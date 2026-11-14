@@ -72,4 +72,55 @@
     <string name="guest_usage_farms">Fermes : %1$d / %2$d</string>
     <string name="guest_usage_fields">Parcelles : %1$d / %2$d</string>
     <string name="guest_usage_analyses">Analyses : %1$.0f / %2$d</string>
+
+    <string name="farms_search_label">Rechercher des fermes</string>
+    <string name="farms_search_placeholder">Filtrer par nom, pays ou région</string>
+    <string name="farms_create_action">Créer une ferme</string>
+    <string name="farms_load_more">Charger plus</string>
+    <string name="farms_empty_title">Aucune ferme trouvée</string>
+    <string name="farms_empty_body">Créez votre première ferme agricole pour organiser vos parcelles et lancer des analyses.</string>
+    <string name="farms_empty_search_body">Aucune ferme ne correspond à votre recherche.</string>
+    <string name="farms_field_count_one">%1$d parcelle</string>
+    <string name="farms_field_count_many">%1$d parcelles</string>
+    <string name="farms_created_at">Créée le : %1$s</string>
+    <string name="farms_guest_banner">Session invité : la création de fermes est soumise aux limites de la session.</string>
+    <string name="farms_error_retry">Réessayer</string>
+    <string name="farms_error_not_found">Ferme introuvable ou inaccessible.</string>
+    <string name="farms_error_unauthorized">Votre session n\'est plus autorisée. Veuillez vous reconnecter.</string>
+    <string name="farms_error_guest_limit">Limite de fermes atteinte pour la session invité. Inscrivez-vous pour en créer davantage.</string>
+    <string name="farms_error_request_id">ID de requête : %1$s</string>
+
+    <string name="farm_detail_title">Détails de la ferme</string>
+    <string name="farm_detail_id_label">ID de la ferme</string>
+    <string name="farm_detail_location_label">Localisation</string>
+    <string name="farm_detail_commune_label">Commune</string>
+    <string name="farm_detail_fields_label">Parcelles</string>
+    <string name="farm_detail_created_label">Date de création</string>
+    <string name="farm_detail_edit">Modifier</string>
+    <string name="farm_detail_delete">Supprimer</string>
+    <string name="farm_detail_back">Retour aux fermes</string>
+    <string name="farm_delete_confirm_title">Supprimer la ferme ?</string>
+    <string name="farm_delete_confirm_body">La suppression de %1$s efface définitivement la ferme ainsi que ses parcelles, historiques et analyses.</string>
+    <string name="farm_delete_confirm_action">Supprimer</string>
+
+    <string name="farm_form_create_title">Créer une ferme</string>
+    <string name="farm_form_edit_title">Modifier la ferme</string>
+    <string name="farm_form_name_label">Nom de la ferme *</string>
+    <string name="farm_form_name_placeholder">ex. Oliveraie Atlas</string>
+    <string name="farm_form_country_label">Pays *</string>
+    <string name="farm_form_country_placeholder">ex. Maroc</string>
+    <string name="farm_form_region_label">Région *</string>
+    <string name="farm_form_region_placeholder">ex. Fès-Meknès</string>
+    <string name="farm_form_commune_label">Commune (optionnel)</string>
+    <string name="farm_form_commune_placeholder">ex. Aïn Taoujdate</string>
+    <string name="farm_form_submit_create">Créer la ferme</string>
+    <string name="farm_form_submit_save">Enregistrer</string>
+
+    <string name="farm_validation_name_required">Le nom de la ferme est requis.</string>
+    <string name="farm_validation_name_too_long">Le nom doit contenir 120 caractères maximum.</string>
+    <string name="farm_validation_country_required">Le pays est requis.</string>
+    <string name="farm_validation_country_too_long">Le pays doit contenir 80 caractères maximum.</string>
+    <string name="farm_validation_region_required">La région est requise.</string>
+    <string name="farm_validation_region_too_long">La région doit contenir 80 caractères maximum.</string>
+    <string name="farm_validation_commune_too_long">La commune doit contenir 120 caractères maximum.</string>
 </resources>

@@ -72,4 +72,55 @@
     <string name="guest_usage_farms">المزارع: %1$d / %2$d</string>
     <string name="guest_usage_fields">الحقول: %1$d / %2$d</string>
     <string name="guest_usage_analyses">التحليلات: %1$.0f / %2$d</string>
+
+    <string name="farms_search_label">البحث عن المزارع</string>
+    <string name="farms_search_placeholder">تصفية حسب الاسم أو البلد أو المنطقة</string>
+    <string name="farms_create_action">إنشاء مزرعة</string>
+    <string name="farms_load_more">تحميل المزيد</string>
+    <string name="farms_empty_title">لا توجد مزارع</string>
+    <string name="farms_empty_body">أنشئ مزرعتك الزراعية الأولى لتنظيم الحقول وتشغيل التحليلات.</string>
+    <string name="farms_empty_search_body">لا توجد مزارع تطابق بحثك الحالي.</string>
+    <string name="farms_field_count_one">%1$d حقل</string>
+    <string name="farms_field_count_many">%1$d حقول</string>
+    <string name="farms_created_at">تاريخ الإنشاء: %1$s</string>
+    <string name="farms_guest_banner">جلسة ضيف: يخضع إنشاء المزارع لحدود الجلسة التجريبية.</string>
+    <string name="farms_error_retry">إعادة المحاولة</string>
+    <string name="farms_error_not_found">المزرعة غير موجودة أو لم تعد متاحة.</string>
+    <string name="farms_error_unauthorized">انتهت صلاحية الجلسة. يرجى تسجيل الدخول مجدداً.</string>
+    <string name="farms_error_guest_limit">تم بلوغ الحد الأقصى للمزارع في جلسة الضيف. سجل حساباً لإنشاء المزيد.</string>
+    <string name="farms_error_request_id">معرف الطلب: %1$s</string>
+
+    <string name="farm_detail_title">تفاصيل المزرعة</string>
+    <string name="farm_detail_id_label">معرف المزرعة</string>
+    <string name="farm_detail_location_label">الموقع</string>
+    <string name="farm_detail_commune_label">الجماعة</string>
+    <string name="farm_detail_fields_label">الحقول</string>
+    <string name="farm_detail_created_label">تاريخ الإنشاء</string>
+    <string name="farm_detail_edit">تعديل</string>
+    <string name="farm_detail_delete">حذف</string>
+    <string name="farm_detail_back">العودة إلى المزارع</string>
+    <string name="farm_delete_confirm_title">حذف المزرعة؟</string>
+    <string name="farm_delete_confirm_body">سيؤدي حذف %1$s إلى إزالة المزرعة وجميع حقولها وسجل محاصيلها وتحليلاتها نهائياً.</string>
+    <string name="farm_delete_confirm_action">حذف</string>
+
+    <string name="farm_form_create_title">إنشاء مزرعة</string>
+    <string name="farm_form_edit_title">تعديل المزرعة</string>
+    <string name="farm_form_name_label">اسم المزرعة *</string>
+    <string name="farm_form_name_placeholder">مثال: ضيعة الزيتون</string>
+    <string name="farm_form_country_label">البلد *</string>
+    <string name="farm_form_country_placeholder">مثال: المغرب</string>
+    <string name="farm_form_region_label">الجهة / المنطقة *</string>
+    <string name="farm_form_region_placeholder">مثال: فاس-مكناس</string>
+    <string name="farm_form_commune_label">الجماعة (اختياري)</string>
+    <string name="farm_form_commune_placeholder">مثال: عين تاوجطات</string>
+    <string name="farm_form_submit_create">إنشاء المزرعة</string>
+    <string name="farm_form_submit_save">حفظ التغييرات</string>
+
+    <string name="farm_validation_name_required">اسم المزرعة مطلوب.</string>
+    <string name="farm_validation_name_too_long">يجب أن يكون اسم المزرعة 120 حرفاً أو أقل.</string>
+    <string name="farm_validation_country_required">البلد مطلوب.</string>
+    <string name="farm_validation_country_too_long">يجب أن يكون البلد 80 حرفاً أو أقل.</string>
+    <string name="farm_validation_region_required">المنطقة مطلوبة.</string>
+    <string name="farm_validation_region_too_long">يجب أن تكون المنطقة 80 حرفاً أو أقل.</string>
+    <string name="farm_validation_commune_too_long">يجب أن تكون الجماعة 120 حرفاً أو أقل.</string>
 </resources>

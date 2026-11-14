@@ -48,3 +48,13 @@ enum class FieldShiftTopLevelDestination(
     )
 }
 
+object FarmRoutes {
+    const val ARG_FARM_ID = "farmId"
+    const val CREATE = "farms/create"
+    const val DETAIL = "farms/detail/{$ARG_FARM_ID}"
+    const val EDIT = "farms/edit/{$ARG_FARM_ID}"
+
+    fun detail(farmId: String): String = "farms/detail/$farmId"
+    fun edit(farmId: String): String = "farms/edit/$farmId"
+}
+

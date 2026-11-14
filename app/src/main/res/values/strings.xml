@@ -72,4 +72,55 @@
     <string name="guest_usage_farms">Farms: %1$d / %2$d</string>
     <string name="guest_usage_fields">Fields: %1$d / %2$d</string>
     <string name="guest_usage_analyses">Analyses: %1$.0f / %2$d</string>
+
+    <string name="farms_search_label">Search farms</string>
+    <string name="farms_search_placeholder">Filter by farm name, country, or region</string>
+    <string name="farms_create_action">Create Farm</string>
+    <string name="farms_load_more">Load More Farms</string>
+    <string name="farms_empty_title">No Farms Found</string>
+    <string name="farms_empty_body">Create your first agricultural farm to organize fields and run analyses.</string>
+    <string name="farms_empty_search_body">No farms match your current search query.</string>
+    <string name="farms_field_count_one">%1$d field</string>
+    <string name="farms_field_count_many">%1$d fields</string>
+    <string name="farms_created_at">Created: %1$s</string>
+    <string name="farms_guest_banner">Guest demo session: farm creation is subject to session limits.</string>
+    <string name="farms_error_retry">Retry</string>
+    <string name="farms_error_not_found">Farm not found or no longer accessible.</string>
+    <string name="farms_error_unauthorized">Your session is no longer authorized. Please sign in again.</string>
+    <string name="farms_error_guest_limit">Guest session farm limit reached. Register or sign in to create more farms.</string>
+    <string name="farms_error_request_id">Request ID: %1$s</string>
+
+    <string name="farm_detail_title">Farm Details</string>
+    <string name="farm_detail_id_label">Farm ID</string>
+    <string name="farm_detail_location_label">Location</string>
+    <string name="farm_detail_commune_label">Commune</string>
+    <string name="farm_detail_fields_label">Fields</string>
+    <string name="farm_detail_created_label">Created At</string>
+    <string name="farm_detail_edit">Edit Farm</string>
+    <string name="farm_detail_delete">Delete Farm</string>
+    <string name="farm_detail_back">Back to Farms</string>
+    <string name="farm_delete_confirm_title">Delete Farm?</string>
+    <string name="farm_delete_confirm_body">Deleting %1$s permanently removes the farm and all of its fields, crop history, and analyses.</string>
+    <string name="farm_delete_confirm_action">Delete</string>
+
+    <string name="farm_form_create_title">Create Farm</string>
+    <string name="farm_form_edit_title">Edit Farm</string>
+    <string name="farm_form_name_label">Farm Name *</string>
+    <string name="farm_form_name_placeholder">e.g. Atlas Olive Grove</string>
+    <string name="farm_form_country_label">Country *</string>
+    <string name="farm_form_country_placeholder">e.g. Morocco</string>
+    <string name="farm_form_region_label">Region *</string>
+    <string name="farm_form_region_placeholder">e.g. Fes-Meknes</string>
+    <string name="farm_form_commune_label">Commune (optional)</string>
+    <string name="farm_form_commune_placeholder">e.g. Ain Taoujdate</string>
+    <string name="farm_form_submit_create">Create Farm</string>
+    <string name="farm_form_submit_save">Save Changes</string>
+
+    <string name="farm_validation_name_required">Farm name is required.</string>
+    <string name="farm_validation_name_too_long">Farm name must be 120 characters or fewer.</string>
+    <string name="farm_validation_country_required">Country is required.</string>
+    <string name="farm_validation_country_too_long">Country must be 80 characters or fewer.</string>
+    <string name="farm_validation_region_required">Region is required.</string>
+    <string name="farm_validation_region_too_long">Region must be 80 characters or fewer.</string>
+    <string name="farm_validation_commune_too_long">Commune must be 120 characters or fewer.</string>
 </resources>

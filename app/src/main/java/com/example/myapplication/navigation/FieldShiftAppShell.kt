@@ -34,10 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.R
 import com.example.myapplication.core.common.AppLanguage
 import com.example.myapplication.core.designsystem.component.AgronomicStatusTone
@@ -53,6 +55,10 @@ import com.example.myapplication.core.designsystem.theme.FieldShiftTheme
 import com.example.myapplication.core.network.ApiEndpointConfig
 import com.example.myapplication.domain.auth.SessionState
 import com.example.myapplication.feature.auth.AuthEntryScreen
+import com.example.myapplication.feature.farms.FarmDetailScreen
+import com.example.myapplication.feature.farms.FarmFormScreen
+import com.example.myapplication.feature.farms.FarmsListScreen
+import com.example.myapplication.feature.farms.FarmsListViewModel
 import com.example.myapplication.feature.profile.ProfileScreen
 
 @Composable
@@ -198,6 +204,7 @@ private fun AuthenticatedAppScaffold(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
         ?: FieldShiftTopLevelDestination.DASHBOARD.route
+    val farmsListViewModel: FarmsListViewModel = hiltViewModel()
 
     val bottomNavItems = FieldShiftTopLevelDestination.entries.map { destination ->
         FieldShiftBottomNavItem(
@@ -207,9 +214,13 @@ private fun AuthenticatedAppScaffold(
         )
     }
 
-    val activeDestination = FieldShiftTopLevelDestination.entries.firstOrNull {
-        it.route == currentRoute
-    } ?: FieldShiftTopLevelDestination.DASHBOARD
+    val activeDestination = when {
+        currentRoute.startsWith(FieldShiftTopLevelDestination.FARMS.route) ->
+            FieldShiftTopLevelDestination.FARMS
+        else -> FieldShiftTopLevelDestination.entries.firstOrNull {
+            it.route == currentRoute
+        } ?: FieldShiftTopLevelDestination.DASHBOARD
+    }
 
     val statusBadge = when (sessionState) {
         is SessionState.GuestSession -> stringResource(id = R.string.profile_badge_guest)
@@ -231,7 +242,7 @@ private fun AuthenticatedAppScaffold(
         bottomBar = {
             FieldShiftBottomBar(
                 items = bottomNavItems,
-                currentRoute = currentRoute,
+                currentRoute = activeDestination.route,
                 onItemSelected = { item ->
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
@@ -251,20 +262,80 @@ private fun AuthenticatedAppScaffold(
         ) {
             FieldShiftTopLevelDestination.entries.forEach { destination ->
                 composable(route = destination.route) {
-                    if (destination == FieldShiftTopLevelDestination.PROFILE) {
-                        ProfileScreen(
-                            selectedLanguage = selectedLanguage,
-                            onLanguageSelected = onLanguageSelected
-                        )
-                    } else {
-                        FoundationSectionEmptyScreen(
-                            destination = destination,
-                            apiEndpointConfig = apiEndpointConfig,
-                            selectedLanguage = selectedLanguage,
-                            onLanguageSelected = onLanguageSelected
-                        )
+                    when (destination) {
+                        FieldShiftTopLevelDestination.FARMS -> {
+                            FarmsListScreen(
+                                viewModel = farmsListViewModel,
+                                onCreateFarmClick = { navController.navigate(FarmRoutes.CREATE) },
+                                onFarmClick = { farmId ->
+                                    navController.navigate(FarmRoutes.detail(farmId))
+                                }
+                            )
+                        }
+                        FieldShiftTopLevelDestination.PROFILE -> {
+                            ProfileScreen(
+                                selectedLanguage = selectedLanguage,
+                                onLanguageSelected = onLanguageSelected
+                            )
+                        }
+                        else -> {
+                            FoundationSectionEmptyScreen(
+                                destination = destination,
+                                apiEndpointConfig = apiEndpointConfig,
+                                selectedLanguage = selectedLanguage,
+                                onLanguageSelected = onLanguageSelected
+                            )
+                        }
                     }
                 }
+            }
+
+            composable(route = FarmRoutes.CREATE) {
+                FarmFormScreen(
+                    farmId = null,
+                    onSaved = { farm ->
+                        farmsListViewModel.onFarmSaved(farm)
+                        navController.navigate(FarmRoutes.detail(farm.id)) {
+                            popUpTo(FarmRoutes.CREATE) { inclusive = true }
+                        }
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = FarmRoutes.DETAIL,
+                arguments = listOf(navArgument(FarmRoutes.ARG_FARM_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FarmRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                FarmDetailScreen(
+                    farmId = farmId,
+                    onEditClick = { id -> navController.navigate(FarmRoutes.edit(id)) },
+                    onDeleted = { deletedId ->
+                        farmsListViewModel.onFarmDeleted(deletedId)
+                        navController.popBackStack()
+                    },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = FarmRoutes.EDIT,
+                arguments = listOf(navArgument(FarmRoutes.ARG_FARM_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FarmRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                FarmFormScreen(
+                    farmId = farmId,
+                    onSaved = { updatedFarm ->
+                        farmsListViewModel.onFarmSaved(updatedFarm)
+                        navController.navigate(FarmRoutes.detail(updatedFarm.id)) {
+                            popUpTo(FarmRoutes.detail(updatedFarm.id)) { inclusive = true }
+                        }
+                    },
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }
