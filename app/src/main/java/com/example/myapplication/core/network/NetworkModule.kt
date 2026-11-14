@@ -134,4 +134,10 @@ object NetworkModule {
     fun provideFieldApiService(retrofit: Retrofit): FieldApiService {
         return retrofit.create(FieldApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideAnalysisApiService(retrofit: Retrofit): AnalysisApiService {
+        return retrofit.create(AnalysisApiService::class.java)
+    }
 }
