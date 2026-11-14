@@ -122,4 +122,10 @@ object NetworkModule {
     fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideFarmApiService(retrofit: Retrofit): FarmApiService {
+        return retrofit.create(FarmApiService::class.java)
+    }
 }
