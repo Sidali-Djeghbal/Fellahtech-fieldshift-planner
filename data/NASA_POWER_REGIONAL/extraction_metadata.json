@@ -1,0 +1,463 @@
+{
+  "project": "Field Shift",
+  "study_area": "Guelma Wilaya, Algeria",
+  "period": {
+    "start_year": 2016,
+    "end_year": 2025
+  },
+  "api": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+  "original_bbox": {
+    "west": 6.941607407000106,
+    "east": 7.961420695000015,
+    "south": 36.02588817100019,
+    "north": 36.67432800400002
+  },
+  "meteorological_bbox": {
+    "latitude-min": 35.5,
+    "latitude-max": 37.5,
+    "longitude-min": 6.25,
+    "longitude-max": 8.75
+  },
+  "solar_bbox": {
+    "latitude-min": 35.0,
+    "latitude-max": 37.0,
+    "longitude-min": 6.0,
+    "longitude-max": 8.0
+  },
+  "meteorological_variables": [
+    "T2M",
+    "T2M_MAX",
+    "T2M_MIN",
+    "PRECTOTCORR",
+    "RH2M"
+  ],
+  "solar_variables": [
+    "ALLSKY_SFC_SW_DWN"
+  ],
+  "successful_requests": 60,
+  "failed_requests": 0,
+  "successes": [
+    {
+      "variable": "T2M",
+      "year": 2016,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2017,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2018,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2019,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2020,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2021,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2022,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2023,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2024,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M",
+      "year": 2025,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M/T2M_2025.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2016,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2017,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2018,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2019,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2020,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2021,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2022,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2023,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2024,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MAX",
+      "year": 2025,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MAX/T2M_MAX_2025.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2016,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2017,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2018,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2019,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2020,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2021,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2022,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2023,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2024,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "T2M_MIN",
+      "year": 2025,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/T2M_MIN/T2M_MIN_2025.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2016,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2017,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2018,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2019,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2020,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2021,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2022,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2023,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2024,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "PRECTOTCORR",
+      "year": 2025,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/PRECTOTCORR/PRECTOTCORR_2025.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2016,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2017,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2018,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2019,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2020,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2021,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2022,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2023,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2024,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "RH2M",
+      "year": 2025,
+      "community": "AG",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/RH2M/RH2M_2025.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2016,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2016.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2017,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2017.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2018,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2018.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2019,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2019.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2020,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2020.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2021,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2021.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2022,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2022.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2023,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2023.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2024,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2024.json",
+      "status": "success"
+    },
+    {
+      "variable": "ALLSKY_SFC_SW_DWN",
+      "year": 2025,
+      "community": "RE",
+      "file": "/home/lokman/Desktop/FeildShit-SI-Model/data/NASA_POWER_REGIONAL/raw/ALLSKY_SFC_SW_DWN/ALLSKY_SFC_SW_DWN_2025.json",
+      "status": "success"
+    }
+  ],
+  "failures": [],
+  "methodological_note": "Regional bounding-box extraction. The bounding box is not identical to the Wilaya polygon. Spatial filtering is required. Native NASA POWER spatial resolution must be preserved."
+}
