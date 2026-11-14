@@ -16,4 +16,60 @@
     <string name="network_config_title">Configured API Endpoint</string>
     <string name="network_config_unset">Not configured (set fieldshift.api.baseUrl in local.properties)</string>
     <string name="localization_preview_title">Language &amp; Layout Direction (LTR / RTL)</string>
+
+    <!-- Phase 2: Auth & Session -->
+    <string name="session_restoring">Restoring FieldShift session…</string>
+    <string name="session_error_title">Connection Issue</string>
+    <string name="session_error_retry">Retry Connection</string>
+    <string name="session_error_switch_account">Sign Out &amp; Switch Account</string>
+
+    <string name="auth_badge">ACCESS CONTROL</string>
+    <string name="auth_headline">Precision Agronomy Access</string>
+    <string name="auth_subhead">Sign in to your FieldShift account or launch a guided guest demo session.</string>
+    <string name="auth_tab_login">Sign In</string>
+    <string name="auth_tab_register">Register</string>
+    <string name="auth_tab_guest">Guest Demo</string>
+
+    <string name="auth_email_label">Email</string>
+    <string name="auth_email_placeholder">operator@domain.dz</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_placeholder">Enter password</string>
+    <string name="auth_full_name_label">Full Name</string>
+    <string name="auth_full_name_placeholder">Operator name</string>
+    <string name="auth_preferred_lang_label">Preferred Language</string>
+
+    <string name="auth_action_login">Sign In</string>
+    <string name="auth_action_register">Create Account</string>
+    <string name="auth_action_start_guest">Start Guest Demo</string>
+    <string name="auth_validation_email_invalid">Enter a valid email address.</string>
+    <string name="auth_validation_password_required">Password is required.</string>
+    <string name="auth_validation_password_min">Password must be at least 8 characters.</string>
+    <string name="auth_validation_name_required">Full name is required.</string>
+    <string name="auth_validation_demo_required">Select a demo location to continue.</string>
+
+    <string name="demo_locations_title">Available Demo Locations</string>
+    <string name="demo_locations_loading">Loading demo locations…</string>
+    <string name="demo_locations_empty">No active demo locations returned by the server.</string>
+    <string name="demo_locations_reload">Reload Locations</string>
+
+    <string name="profile_badge_authenticated">AUTHENTICATED</string>
+    <string name="profile_badge_guest">GUEST DEMO</string>
+    <string name="profile_member_since">Member since %1$s</string>
+    <string name="profile_logout">Sign Out</string>
+    <string name="profile_delete_account">Delete Account</string>
+    <string name="profile_delete_confirm_title">Delete Account Permanently?</string>
+    <string name="profile_delete_confirm_body">This immediately hard-deletes your account and all owned farms, fields, crop history, and analyses.</string>
+    <string name="profile_delete_confirm_action">Delete Permanently</string>
+    <string name="profile_cancel">Cancel</string>
+
+    <string name="guest_demo_parcel_title">Pre-Designated Demo Parcel</string>
+    <string name="guest_demo_unverified_badge">UNVERIFIED DEMO</string>
+    <string name="guest_demo_area_ha">%1$.1f ha</string>
+    <string name="guest_demo_limits_title">Session Limits &amp; Usage</string>
+    <string name="guest_demo_expires">Expires: %1$s</string>
+    <string name="guest_demo_exit">Exit Guest Session</string>
+    <string name="guest_demo_refresh">Refresh Session Info</string>
+    <string name="guest_usage_farms">Farms: %1$d / %2$d</string>
+    <string name="guest_usage_fields">Fields: %1$d / %2$d</string>
+    <string name="guest_usage_analyses">Analyses: %1$.0f / %2$d</string>
 </resources>
