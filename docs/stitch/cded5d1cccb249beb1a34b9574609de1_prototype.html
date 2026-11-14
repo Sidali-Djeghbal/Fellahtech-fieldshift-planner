@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Space+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-high": "#1C241E", "on-secondary-fixed-variant": "#005313", "outline": "#9c8f7d", "surface-variant": "#2d3732", "on-tertiary-container": "#00516f", "surface-container": "#131814", "on-primary": "#422c00", "inverse-surface": "#dbe5de", "secondary-container": "#00761f", "foliage-green-bright": "#66BB6A", "text-secondary": "#A3B3A7", "on-secondary-container": "#95fb92", "on-secondary-fixed": "#002204", "tertiary-fixed-dim": "#7bd0ff", "inverse-on-surface": "#29322e", "secondary-fixed-dim": "#78dc77", "primary": "#ffd183", "telemetry-cyan": "#38BDF8", "background": "#0c1511", "text-tertiary": "#65776A", "primary-fixed": "#ffdeaa", "on-error-container": "#ffdad6", "on-surface": "#dbe5de", "on-tertiary-fixed-variant": "#004c69", "outline-variant": "#4f4536", "tertiary-fixed": "#c4e7ff", "surface-bright": "#323b36", "error": "#ffb4ab", "surface-canvas": "#0B0F0C", "surface": "#0c1511", "inverse-primary": "#7d5700", "on-secondary": "#00390a", "surface-container-low": "#141d19", "on-primary-fixed": "#271900", "surface-tint": "#f5bd56", "surface-dim": "#0c1511", "on-tertiary": "#00354a", "tertiary": "#aadeff", "error-container": "#93000a", "secondary": "#78dc77", "on-surface-variant": "#d3c4b0", "on-background": "#dbe5de", "on-error": "#690005", "tertiary-container": "#56c7ff", "on-primary-fixed-variant": "#5f4100", "primary-container": "#eab34d", "surface-border": "rgba(255, 255, 255, 0.08)", "text-primary": "#F4F7F4", "primary-fixed-dim": "#f5bd56", "spectral-deep-sea": "#183A41", "surface-container-highest": "#2d3732", "on-primary-container": "#654600", "surface-container-lowest": "#07100c", "on-tertiary-fixed": "#001e2c", "secondary-fixed": "#94f990", "erosion-alert": "#F97316", "foliage-green-deep": "#4D5432" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "margin": "1.25rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem" }, "fontFamily": { "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Space Mono"], "label-sm": ["Space Mono"], "label-lg": ["Space Mono"], "body-md": ["Inter"], "headline-sm": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "body-sm": ["Inter"], "headline-md": ["Space Grotesk"] }, "fontSize": { "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.06em", "fontWeight": "400" }], "label-lg": ["13px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#0c1511;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="flex flex-col"><div class="h-6 px-margin-mobile flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-label-md text-label-md text-on-surface font-medium">09:41</span><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[14px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[14px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-container"><span class="material-symbols-outlined text-[22px]">potted_plant</span></div><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight leading-none">Dashboard</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-secondary flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>SYNC</span></div><span class="font-label-sm text-label-sm text-text-tertiary">NORTH QUADRANT #04</span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="flex flex-col relative w-full pt-22 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin-mobile gap-space-md pb-6">
+<!-- Active Farm Switcher Sheet Trigger -->
+<section class="w-full">
+<div class="w-full bg-surface-container-high rounded-xl p-space-md flex items-center justify-between shadow-sm active:bg-surface-variant transition-colors" id="farm-selector-btn" role="button" tabindex="0">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-11 h-11 rounded-lg bg-surface-container flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[24px]">location_away</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-text-primary truncate">Domaine El-Merdja</span>
+<span class="material-symbols-outlined text-[18px] text-text-secondary">expand_more</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="font-label-sm text-label-sm text-telemetry-cyan uppercase tracking-wider">Boumerdès, DZ</span>
+<span class="w-1 h-1 rounded-full bg-text-tertiary"></span>
+<span class="font-label-sm text-label-sm text-text-secondary truncate">3 Fields · 1 Active Rotation</span>
+</div>
+</div>
+</div>
+<div class="shrink-0 flex items-center gap-1 bg-surface-container px-2 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-foliage-green-bright animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-foliage-green-bright">LIVE GIS</span>
+</div>
+</div>
+</section>
+<!-- Weather & Climate Stress Banner -->
+<section class="w-full">
+<div class="w-full bg-surface-container rounded-xl p-space-md relative overflow-hidden shadow-md">
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start justify-between gap-space-sm mb-2">
+<div class="flex items-center gap-1.5 bg-primary/15 px-2.5 py-1 rounded-full text-primary">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider">Seasonal Stress Alert</span>
+</div>
+<div class="flex items-center gap-1 text-erosion-alert bg-erosion-alert/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">device_thermostat</span>
+<span class="font-label-md text-label-md font-semibold">≥35°C PEAK</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium leading-snug">
+        4 consecutive hot days forecasted across Lower Mitidja basin. Evapotranspiration ET₀ surging to 6.2 mm/day.
+      </p>
+<div class="mt-space-md pt-space-sm bg-surface-container-high/60 rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-text-secondary">
+<span class="material-symbols-outlined text-[16px] text-telemetry-cyan">water_loss</span>
+<span class="font-label-sm text-label-sm">Soil Moisture Index:</span>
+<span class="font-label-md text-label-md text-text-primary font-bold">31% (Depleting)</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary underline font-medium cursor-pointer">Mitigate Now</span>
+</div>
+</div>
+</section>
+<!-- Quick Agronomic Stats Carousel/Row -->
+<section class="grid grid-cols-3 gap-space-xs w-full">
+<!-- Stat 1 -->
+<div class="bg-surface-container rounded-xl p-3 flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-text-tertiary mb-1">
+<span class="font-label-sm text-label-sm">AREA</span>
+<span class="material-symbols-outlined text-[15px] text-foliage-green-bright">grid_view</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-text-primary font-bold">42.5<span class="font-label-sm text-label-sm text-text-secondary ml-0.5 font-normal">ha</span></div>
+<div class="font-label-sm text-label-sm text-text-secondary truncate mt-0.5">Managed basin</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container rounded-xl p-3 flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-text-tertiary mb-1">
+<span class="font-label-sm text-label-sm">AVG FIT</span>
+<span class="material-symbols-outlined text-[15px] text-primary">model_training</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-primary font-bold">68<span class="font-label-sm text-label-sm text-text-secondary ml-0.5 font-normal">/100</span></div>
+<div class="font-label-sm text-label-sm text-text-secondary truncate mt-0.5">+4 vs last cycle</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container rounded-xl p-3 flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-text-tertiary mb-1">
+<span class="font-label-sm text-label-sm">DEFICIT</span>
+<span class="material-symbols-outlined text-[15px] text-erosion-alert">opacity</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-erosion-alert font-bold">Moderate</div>
+<div class="font-label-sm text-label-sm text-text-secondary truncate mt-0.5">Clay buffer ok</div>
+</div>
+</section>
+<!-- Quick Actions Row (M3 Filled Tonal Chips) -->
+<section class="w-full">
+<div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+<!-- Chip 1: New Field -->
+<button class="shrink-0 h-10 px-4 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-text-primary active:scale-95 transition-all flex items-center gap-2 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">add</span>
+<span class="font-label-md text-label-md font-medium whitespace-nowrap">New Field</span>
+</button>
+<!-- Chip 2: Launch Rotation Lab -->
+<button class="shrink-0 h-10 px-4 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-text-primary active:scale-95 transition-all flex items-center gap-2 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-telemetry-cyan">science</span>
+<span class="font-label-md text-label-md font-medium whitespace-nowrap">Rotation Lab</span>
+</button>
+<!-- Chip 3: Offline Data -->
+<button class="shrink-0 h-10 px-4 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-text-primary active:scale-95 transition-all flex items-center gap-2 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">cloud_sync</span>
+<span class="font-label-md text-label-md font-medium whitespace-nowrap">Sync Offline (1)</span>
+</button>
+</div>
+</section>
+<!-- Active Field Highlights -->
+<section class="flex flex-col gap-space-sm w-full">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-text-primary">Active Field Highlights</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-text-secondary font-label-sm text-label-sm">2 parcels</span>
+</div>
+<a class="font-label-sm text-label-sm text-primary hover:underline font-medium flex items-center" href="#">
+        View All
+        <span class="material-symbols-outlined text-[14px] ml-0.5">chevron_right</span>
+</a>
+</div>
+<!-- Field Card 1: Tidjelabine Hillside -->
+<div class="w-full bg-surface-container rounded-xl overflow-hidden shadow-md active:bg-surface-container-high transition-colors cursor-pointer">
+<div class="relative w-full h-32 bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Aerial multispectral drone scan of an undulating hillside agricultural field with distinct clay-loam soil variations, green vegetative contour strips, and telemetry grid overlay in soft ambient late afternoon lighting with deep earth tones and green hues" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB66HPytuMjHJAnjox5UMIYLgPHp2c93xVrr818idWyBuBZaytnM6ojAVcNMNugYngw5CU_QZZ7M1QSfZh37YA8EsevW5pesQbwZy9QmxpqEDlp2kIXF-rEx5rFczX2uWe_TVA2WMEApB8NaHQHfrRBYBMMqfx8ffgLXs4y-1AxHbfeQrsLb2hevUFmA2lwT5yuxOf4iFXeoFJa4Irw3PCbjs-nrwq7tWnAHXGumW4s"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/40 to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 bg-surface-canvas/80 backdrop-blur-md px-2 py-1 rounded font-label-sm text-label-sm text-telemetry-cyan flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">pin_drop</span>
+          36°43'12"N 3°29'08"E
+        </div>
+<div class="absolute top-2.5 right-2.5 bg-surface-canvas/80 backdrop-blur-md px-2.5 py-1 rounded-full font-label-sm text-label-sm text-foliage-green-bright flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-foliage-green-bright"></span>
+          PARCEL 04
+        </div>
+</div>
+<div class="p-space-md pt-2 flex flex-col gap-space-sm">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Tidjelabine Hillside</h3>
+<span class="font-body-sm text-body-sm text-text-secondary">12.4 ha · Rainfed Cereal Slope · Clay-Loam</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</div>
+</div>
+<!-- Agronomic Match pill -->
+<div class="bg-surface-container-high rounded-lg p-2.5 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-foliage-green-bright">check_circle</span>
+<span class="font-label-md text-label-md text-text-primary font-medium">Durum Wheat + Vetch Cover</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-foliage-green-bright bg-secondary-container/40 px-2 py-0.5 rounded">Fit 74/100</span>
+</div>
+<div class="flex items-center justify-between pt-1 text-text-secondary font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">shield</span>
+              -28 days bare-wet erosion risk
+            </span>
+<span class="text-primary font-medium">Fall 2025 Plan</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Field Card 2: Mitidja Plain Lower -->
+<div class="w-full bg-surface-container rounded-xl overflow-hidden shadow-md active:bg-surface-container-high transition-colors cursor-pointer">
+<div class="relative w-full h-32 bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="High precision agricultural drone perspective over flat alluvial plain with orderly drip irrigation lines and chickpea legume foliage in fertile Algerian Mitidja valley under warm golden sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNvnr4WJXxfUJEwNPyTEs4SjVpb9ICGfV5fPHXky_XK2hGQ2LJIMlNXGuYCUL6dN2OK6GwhPerHzX11yW9DmtlWcVQcIZhKqo8wTlp18PShnZuT-1wE7DKTkxad1twjNB6u6dkfBz9Oo7HD0vIMgvWZoKx2J7wuaN4qC90tuUXuQlQdK64o8PLgSwExPl5QClDPSJhgOvRj_vHT6bAgHARKGm_z5lRVYCbmDIZcOVf"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/40 to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 bg-surface-canvas/80 backdrop-blur-md px-2 py-1 rounded font-label-sm text-label-sm text-telemetry-cyan flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">pin_drop</span>
+          36°41'55"N 3°26'40"E
+        </div>
+<div class="absolute top-2.5 right-2.5 bg-surface-canvas/80 backdrop-blur-md px-2.5 py-1 rounded-full font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          PARCEL 01
+        </div>
+</div>
+<div class="p-space-md pt-2 flex flex-col gap-space-sm">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Mitidja Plain Lower</h3>
+<span class="font-body-sm text-body-sm text-text-secondary">18.0 ha · Alluvial Loam · Drip Irrigated</span>
+</div>
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-lg p-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-foliage-green-bright">verified</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-primary font-medium">Audited &amp; Verified</span>
+<span class="font-label-sm text-label-sm text-text-secondary">Chickpea rotation active (Week 6)</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/15 px-2 py-0.5 rounded font-mono font-medium">NDVI 0.62</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Satellite & Soil Audits Card -->
+<section class="w-full">
+<div class="w-full bg-surface-container rounded-xl p-space-md shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-telemetry-cyan">
+<span class="material-symbols-outlined text-[20px]">satellite_alt</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-headline-sm text-headline-sm text-text-primary">NASA IMERG &amp; Soil Audits</h4>
+<span class="font-label-sm text-label-sm text-text-tertiary">Boumerdès Climatology Cross-Match</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-text-secondary px-2 py-0.5 rounded">T-6h</span>
+</div>
+<!-- Soil & Climatology Stats Matrix -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="bg-surface-container-high rounded-lg p-space-sm flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-text-secondary">ANNUAL RAIN BASELINE</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">647</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">mm/yr</span>
+</div>
+<span class="font-label-sm text-label-sm text-foliage-green-bright flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">trending_up</span>
+            IMERG anomaly +12mm
+          </span>
+</div>
+<div class="bg-surface-container-high rounded-lg p-space-sm flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-text-secondary">ORGANIC MATTER (SOM)</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm text-primary font-bold">1.82%</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">topsoil</span>
+</div>
+<span class="font-label-sm text-label-sm text-erosion-alert flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">priority_high</span>
+            Target ≥ 2.4%
+          </span>
+</div>
+</div>
+<!-- Soil Health Sparkline Preview inline SVG -->
+<div class="w-full bg-surface-container-high rounded-lg p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between text-text-secondary">
+<span class="font-label-sm text-label-sm">Synthetic Moisture Depletion (14-Day Vector)</span>
+<span class="font-label-sm text-label-sm font-mono text-telemetry-cyan">-18.4% Net</span>
+</div>
+<svg class="w-full h-8 text-telemetry-cyan" fill="none" preserveaspectratio="none" viewbox="0 0 300 40">
+<path d="M0,10 Q40,5 80,18 T160,22 T240,32 T300,38" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M0,10 Q40,5 80,18 T160,22 T240,32 T300,38 L300,40 L0,40 Z" fill="currentColor" fill-opacity="0.12"></path>
+<!-- Alert point on curve -->
+<circle class="fill-erosion-alert stroke-surface-canvas" cx="240" cy="32" r="3.5" stroke-width="1.5"></circle>
+</svg>
+</div>
+</div>
+</section>
+<!-- Primary Floating Action Button (Prominent M3 Extended FAB) -->
+<section class="w-full mt-space-sm">
+<button class="w-full h-14 bg-primary-container text-on-primary-container rounded-2xl shadow-xl flex items-center justify-center gap-space-sm font-headline-sm text-headline-sm tracking-tight active:scale-[0.98] transition-transform hover:brightness-105" type="button">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span>New Crop Rotation Analysis</span>
+</button>
+</section>
+</div>
+<script>
+  // Micro-interaction for farm switcher toggle demonstration
+  document.getElementById('farm-selector-btn')?.addEventListener('click', function() {
+    const icon = this.querySelector('.material-symbols-outlined.text-\\[18px\\]');
+    if (icon) {
+      icon.textContent = icon.textContent === 'expand_more' ? 'expand_less' : 'expand_more';
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-canvas/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.4)]" data-active-classes="[&amp;_.indicator]:bg-primary-container/20 [&amp;_.indicator]:text-primary-container text-text-primary font-semibold"><div class="flex items-center justify-around h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 transition-colors [&amp;_.indicator]:bg-primary-container/20 [&amp;_.indicator]:text-primary-container text-text-primary font-semibold" data-path="dashboard" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">dashboard</span></div><span class="font-label-sm text-label-sm">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="farms-grid" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">agriculture</span></div><span class="font-label-sm text-label-sm">Farms</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="spectral-analysis" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">science</span></div><span class="font-label-sm text-label-sm">Analysis</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="field-history" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">history</span></div><span class="font-label-sm text-label-sm">History</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="operator-profile" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">manage_accounts</span></div><span class="font-label-sm text-label-sm">Profile</span></a></div><div class="w-full flex items-center justify-center pb-2 pt-1"><div class="w-32 h-1 rounded-full bg-on-surface/20"></div></div></nav></body></html>

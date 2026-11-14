@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Space+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-high": "#1C241E", "on-secondary-fixed-variant": "#005313", "outline": "#9c8f7d", "surface-variant": "#2d3732", "on-tertiary-container": "#00516f", "surface-container": "#131814", "on-primary": "#422c00", "inverse-surface": "#dbe5de", "secondary-container": "#00761f", "foliage-green-bright": "#66BB6A", "text-secondary": "#A3B3A7", "on-secondary-container": "#95fb92", "on-secondary-fixed": "#002204", "tertiary-fixed-dim": "#7bd0ff", "inverse-on-surface": "#29322e", "secondary-fixed-dim": "#78dc77", "primary": "#ffd183", "telemetry-cyan": "#38BDF8", "background": "#0c1511", "text-tertiary": "#65776A", "primary-fixed": "#ffdeaa", "on-error-container": "#ffdad6", "on-surface": "#dbe5de", "on-tertiary-fixed-variant": "#004c69", "outline-variant": "#4f4536", "tertiary-fixed": "#c4e7ff", "surface-bright": "#323b36", "error": "#ffb4ab", "surface-canvas": "#0B0F0C", "surface": "#0c1511", "inverse-primary": "#7d5700", "on-secondary": "#00390a", "surface-container-low": "#141d19", "on-primary-fixed": "#271900", "surface-tint": "#f5bd56", "surface-dim": "#0c1511", "on-tertiary": "#00354a", "tertiary": "#aadeff", "error-container": "#93000a", "secondary": "#78dc77", "on-surface-variant": "#d3c4b0", "on-background": "#dbe5de", "on-error": "#690005", "tertiary-container": "#56c7ff", "on-primary-fixed-variant": "#5f4100", "primary-container": "#eab34d", "surface-border": "rgba(255, 255, 255, 0.08)", "text-primary": "#F4F7F4", "primary-fixed-dim": "#f5bd56", "spectral-deep-sea": "#183A41", "surface-container-highest": "#2d3732", "on-primary-container": "#654600", "surface-container-lowest": "#07100c", "on-tertiary-fixed": "#001e2c", "secondary-fixed": "#94f990", "erosion-alert": "#F97316", "foliage-green-deep": "#4D5432" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "margin": "1.25rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem" }, "fontFamily": { "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Space Mono"], "label-sm": ["Space Mono"], "label-lg": ["Space Mono"], "body-md": ["Inter"], "headline-sm": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "body-sm": ["Inter"], "headline-md": ["Space Grotesk"] }, "fontSize": { "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.06em", "fontWeight": "400" }], "label-lg": ["13px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#0c1511;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="flex flex-col"><div class="h-6 px-margin-mobile flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-label-md text-label-md text-on-surface font-medium">09:41</span><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[14px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[14px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-container"><span class="material-symbols-outlined text-[22px]">potted_plant</span></div><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight leading-none">Spectral Analysis</span><span class="px-1.5 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-secondary flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>SYNC</span></div><span class="font-label-sm text-label-sm text-text-tertiary">NORTH QUADRANT #04</span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="flex flex-col relative w-full pt-22 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full pb-10">
+<!-- Top Ambient Banner / Parcel Profile Card -->
+<div class="px-margin-mobile pt-space-xs pb-space-sm">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-high p-space-md shadow-md">
+<!-- Glow Accent Background -->
+<div class="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Rotation Sandbox Active</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-telemetry-cyan font-medium">MOD-ROT-2025</span>
+</div>
+<div class="flex flex-col mt-0.5">
+<span class="font-headline-sm text-headline-sm text-text-primary tracking-tight">Tidjelabine Hillside</span>
+<span class="font-body-sm text-body-sm text-text-secondary">12.4 ha · Rainfed Terraces · Clay-Loam Subsoil</span>
+</div>
+<div class="mt-space-xs pt-space-xs flex items-center justify-between bg-surface-container/60 rounded-lg px-space-sm py-1.5">
+<div class="flex items-center gap-1.5 text-telemetry-cyan">
+<span class="material-symbols-outlined text-[15px]">satellite_alt</span>
+<span class="font-label-sm text-label-sm">Sentinel-2 Sync: 2d ago</span>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[15px]">water_drop</span>
+<span class="font-label-sm text-label-sm">Moisture: 24%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Configuration Form -->
+<div class="flex flex-col gap-space-md px-margin-mobile">
+<!-- SECTION 1: PLANNING SCOPE & CYCLE -->
+<section class="flex flex-col gap-space-sm bg-surface-container p-space-md rounded-xl shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[17px]">event_repeat</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">1. Planning Scope &amp; Cycle</h2>
+</div>
+<span class="font-label-sm text-label-sm text-text-tertiary">STEP 01/03</span>
+</div>
+<!-- Start Season Pill Selector -->
+<div class="flex flex-col gap-1.5 mt-1">
+<label class="font-label-md text-label-md text-text-secondary uppercase">Initial Seeding Window</label>
+<div class="grid grid-cols-2 gap-space-xs" id="season-selector">
+<button class="season-btn flex items-center justify-between px-space-sm py-2.5 rounded-lg bg-surface-container-high text-primary font-medium text-left transition-all" data-season="autumn-2025" type="button">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-text-primary leading-tight">Autumn / Winter 2025</span>
+<span class="font-label-sm text-label-sm text-primary">Primary Cereal Run</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<button class="season-btn flex items-center justify-between px-space-sm py-2.5 rounded-lg bg-surface-container-low text-text-tertiary text-left opacity-75 hover:opacity-100 transition-all" data-season="spring-2026" type="button">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-text-secondary leading-tight">Spring 2026</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">Pulse &amp; Forage Focus</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-tertiary">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+<!-- Planning Horizon Slider -->
+<div class="flex flex-col gap-2 mt-2 bg-surface-container-high/60 p-space-sm rounded-lg">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-text-secondary">Planning Horizon</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold" id="horizon-label">3 Seasons (18 Months)</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-text-primary font-label-sm text-label-sm">Range: 1–6</span>
+</div>
+<div class="relative flex items-center w-full py-1">
+<input class="w-full h-2 rounded-lg bg-surface-container-highest appearance-none cursor-pointer accent-primary" id="horizon-slider" max="6" min="1" step="1" type="range" value="3"/>
+</div>
+<div class="flex justify-between text-text-tertiary font-label-sm text-label-sm px-1">
+<span>6m (1s)</span>
+<span>12m (2s)</span>
+<span class="text-primary font-medium">18m (3s)</span>
+<span>24m (4s)</span>
+<span>36m (6s)</span>
+</div>
+</div>
+<!-- Cycle Mode Segmented Control -->
+<div class="flex flex-col gap-1.5 mt-2">
+<label class="font-label-md text-label-md text-text-secondary uppercase">Rotational Mechanism</label>
+<div class="grid grid-cols-2 p-1 bg-surface-container-highest rounded-lg gap-1" id="cycle-mode-toggle">
+<button class="cycle-pill py-2 px-space-xs rounded font-body-sm text-body-sm text-center font-medium bg-primary text-on-primary shadow-sm transition-all" data-mode="consecutive" type="button">
+            Consecutive Seasons
+          </button>
+<button class="cycle-pill py-2 px-space-xs rounded font-body-sm text-body-sm text-center text-text-secondary hover:text-text-primary transition-all" data-mode="annual" type="button">
+            Annual Crop Rotation
+          </button>
+</div>
+</div>
+<!-- Climate Stress Drought Simulation Toggle -->
+<div class="mt-2 p-space-sm rounded-lg bg-surface-container-high flex items-center justify-between gap-space-sm">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-erosion-alert/20 text-erosion-alert flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">severe_cold</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-text-primary font-medium">Drought Simulation Mode</span>
+<span class="font-body-sm text-body-sm text-text-secondary">Inject -20% rainfall deficit anomaly profile</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer shrink-0">
+<input checked="" class="sr-only peer" id="drought-toggle" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-primary after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-erosion-alert"></div>
+</label>
+</div>
+</section>
+<!-- SECTION 2: MULTI-OBJECTIVE OPTIMIZATION PRIORITIES -->
+<section class="flex flex-col gap-space-sm bg-surface-container p-space-md rounded-xl shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[17px]">tune</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">2. Priority Sliders</h2>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-high px-2 py-0.5 rounded-full">Independent 0–100</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-tertiary -mt-1">Weighted agronomic scoring targets. Independent values allow multi-target Pareto optimization.</p>
+<!-- Slider 1: Water Saving -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-telemetry-cyan">water_drop</span>
+<span class="font-body-md text-body-md text-text-primary font-medium">Water Saving &amp; Conservation</span>
+</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-telemetry-cyan bg-surface-container px-2 py-0.5 rounded">
+<span id="val-water">85</span><span>/100</span>
+</div>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-telemetry-cyan" max="100" min="0" oninput="document.getElementById('val-water').textContent = this.value" type="range" value="85"/>
+<div class="flex justify-between items-center text-text-tertiary">
+<span class="font-body-sm text-body-sm text-text-secondary">High – Reduce summer fallow evaporation</span>
+<span class="font-label-sm text-label-sm text-telemetry-cyan uppercase">Conserve Runoff</span>
+</div>
+</div>
+<!-- Slider 2: Soil Organic Matter Gain -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-foliage-green-bright">compost</span>
+<span class="font-body-md text-body-md text-text-primary font-medium">Soil Organic Matter Gain</span>
+</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-foliage-green-bright bg-surface-container px-2 py-0.5 rounded">
+<span id="val-som">70</span><span>/100</span>
+</div>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-foliage-green-bright" max="100" min="0" oninput="document.getElementById('val-som').textContent = this.value" type="range" value="70"/>
+<div class="flex justify-between items-center text-text-tertiary">
+<span class="font-body-sm text-body-sm text-text-secondary">Build carbon sponge &amp; aggregate stability</span>
+<span class="font-label-sm text-label-sm text-foliage-green-bright uppercase">+1.2% Target</span>
+</div>
+</div>
+<!-- Slider 3: Economic Yield / Net Margin -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">payments</span>
+<span class="font-body-md text-body-md text-text-primary font-medium">Economic Yield / Net Margin</span>
+</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-primary bg-surface-container px-2 py-0.5 rounded">
+<span id="val-econ">90</span><span>/100</span>
+</div>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="100" min="0" oninput="document.getElementById('val-econ').textContent = this.value" type="range" value="90"/>
+<div class="flex justify-between items-center text-text-tertiary">
+<span class="font-body-sm text-body-sm text-text-secondary">Cereal cash crop stability &amp; market price</span>
+<span class="font-label-sm text-label-sm text-primary uppercase">Aggressive</span>
+</div>
+</div>
+<!-- Slider 4: Risk Reduction & Drought Resilience -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-erosion-alert">shield_with_heart</span>
+<span class="font-body-md text-body-md text-text-primary font-medium">Risk Reduction &amp; Drought Resilience</span>
+</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-erosion-alert bg-surface-container px-2 py-0.5 rounded">
+<span id="val-risk">75</span><span>/100</span>
+</div>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-erosion-alert" max="100" min="0" oninput="document.getElementById('val-risk').textContent = this.value" type="range" value="75"/>
+<div class="flex justify-between items-center text-text-tertiary">
+<span class="font-body-sm text-body-sm text-text-secondary">Cap crop failure tail-risk under heat waves</span>
+<span class="font-label-sm text-label-sm text-erosion-alert uppercase">Resilient</span>
+</div>
+</div>
+<!-- Slider 5: Livestock Forage Value -->
+<div class="flex flex-col gap-1.5 p-space-sm rounded-lg bg-surface-container-high">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary">grass</span>
+<span class="font-body-md text-body-md text-text-primary font-medium">Livestock Forage Value</span>
+</div>
+<div class="flex items-center gap-1 font-label-md text-label-md text-tertiary bg-surface-container px-2 py-0.5 rounded">
+<span id="val-forage">40</span><span>/100</span>
+</div>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-tertiary" max="100" min="0" oninput="document.getElementById('val-forage').textContent = this.value" type="range" value="40"/>
+<div class="flex justify-between items-center text-text-tertiary">
+<span class="font-body-sm text-body-sm text-text-secondary">Secondary vetch grazing &amp; hay biomass</span>
+<span class="font-label-sm text-label-sm text-tertiary uppercase">Moderate</span>
+</div>
+</div>
+</section>
+<!-- SECTION 3: MARKET & CONSTRAINTS -->
+<section class="flex flex-col gap-space-sm bg-surface-container p-space-md rounded-xl shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-telemetry-cyan">
+<span class="material-symbols-outlined text-[17px]">storefront</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">3. Market &amp; Constraints</h2>
+</div>
+<span class="font-label-sm text-label-sm text-text-tertiary">STEP 03/03</span>
+</div>
+<!-- Market Intent Chips -->
+<div class="flex flex-col gap-1.5 mt-1">
+<label class="font-label-md text-label-md text-text-secondary uppercase">Off-Take Destination</label>
+<div class="grid grid-cols-2 gap-space-xs" id="market-chips">
+<button class="market-chip py-2 px-3 rounded-lg bg-surface-container-high text-text-secondary font-body-sm text-body-sm text-left hover:text-text-primary transition-all" data-market="local" type="button">
+            Local Algerian Market
+          </button>
+<button class="market-chip py-2 px-3 rounded-lg bg-surface-container-high text-text-secondary font-body-sm text-body-sm text-left hover:text-text-primary transition-all" data-market="export" type="button">
+            Export Channel
+          </button>
+<button class="market-chip py-2 px-3 rounded-lg bg-surface-container-high text-text-secondary font-body-sm text-body-sm text-left hover:text-text-primary transition-all" data-market="subsistence" type="button">
+            Subsistence / Feed
+          </button>
+<button class="market-chip py-2 px-3 rounded-lg bg-primary/20 text-primary font-body-sm text-body-sm text-left font-semibold flex items-center justify-between transition-all" data-market="mixed" type="button">
+<span>Mixed (Diversified)</span>
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+</div>
+</div>
+<!-- Crop Preferences / Target Inclusion -->
+<div class="flex flex-col gap-2 mt-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-text-secondary uppercase">Candidate Crops for Matrix</label>
+<span class="font-label-sm text-label-sm text-text-tertiary">Tap to toggle</span>
+</div>
+<div class="flex flex-wrap gap-1.5" id="crop-tags">
+<button class="crop-tag flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-text-primary font-body-sm text-body-sm hover:bg-surface-container-highest transition-all" type="button">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Durum Wheat</span>
+<span class="material-symbols-outlined text-[15px] text-text-tertiary">check</span>
+</button>
+<button class="crop-tag flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-text-primary font-body-sm text-body-sm hover:bg-surface-container-highest transition-all" type="button">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Chickpea</span>
+<span class="material-symbols-outlined text-[15px] text-text-tertiary">check</span>
+</button>
+<button class="crop-tag flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-text-primary font-body-sm text-body-sm hover:bg-surface-container-highest transition-all" type="button">
+<span class="w-2 h-2 rounded-full bg-foliage-green-bright"></span>
+<span>Common Vetch</span>
+<span class="material-symbols-outlined text-[15px] text-text-tertiary">check</span>
+</button>
+<button class="crop-tag flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-text-primary font-body-sm text-body-sm hover:bg-surface-container-highest transition-all" type="button">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span>Faba Bean</span>
+<span class="material-symbols-outlined text-[15px] text-text-tertiary">check</span>
+</button>
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-highest text-primary font-body-sm text-body-sm font-medium hover:bg-primary/20 transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add Pulse</span>
+</button>
+</div>
+</div>
+<!-- Equipment & Input Constraints -->
+<div class="flex flex-col gap-2 mt-2 pt-2 bg-surface-container-high/40 rounded-lg p-space-sm">
+<label class="font-label-md text-label-md text-text-secondary uppercase">Machinery &amp; Input Boundaries</label>
+<!-- Toggle 1 -->
+<div class="flex items-center justify-between py-1">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-text-primary">No-till / Low-input Regime</span>
+<span class="font-body-sm text-body-sm text-text-tertiary">Excludes moldboard plow operations</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-primary after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px bg-surface-container-highest"></div>
+<!-- Toggle 2 -->
+<div class="flex items-center justify-between py-1">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-text-primary">Mechanized Harvest Available</span>
+<span class="font-body-sm text-body-sm text-text-tertiary">Combine header compatible with short pulse</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-primary after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Visual Indicator Card: Estimated Engine Run Cost / Space -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-text-tertiary">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-telemetry-cyan">memory</span>
+<span class="font-label-sm text-label-sm">Agronomic AI Engine: 4,096 Monte Carlo Cycles</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Est. 4.2s runtime</span>
+</div>
+</div>
+<!-- STICKY ACTION BAR -->
+<div class="sticky bottom-16 left-0 right-0 z-40 px-margin-mobile mt-space-md pt-2 pb-3 bg-gradient-to-t from-background via-background/95 to-transparent">
+<div class="flex flex-col gap-2">
+<button class="w-full h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center gap-space-sm shadow-xl hover:brightness-110 active:scale-[0.98] transition-all" id="run-lab-btn" type="button">
+<span class="material-symbols-outlined text-[24px]">biotech</span>
+<span class="font-headline-sm text-headline-sm uppercase tracking-wide">Run ML Rotation Lab</span>
+<span class="material-symbols-outlined text-[20px] ml-1">arrow_forward</span>
+</button>
+<div class="flex items-center justify-center gap-1.5 text-center">
+<span class="material-symbols-outlined text-[13px] text-text-tertiary">cloud_sync</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">Analysis runs asynchronously via backend REST API</span>
+</div>
+</div>
+</div>
+<!-- Interactive Logic Hook -->
+<script>
+    // Horizon slider dynamic label updater
+    const horizonSlider = document.getElementById('horizon-slider');
+    const horizonLabel = document.getElementById('horizon-label');
+    if (horizonSlider && horizonLabel) {
+      const seasonMap = {
+        '1': '1 Season (6 Months)',
+        '2': '2 Seasons (12 Months)',
+        '3': '3 Seasons (18 Months)',
+        '4': '4 Seasons (24 Months)',
+        '5': '5 Seasons (30 Months)',
+        '6': '6 Seasons (36 Months)'
+      };
+      horizonSlider.addEventListener('input', (e) => {
+        horizonLabel.textContent = seasonMap[e.target.value] || `${e.target.value} Seasons`;
+      });
+    }
+
+    // Cycle Mode Toggle
+    const cycleButtons = document.querySelectorAll('.cycle-pill');
+    cycleButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        cycleButtons.forEach(b => {
+          b.className = 'cycle-pill py-2 px-space-xs rounded font-body-sm text-body-sm text-center text-text-secondary hover:text-text-primary transition-all';
+        });
+        btn.className = 'cycle-pill py-2 px-space-xs rounded font-body-sm text-body-sm text-center font-medium bg-primary text-on-primary shadow-sm transition-all';
+      });
+    });
+
+    // Season Selector Buttons
+    const seasonBtns = document.querySelectorAll('.season-btn');
+    seasonBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        seasonBtns.forEach(b => {
+          b.className = 'season-btn flex items-center justify-between px-space-sm py-2.5 rounded-lg bg-surface-container-low text-text-tertiary text-left opacity-75 hover:opacity-100 transition-all';
+          const icon = b.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.textContent = 'radio_button_unchecked';
+            icon.className = 'material-symbols-outlined text-[18px] text-text-tertiary';
+            icon.style.fontVariationSettings = '';
+          }
+        });
+        btn.className = 'season-btn flex items-center justify-between px-space-sm py-2.5 rounded-lg bg-surface-container-high text-primary font-medium text-left transition-all';
+        const icon = btn.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.textContent = 'check_circle';
+          icon.className = 'material-symbols-outlined text-[18px] text-primary';
+          icon.style.fontVariationSettings = "'FILL' 1";
+        }
+      });
+    });
+
+    // Market Chips Toggle
+    const marketChips = document.querySelectorAll('.market-chip');
+    marketChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        marketChips.forEach(c => {
+          c.className = 'market-chip py-2 px-3 rounded-lg bg-surface-container-high text-text-secondary font-body-sm text-body-sm text-left hover:text-text-primary transition-all';
+          const check = c.querySelector('.material-symbols-outlined');
+          if (check) check.remove();
+        });
+        chip.className = 'market-chip py-2 px-3 rounded-lg bg-primary/20 text-primary font-body-sm text-body-sm text-left font-semibold flex items-center justify-between transition-all';
+        const check = document.createElement('span');
+        check.className = 'material-symbols-outlined text-[16px]';
+        check.textContent = 'check';
+        chip.appendChild(check);
+      });
+    });
+
+    // Run ML Lab Feedback
+    const runBtn = document.getElementById('run-lab-btn');
+    if (runBtn) {
+      runBtn.addEventListener('click', () => {
+        const originalContent = runBtn.innerHTML;
+        runBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[24px] animate-spin">progress_activity</span>
+          <span class="font-headline-sm text-headline-sm uppercase tracking-wide">Compiling Heuristics...</span>
+        `;
+        setTimeout(() => {
+          runBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[24px] text-secondary">task_alt</span>
+            <span class="font-headline-sm text-headline-sm uppercase tracking-wide">Job Dispatched #4092</span>
+          `;
+          setTimeout(() => {
+            runBtn.innerHTML = originalContent;
+          }, 2400);
+        }, 1200);
+      });
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-canvas/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.4)]" data-active-classes="[&amp;_.indicator]:bg-primary-container/20 [&amp;_.indicator]:text-primary-container text-text-primary font-semibold"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="dashboard" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">dashboard</span></div><span class="font-label-sm text-label-sm">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="farms-grid" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">agriculture</span></div><span class="font-label-sm text-label-sm">Farms</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 transition-colors [&amp;_.indicator]:bg-primary-container/20 [&amp;_.indicator]:text-primary-container text-text-primary font-semibold" data-path="spectral-analysis" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">science</span></div><span class="font-label-sm text-label-sm">Analysis</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="field-history" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">history</span></div><span class="font-label-sm text-label-sm">History</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-1 text-text-tertiary hover:text-on-surface transition-colors" data-path="operator-profile" href="#"><div class="indicator px-4 py-1 rounded-full flex items-center justify-center transition-all"><span class="material-symbols-outlined text-[22px]">manage_accounts</span></div><span class="font-label-sm text-label-sm">Profile</span></a></div><div class="w-full flex items-center justify-center pb-2 pt-1"><div class="w-32 h-1 rounded-full bg-on-surface/20"></div></div></nav></body></html>
