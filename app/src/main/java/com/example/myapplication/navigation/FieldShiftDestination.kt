@@ -58,3 +58,17 @@ object FarmRoutes {
     fun edit(farmId: String): String = "farms/edit/$farmId"
 }
 
+object FieldRoutes {
+    const val ARG_FARM_ID = "farmId"
+    const val ARG_FIELD_ID = "fieldId"
+    const val LIST = "farms/{$ARG_FARM_ID}/fields"
+    const val CREATE = "farms/{$ARG_FARM_ID}/fields/create"
+    const val DETAIL = "farms/{$ARG_FARM_ID}/fields/detail/{$ARG_FIELD_ID}"
+    const val EDIT = "farms/{$ARG_FARM_ID}/fields/edit/{$ARG_FIELD_ID}"
+
+    fun list(farmId: String): String = "farms/$farmId/fields"
+    fun create(farmId: String): String = "farms/$farmId/fields/create"
+    fun detail(farmId: String, fieldId: String): String = "farms/$farmId/fields/detail/$fieldId"
+    fun edit(farmId: String, fieldId: String): String = "farms/$farmId/fields/edit/$fieldId"
+}
+

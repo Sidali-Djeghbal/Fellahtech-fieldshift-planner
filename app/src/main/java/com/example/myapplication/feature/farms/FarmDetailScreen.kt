@@ -44,6 +44,7 @@ import com.example.myapplication.domain.farm.FarmError
 @Composable
 fun FarmDetailScreen(
     farmId: String,
+    onViewFieldsClick: (String) -> Unit,
     onEditClick: (String) -> Unit,
     onDeleted: (String) -> Unit,
     onBack: () -> Unit,
@@ -142,6 +143,11 @@ fun FarmDetailScreen(
                     }
                 } else {
                     FieldShiftPrimaryButton(
+                        text = stringResource(id = R.string.farm_detail_view_fields, farm.fieldCount),
+                        onClick = { onViewFieldsClick(farm.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    FieldShiftOutlinedButton(
                         text = stringResource(id = R.string.farm_detail_edit),
                         onClick = { onEditClick(farm.id) },
                         modifier = Modifier.fillMaxWidth(),

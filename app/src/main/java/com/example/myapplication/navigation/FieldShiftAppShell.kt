@@ -58,6 +58,12 @@ import com.example.myapplication.feature.auth.AuthEntryScreen
 import com.example.myapplication.feature.farms.FarmDetailScreen
 import com.example.myapplication.feature.farms.FarmFormScreen
 import com.example.myapplication.feature.farms.FarmsListScreen
+import com.example.myapplication.feature.fields.FieldDetailScreen
+import com.example.myapplication.feature.fields.FieldDetailViewModel
+import com.example.myapplication.feature.fields.FieldFormScreen
+import com.example.myapplication.feature.fields.FieldFormViewModel
+import com.example.myapplication.feature.fields.FieldsListScreen
+import com.example.myapplication.feature.fields.FieldsListViewModel
 import com.example.myapplication.feature.farms.FarmsListViewModel
 import com.example.myapplication.feature.profile.ProfileScreen
 
@@ -205,6 +211,7 @@ private fun AuthenticatedAppScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
         ?: FieldShiftTopLevelDestination.DASHBOARD.route
     val farmsListViewModel: FarmsListViewModel = hiltViewModel()
+    val fieldsListViewModel: FieldsListViewModel = hiltViewModel()
 
     val bottomNavItems = FieldShiftTopLevelDestination.entries.map { destination ->
         FieldShiftBottomNavItem(
@@ -311,6 +318,7 @@ private fun AuthenticatedAppScaffold(
                     .orEmpty()
                 FarmDetailScreen(
                     farmId = farmId,
+                    onViewFieldsClick = { id -> navController.navigate(FieldRoutes.list(id)) },
                     onEditClick = { id -> navController.navigate(FarmRoutes.edit(id)) },
                     onDeleted = { deletedId ->
                         farmsListViewModel.onFarmDeleted(deletedId)
@@ -335,6 +343,99 @@ private fun AuthenticatedAppScaffold(
                         }
                     },
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = FieldRoutes.LIST,
+                arguments = listOf(navArgument(FieldRoutes.ARG_FARM_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                FieldsListScreen(
+                    farmId = farmId,
+                    viewModel = fieldsListViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onFieldClick = { fieldId ->
+                        navController.navigate(FieldRoutes.detail(farmId, fieldId))
+                    },
+                    onCreateFieldClick = {
+                        navController.navigate(FieldRoutes.create(farmId))
+                    }
+                )
+            }
+
+            composable(
+                route = FieldRoutes.CREATE,
+                arguments = listOf(navArgument(FieldRoutes.ARG_FARM_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                val formViewModel: FieldFormViewModel = hiltViewModel()
+                FieldFormScreen(
+                    farmId = farmId,
+                    fieldId = null,
+                    viewModel = formViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onSaved = { saved ->
+                        fieldsListViewModel.onFieldSaved(saved)
+                        navController.navigate(FieldRoutes.detail(farmId, saved.fieldId)) {
+                            popUpTo(FieldRoutes.create(farmId)) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(
+                route = FieldRoutes.DETAIL,
+                arguments = listOf(
+                    navArgument(FieldRoutes.ARG_FARM_ID) { type = NavType.StringType },
+                    navArgument(FieldRoutes.ARG_FIELD_ID) { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                val fieldId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FIELD_ID)
+                    .orEmpty()
+                val detailViewModel: FieldDetailViewModel = hiltViewModel()
+                FieldDetailScreen(
+                    farmId = farmId,
+                    fieldId = fieldId,
+                    viewModel = detailViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onEditClick = {
+                        navController.navigate(FieldRoutes.edit(farmId, fieldId))
+                    },
+                    onDeleted = { deletedId ->
+                        fieldsListViewModel.onFieldDeleted(deletedId)
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(
+                route = FieldRoutes.EDIT,
+                arguments = listOf(
+                    navArgument(FieldRoutes.ARG_FARM_ID) { type = NavType.StringType },
+                    navArgument(FieldRoutes.ARG_FIELD_ID) { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val farmId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FARM_ID)
+                    .orEmpty()
+                val fieldId = backStackEntry.arguments?.getString(FieldRoutes.ARG_FIELD_ID)
+                    .orEmpty()
+                val formViewModel: FieldFormViewModel = hiltViewModel()
+                FieldFormScreen(
+                    farmId = farmId,
+                    fieldId = fieldId,
+                    viewModel = formViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onSaved = { saved ->
+                        fieldsListViewModel.onFieldSaved(saved)
+                        navController.navigate(FieldRoutes.detail(farmId, saved.fieldId)) {
+                            popUpTo(FieldRoutes.detail(farmId, saved.fieldId)) { inclusive = true }
+                        }
+                    }
                 )
             }
         }
