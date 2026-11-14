@@ -1,0 +1,35 @@
+dataset,column_name,dtype,unit,description
+nasa_power_daily_cell_values.csv,date,string (YYYY-MM-DD),-,Calendar date (UTC)
+nasa_power_daily_cell_values.csv,year,int,-,Calendar year (2016-2025)
+nasa_power_daily_cell_values.csv,month,int,-,Calendar month (1-12)
+nasa_power_daily_cell_values.csv,day,int,-,Day of month
+nasa_power_daily_cell_values.csv,season,string,-,Meteorological season (Winter/Spring/Summer/Autumn)
+nasa_power_daily_cell_values.csv,variable,string,-,NASA POWER parameter code
+nasa_power_daily_cell_values.csv,community,string,-,NASA POWER community (AG or RE)
+nasa_power_daily_cell_values.csv,cell_id,string,-,Unique community-longitude-latitude cell identifier
+nasa_power_daily_cell_values.csv,longitude,float,degrees_east,Cell center longitude (EPSG:4326)
+nasa_power_daily_cell_values.csv,latitude,float,degrees_north,Cell center latitude (EPSG:4326)
+nasa_power_daily_cell_values.csv,elevation_m,float,m,Grid-cell elevation reported by NASA POWER
+nasa_power_daily_cell_values.csv,value,float,variable unit,Daily cell value
+nasa_power_daily_cell_values.csv,unit,string,-,Physical unit
+nasa_power_daily_cell_values.csv,intersection_area_km2,float,km2,Approximate cell intersection area with Guelma in EPSG:32632
+nasa_power_daily_cell_values.csv,area_weight,float,fraction,Cell intersection area divided by total Guelma area
+nasa_power_daily_guelma.csv,weighted_mean,float,variable unit,Area-weighted regional mean over valid intersecting cells
+nasa_power_daily_guelma.csv,valid_cells,int,count,Number of intersecting cells with valid observation
+nasa_power_daily_guelma.csv,valid_area_km2,float,km2,Sum of intersection areas of valid cells
+nasa_power_daily_guelma.csv,total_study_area_km2,float,km2,Total Guelma boundary area in EPSG:32632
+nasa_power_daily_guelma.csv,coverage_fraction,float,fraction,valid_area_km2 / total_study_area_km2
+nasa_power_monthly_guelma.csv,T2M_mean_C,float,C,Monthly mean of daily T2M
+nasa_power_monthly_guelma.csv,T2M_MAX_mean_C,float,C,Monthly mean of daily T2M_MAX
+nasa_power_monthly_guelma.csv,T2M_MIN_mean_C,float,C,Monthly mean of daily T2M_MIN
+nasa_power_monthly_guelma.csv,PRECTOTCORR_sum_mm,float,mm/month,Monthly total precipitation
+nasa_power_monthly_guelma.csv,RH2M_mean_pct,float,%,Monthly mean relative humidity
+nasa_power_monthly_guelma.csv,ALLSKY_SFC_SW_DWN_mean_kwh_m2_day,float,kWh/m2/day,Monthly mean daily solar irradiance
+nasa_power_monthly_guelma.csv,ALLSKY_SFC_SW_DWN_sum_kwh_m2,float,kWh/m2/month,Monthly cumulative solar irradiance
+nasa_power_seasonal_guelma.csv,season_year,int,-,Seasonal year (December assigned to year+1 for Winter)
+nasa_power_seasonal_guelma.csv,is_complete_season,bool,-,True if valid_days equals full calendar season days
+nasa_power_annual_guelma.csv,annual_mean_diurnal_temp_range_C,float,C,Annual mean T2M_MAX minus annual mean T2M_MIN
+nasa_power_annual_guelma.csv,annual_extreme_temp_range_C,float,C,Annual max daily T2M_MAX minus min daily T2M_MIN
+nasa_power_annual_guelma.csv,PRECTOTCORR_anomaly_mm,float,mm,Annual rainfall minus 2016-2025 mean
+nasa_power_annual_guelma.csv,PRECTOTCORR_anomaly_pct,float,%,Percentage rainfall anomaly vs 2016-2025 mean
+nasa_power_annual_guelma.csv,T2M_anomaly_C,float,C,Annual mean T2M minus 2016-2025 mean

@@ -1,0 +1,13 @@
+check_id,scope,metric,observed_value,expected_value,status,details
+QA_01_DUPLICATES,daily_cell & daily_guelma,duplicate_key_rows,0,0,PASS,"daily_cell_dups=0, daily_guelma_dups=0"
+QA_02_MISSING_DATES,2016-01-01..2025-12-31 (3653 days/var),missing_variable_dates,0,0,PASS,"{'T2M': 0, 'T2M_MAX': 0, 'T2M_MIN': 0, 'PRECTOTCORR': 0, 'RH2M': 0, 'ALLSKY_SFC_SW_DWN': 0}"
+QA_03_MISSING_CELLS,daily_guelma,days_with_fewer_than_expected_valid_cells,0,0,PASS,"Expected intersecting cells: {'AG': 5, 'RE': 2}"
+QA_04_NUMERIC_VALIDITY,daily_cell & daily_guelma,nan_or_inf_values,0,0,PASS,"nan_cell=0, inf_cell=0, nan_reg=0"
+QA_05_UNIT_CONSISTENCY,60 raw JSON files,variables_with_inconsistent_units,0,0,PASS,"{'T2M': ['C'], 'T2M_MAX': ['C'], 'T2M_MIN': ['C'], 'PRECTOTCORR': ['mm/day'], 'RH2M': ['%'], 'ALLSKY_SFC_SW_DWN': ['kW-hr/m^2/day']}"
+QA_06_TEMPERATURE_ORDER,daily_cell & daily_guelma,T2M_MIN <= T2M <= T2M_MAX violations,0,0,PASS,"cell_violations=0, regional_violations=0"
+QA_07_RAINFALL_NONNEGATIVE,PRECTOTCORR,negative_precipitation_records,0,0,PASS,"cell=0, regional=0"
+QA_08_RH2M_BOUNDS,RH2M,values_outside_0_100_pct,0,0,PASS,"cell=0, regional=0, range=(13.02, 97.12)"
+QA_09_SOLAR_NONNEGATIVE,ALLSKY_SFC_SW_DWN,negative_irradiance_records,0,0,PASS,"cell=0, regional=0"
+QA_10_AGGREGATION_CONSISTENCY,daily -> monthly -> seasonal -> annual,failed_consistency_checks,0,0,PASS,max_diff=1.137e-13
+QA_11_SPATIAL_COVERAGE,daily_guelma,variable_days_with_incomplete_coverage,0,0,PASS,min_cov=1.000000
+QA_12_COORDINATE_CONSISTENCY,60 raw JSON files,all_years_identical_coordinates_and_elevations,1,1,PASS,"AG=25 cells (50 files), RE=4 cells (10 files)"

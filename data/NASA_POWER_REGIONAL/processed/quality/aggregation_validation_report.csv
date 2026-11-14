@@ -1,0 +1,10 @@
+check,max_abs_diff,status
+monthly_sum_vs_annual_PRECTOTCORR,1.1368683772161603e-13,PASS
+daily_sum_vs_annual_PRECTOTCORR,0.0,PASS
+daily_mean_vs_annual_T2M,0.0,PASS
+daily_mean_vs_annual_T2M_MAX,0.0,PASS
+daily_mean_vs_annual_T2M_MIN,0.0,PASS
+daily_mean_vs_annual_RH2M,0.0,PASS
+daily_mean_vs_annual_ALLSKY_SFC_SW_DWN,0.0,PASS
+daily_sum_vs_seasonal_PRECTOTCORR,0.0,PASS
+day_weighted_monthly_T2M_vs_annual,3.552713678800501e-15,PASS

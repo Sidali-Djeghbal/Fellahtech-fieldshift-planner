@@ -1,0 +1,342 @@
+{
+  "project": "Field Shift (NASA Space Apps Challenge 2026)",
+  "study_area": "Guelma Wilaya, Algeria",
+  "period": "2016-01-01 to 2025-12-31",
+  "generated_utc": "2026-11-14T22:24:28.595239+00:00",
+  "package_versions": {
+    "python": "3.14.7",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "geopandas": "1.2.0",
+    "shapely": "2.2.0",
+    "pyproj": "3.8.0",
+    "matplotlib": "3.11.2"
+  },
+  "boundary_audit": {
+    "boundary_file": "/home/lokman/Desktop/FeildShit-SI-Model/data/boundaries/processed/guelma_wilaya_boundary.geojson.gpkg",
+    "source_crs": "EPSG:4326",
+    "geometry_valid_original": true,
+    "geometry_valid_final": true,
+    "bounds_wgs84": {
+      "west": 6.941607407000106,
+      "south": 36.02588817100019,
+      "east": 7.961420695000015,
+      "north": 36.67432800400002
+    },
+    "area_crs": "EPSG:32632",
+    "utm_area_km2": 3683.231117768284,
+    "geodesic_wgs84_area_km2": 3684.2536058309156,
+    "utm_vs_geodesic_diff_pct": -0.0277529228990442
+  },
+  "grid_audit": {
+    "total_json_files_audited": 60,
+    "units_by_variable": {
+      "T2M": [
+        "C"
+      ],
+      "T2M_MAX": [
+        "C"
+      ],
+      "T2M_MIN": [
+        "C"
+      ],
+      "PRECTOTCORR": [
+        "mm/day"
+      ],
+      "RH2M": [
+        "%"
+      ],
+      "ALLSKY_SFC_SW_DWN": [
+        "kW-hr/m^2/day"
+      ]
+    },
+    "communities": {
+      "AG": {
+        "files_inspected": 50,
+        "coordinate_consistent_across_all_files": true,
+        "sources": [
+          "MERRA2",
+          "POWER"
+        ],
+        "cell_count": 25,
+        "n_unique_lons": 5,
+        "n_unique_lats": 5,
+        "unique_lons": [
+          6.25,
+          6.875,
+          7.5,
+          8.125,
+          8.75
+        ],
+        "unique_lats": [
+          35.5,
+          36.0,
+          36.5,
+          37.0,
+          37.5
+        ],
+        "lon_spacing_deg": 0.625,
+        "lat_spacing_deg": 0.5,
+        "spacing_varies_with_lat_or_lon": false,
+        "grid_regularity": "complete_regular_grid",
+        "geometry_source_in_json": "Point (grid-cell center only; no official boundary polygons in payload)",
+        "polygon_construction_method": "Approximate grid-center-derived cell bounds (+/- half nominal spacing, densified before UTM projection)",
+        "intersecting_cells": 5,
+        "centers_strictly_inside_guelma": 1,
+        "sum_intersection_area_km2": 3683.231117768283,
+        "union_intersection_area_km2": 3683.2311177682877,
+        "guelma_area_km2": 3683.231117768284,
+        "union_minus_guelma_km2": 3.637978807091713e-12,
+        "gap_area_m2": 2.0139668777119368e-07,
+        "excess_area_m2": 0.0,
+        "max_pairwise_overlap_m2": 0.0,
+        "sum_pairwise_overlap_m2": 0.0,
+        "coverage_pct": 100.00000000000009
+      },
+      "RE": {
+        "files_inspected": 10,
+        "coordinate_consistent_across_all_files": true,
+        "sources": [
+          "SYN1DEG"
+        ],
+        "cell_count": 4,
+        "n_unique_lons": 2,
+        "n_unique_lats": 2,
+        "unique_lons": [
+          6.5,
+          7.5
+        ],
+        "unique_lats": [
+          35.5,
+          36.5
+        ],
+        "lon_spacing_deg": 1.0,
+        "lat_spacing_deg": 1.0,
+        "spacing_varies_with_lat_or_lon": false,
+        "grid_regularity": "complete_regular_grid",
+        "geometry_source_in_json": "Point (grid-cell center only; no official boundary polygons in payload)",
+        "polygon_construction_method": "Approximate grid-center-derived cell bounds (+/- half nominal spacing, densified before UTM projection)",
+        "intersecting_cells": 2,
+        "centers_strictly_inside_guelma": 1,
+        "sum_intersection_area_km2": 3683.231117768283,
+        "union_intersection_area_km2": 3683.2311177682836,
+        "guelma_area_km2": 3683.231117768284,
+        "union_minus_guelma_km2": -4.547473508864641e-13,
+        "gap_area_m2": 0.0,
+        "excess_area_m2": 7.954986358527094e-08,
+        "max_pairwise_overlap_m2": 0.0,
+        "sum_pairwise_overlap_m2": 0.0,
+        "coverage_pct": 99.99999999999999
+      }
+    }
+  },
+  "variables": {
+    "T2M": {
+      "community": "AG",
+      "source_model": "MERRA-2",
+      "canonical_unit": "C",
+      "expected_raw_units": [
+        "C"
+      ],
+      "nominal_lat_step": 0.5,
+      "nominal_lon_step": 0.625,
+      "aggregation": "mean",
+      "longname": "Temperature at 2 Meters"
+    },
+    "T2M_MAX": {
+      "community": "AG",
+      "source_model": "MERRA-2",
+      "canonical_unit": "C",
+      "expected_raw_units": [
+        "C"
+      ],
+      "nominal_lat_step": 0.5,
+      "nominal_lon_step": 0.625,
+      "aggregation": "mean",
+      "longname": "Maximum Temperature at 2 Meters"
+    },
+    "T2M_MIN": {
+      "community": "AG",
+      "source_model": "MERRA-2",
+      "canonical_unit": "C",
+      "expected_raw_units": [
+        "C"
+      ],
+      "nominal_lat_step": 0.5,
+      "nominal_lon_step": 0.625,
+      "aggregation": "mean",
+      "longname": "Minimum Temperature at 2 Meters"
+    },
+    "PRECTOTCORR": {
+      "community": "AG",
+      "source_model": "MERRA-2",
+      "canonical_unit": "mm/day",
+      "expected_raw_units": [
+        "mm/day"
+      ],
+      "nominal_lat_step": 0.5,
+      "nominal_lon_step": 0.625,
+      "aggregation": "sum",
+      "longname": "Bias-Corrected Total Precipitation"
+    },
+    "RH2M": {
+      "community": "AG",
+      "source_model": "MERRA-2 (POWER derived)",
+      "canonical_unit": "%",
+      "expected_raw_units": [
+        "%"
+      ],
+      "nominal_lat_step": 0.5,
+      "nominal_lon_step": 0.625,
+      "aggregation": "mean",
+      "longname": "Relative Humidity at 2 Meters"
+    },
+    "ALLSKY_SFC_SW_DWN": {
+      "community": "RE",
+      "source_model": "CERES SYN1deg",
+      "canonical_unit": "kWh/m2/day",
+      "expected_raw_units": [
+        "kW-hr/m^2/day",
+        "kWh/m2/day"
+      ],
+      "nominal_lat_step": 1.0,
+      "nominal_lon_step": 1.0,
+      "aggregation": "mean",
+      "longname": "All Sky Surface Shortwave Downward Irradiance"
+    }
+  },
+  "spatial_aggregation": {
+    "weighted_mean_formula": "sum(value_i * intersection_area_i) / sum(intersection_area_i) over valid observations",
+    "coverage_fraction_formula": "valid_area_km2 / total_study_area_km2",
+    "communities_kept_separate": true,
+    "area_crs": "EPSG:32632",
+    "geographic_crs": "EPSG:4326"
+  },
+  "dataset_row_counts": {
+    "daily_cell_values": 98631,
+    "daily_guelma": 21918,
+    "monthly_guelma": 120,
+    "seasonal_guelma": 41,
+    "annual_guelma": 10,
+    "climate_trends": 6,
+    "climate_anomalies": 10
+  },
+  "quality_assurance_summary": [
+    {
+      "check_id": "QA_01_DUPLICATES",
+      "scope": "daily_cell & daily_guelma",
+      "metric": "duplicate_key_rows",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "daily_cell_dups=0, daily_guelma_dups=0"
+    },
+    {
+      "check_id": "QA_02_MISSING_DATES",
+      "scope": "2016-01-01..2025-12-31 (3653 days/var)",
+      "metric": "missing_variable_dates",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "{'T2M': 0, 'T2M_MAX': 0, 'T2M_MIN': 0, 'PRECTOTCORR': 0, 'RH2M': 0, 'ALLSKY_SFC_SW_DWN': 0}"
+    },
+    {
+      "check_id": "QA_03_MISSING_CELLS",
+      "scope": "daily_guelma",
+      "metric": "days_with_fewer_than_expected_valid_cells",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "Expected intersecting cells: {'AG': 5, 'RE': 2}"
+    },
+    {
+      "check_id": "QA_04_NUMERIC_VALIDITY",
+      "scope": "daily_cell & daily_guelma",
+      "metric": "nan_or_inf_values",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "nan_cell=0, inf_cell=0, nan_reg=0"
+    },
+    {
+      "check_id": "QA_05_UNIT_CONSISTENCY",
+      "scope": "60 raw JSON files",
+      "metric": "variables_with_inconsistent_units",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "{'T2M': ['C'], 'T2M_MAX': ['C'], 'T2M_MIN': ['C'], 'PRECTOTCORR': ['mm/day'], 'RH2M': ['%'], 'ALLSKY_SFC_SW_DWN': ['kW-hr/m^2/day']}"
+    },
+    {
+      "check_id": "QA_06_TEMPERATURE_ORDER",
+      "scope": "daily_cell & daily_guelma",
+      "metric": "T2M_MIN <= T2M <= T2M_MAX violations",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "cell_violations=0, regional_violations=0"
+    },
+    {
+      "check_id": "QA_07_RAINFALL_NONNEGATIVE",
+      "scope": "PRECTOTCORR",
+      "metric": "negative_precipitation_records",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "cell=0, regional=0"
+    },
+    {
+      "check_id": "QA_08_RH2M_BOUNDS",
+      "scope": "RH2M",
+      "metric": "values_outside_0_100_pct",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "cell=0, regional=0, range=(13.02, 97.12)"
+    },
+    {
+      "check_id": "QA_09_SOLAR_NONNEGATIVE",
+      "scope": "ALLSKY_SFC_SW_DWN",
+      "metric": "negative_irradiance_records",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "cell=0, regional=0"
+    },
+    {
+      "check_id": "QA_10_AGGREGATION_CONSISTENCY",
+      "scope": "daily -> monthly -> seasonal -> annual",
+      "metric": "failed_consistency_checks",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "max_diff=1.137e-13"
+    },
+    {
+      "check_id": "QA_11_SPATIAL_COVERAGE",
+      "scope": "daily_guelma",
+      "metric": "variable_days_with_incomplete_coverage",
+      "observed_value": 0,
+      "expected_value": "0",
+      "status": "PASS",
+      "details": "min_cov=1.000000"
+    },
+    {
+      "check_id": "QA_12_COORDINATE_CONSISTENCY",
+      "scope": "60 raw JSON files",
+      "metric": "all_years_identical_coordinates_and_elevations",
+      "observed_value": 1,
+      "expected_value": "1",
+      "status": "PASS",
+      "details": "AG=25 cells (50 files), RE=4 cells (10 files)"
+    }
+  ],
+  "scientific_constraints_and_limitations": [
+    "NASA POWER raw JSON responses provide Point coordinates (grid centers), not official cell boundary polygons; cell polygons are approximate footprints derived from nominal grid spacing.",
+    "AG (MERRA-2, 0.5 x 0.625 deg) and RE (CERES SYN1deg, 1.0 x 1.0 deg) use distinct native grids and are processed separately.",
+    "Data represent coarse regional environmental context, NOT field-level weather observations.",
+    "The 2016-2025 record spans 10 years and is NOT a standard 30-year WMO climate normal.",
+    "Winter 2016 (Jan-Feb 2016 only) and Winter 2026 (Dec 2025 only) are boundary-truncated partial seasons and are flagged via is_complete_season.",
+    "Regional climate values cannot substitute for local soil or field measurements, nor infer crop species/rotations."
+  ]
+}
