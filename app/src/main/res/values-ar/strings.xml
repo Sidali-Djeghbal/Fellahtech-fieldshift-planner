@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">FieldShift Planner</string>
+    <string name="app_tagline">FIELD SHIFT · رصد الأرض</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_farms">المزارع</string>
+    <string name="nav_analysis">التحليل</string>
+    <string name="nav_history">السجل</string>
+    <string name="nav_profile">الملف الشخصي</string>
+    <string name="screen_title_dashboard">لوحة التحكم</string>
+    <string name="screen_title_farms">المزارع والحقول</string>
+    <string name="screen_title_analysis">التحليل الطيفي</string>
+    <string name="screen_title_history">سجل التحليلات</string>
+    <string name="screen_title_profile">ملف المشغل</string>
+    <string name="foundation_ready_badge">الأساس جاهز</string>
+    <string name="foundation_empty_state_message">لا توجد بيانات وهمية ثابتة. اتصل بواجهة برمجة تطبيقات FieldShift لتحميل المزارع والحقول وتحليلات الدورة الزراعية الفعلية.</string>
+    <string name="network_config_title">عنوان خادم API المُعد</string>
+    <string name="network_config_unset">غير مُعد (قم بتعيين fieldshift.api.baseUrl في local.properties)</string>
+    <string name="localization_preview_title">اللغة واتجاه التخطيط (LTR / RTL)</string>
+</resources>
+

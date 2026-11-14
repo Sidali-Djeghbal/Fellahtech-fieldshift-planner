@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">FieldShift Planner</string>
+    <string name="app_tagline">FIELD SHIFT · EARTH OBSERVATION</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_farms">Farms</string>
+    <string name="nav_analysis">Analysis</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
+    <string name="screen_title_dashboard">Dashboard</string>
+    <string name="screen_title_farms">Farms &amp; Parcels</string>
+    <string name="screen_title_analysis">Spectral Analysis</string>
+    <string name="screen_title_history">Analysis History</string>
+    <string name="screen_title_profile">Operator Profile</string>
+    <string name="foundation_ready_badge">FOUNDATION READY</string>
+    <string name="foundation_empty_state_message">No static mock data is loaded. Connect to the FieldShift REST API to load real farms, fields, and crop rotation analyses.</string>
+    <string name="network_config_title">Configured API Endpoint</string>
+    <string name="network_config_unset">Not configured (set fieldshift.api.baseUrl in local.properties)</string>
+    <string name="localization_preview_title">Language &amp; Layout Direction (LTR / RTL)</string>
 </resources>

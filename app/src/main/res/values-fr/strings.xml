@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">FieldShift Planner</string>
+    <string name="app_tagline">FIELD SHIFT · OBSERVATION TERRESTRE</string>
+    <string name="nav_home">Accueil</string>
+    <string name="nav_farms">Fermes</string>
+    <string name="nav_analysis">Analyse</string>
+    <string name="nav_history">Historique</string>
+    <string name="nav_profile">Profil</string>
+    <string name="screen_title_dashboard">Tableau de bord</string>
+    <string name="screen_title_farms">Fermes et Parcelles</string>
+    <string name="screen_title_analysis">Analyse Spectrale</string>
+    <string name="screen_title_history">Historique des Analyses</string>
+    <string name="screen_title_profile">Profil Opérateur</string>
+    <string name="foundation_ready_badge">FONDATION PRÊTE</string>
+    <string name="foundation_empty_state_message">Aucune donnée fictive statique n\'est chargée. Connectez-vous à l\'API REST FieldShift pour charger les fermes, parcelles et analyses réelles.</string>
+    <string name="network_config_title">Point de terminaison API configuré</string>
+    <string name="network_config_unset">Non configuré (définir fieldshift.api.baseUrl dans local.properties)</string>
+    <string name="localization_preview_title">Langue et direction de mise en page (LTR / RTL)</string>
+</resources>
+
