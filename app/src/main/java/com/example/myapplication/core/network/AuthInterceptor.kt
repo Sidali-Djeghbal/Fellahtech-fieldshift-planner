@@ -2,11 +2,15 @@ package com.example.myapplication.core.network
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
 
 /**
- * Injects the appropriate authentication header per `docs/openapi.yaml` security declarations:
+ * Injects the appropriate authentication header per `docs/openapi-v3.2.yaml` security declarations:
+ * - Validates that request origin matches the configured API base URL before attaching credentials.
+ * - Never transmits credentials to untrusted origins or third-party hosts.
  * - Unauthenticated endpoints (`/auth/login`, `/auth/register`, `/auth/refresh`, `/auth/guest`, `/demo/locations`):
  *   no credential header added.
  * - Guest-only endpoints (`/demo/session`): `X-Guest-Token`.
@@ -16,11 +20,18 @@ import okhttp3.Response
  */
 @Singleton
 class AuthInterceptor @Inject constructor(
-    private val credentialStore: CredentialStore
+    private val credentialStore: CredentialStore,
+    private val endpointConfig: ApiEndpointConfig
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
+
+        // Enforce origin validation: never send credentials to an unrelated host, scheme, or port.
+        if (!isTargetOrigin(original.url)) {
+            return chain.proceed(original)
+        }
+
         val path = original.url.encodedPath
 
         if (isPublicPath(path)) {
@@ -55,6 +66,16 @@ class AuthInterceptor @Inject constructor(
         }
 
         return chain.proceed(builder.build())
+    }
+
+    private fun isTargetOrigin(requestUrl: HttpUrl): Boolean {
+        val configuredBase = endpointConfig.normalizedBaseUrl
+            .takeIf { it.isNotBlank() }
+            ?.toHttpUrlOrNull() ?: return false
+
+        return requestUrl.scheme.equals(configuredBase.scheme, ignoreCase = true) &&
+            requestUrl.host.equals(configuredBase.host, ignoreCase = true) &&
+            requestUrl.port == configuredBase.port
     }
 
     private fun isPublicPath(path: String): Boolean {

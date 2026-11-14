@@ -51,7 +51,7 @@ data class PersistedCredentials(
  */
 @Singleton
 class SecureSessionStore @Inject constructor(
-    @SecureSessionDataStore private val dataStore: DataStore<Preferences>,
+    @param:SecureSessionDataStore private val dataStore: DataStore<Preferences>,
     private val cryptoManager: KeystoreCryptoManager,
     private val json: Json
 ) : CredentialStore {
@@ -68,13 +68,20 @@ class SecureSessionStore @Inject constructor(
             val prefs = dataStore.data.first()
             val encryptedBlob = prefs[KEY_ENCRYPTED_CREDENTIALS]
             val restored = if (!encryptedBlob.isNullOrBlank()) {
-                cryptoManager.decrypt(encryptedBlob)?.let { plaintext ->
+                val decrypted = cryptoManager.decrypt(encryptedBlob)
+                if (decrypted != null) {
                     try {
-                        json.decodeFromString<PersistedCredentials>(plaintext)
+                        json.decodeFromString<PersistedCredentials>(decrypted)
                     } catch (_: Exception) {
+                        dataStore.edit { it.remove(KEY_ENCRYPTED_CREDENTIALS) }
                         PersistedCredentials()
                     }
-                } ?: PersistedCredentials()
+                } else {
+                    // Decryption failed: corrupted data or permanently invalidated key.
+                    // Recovery is impossible; safely clear the unusable stored session.
+                    dataStore.edit { it.remove(KEY_ENCRYPTED_CREDENTIALS) }
+                    PersistedCredentials()
+                }
             } else {
                 PersistedCredentials()
             }
@@ -150,10 +157,35 @@ class SecureSessionStore @Inject constructor(
     private suspend fun updateCredentials(transform: (PersistedCredentials) -> PersistedCredentials) {
         writeMutex.withLock {
             val next = transform(cached.get())
+            if (next.accessToken.isNullOrBlank() &&
+                next.refreshToken.isNullOrBlank() &&
+                next.guestToken.isNullOrBlank()
+            ) {
+                cached.set(next)
+                isWarmedUp = true
+                dataStore.edit { prefs ->
+                    prefs.remove(KEY_ENCRYPTED_CREDENTIALS)
+                }
+                return@withLock
+            }
+
+            val serialized = json.encodeToString(next)
+            val encrypted = try {
+                cryptoManager.encrypt(serialized)
+            } catch (ex: Exception) {
+                // If encryption recovery fails (e.g. hardware Keystore failure or permanent corruption),
+                // do NOT persist plaintext credentials under any circumstances.
+                // Clear the unusable encrypted data store entry and reset cache.
+                dataStore.edit { prefs ->
+                    prefs.remove(KEY_ENCRYPTED_CREDENTIALS)
+                }
+                cached.set(PersistedCredentials())
+                isWarmedUp = true
+                return@withLock
+            }
+
             cached.set(next)
             isWarmedUp = true
-            val serialized = json.encodeToString(next)
-            val encrypted = cryptoManager.encrypt(serialized)
             dataStore.edit { prefs ->
                 prefs[KEY_ENCRYPTED_CREDENTIALS] = encrypted
             }
@@ -183,4 +215,3 @@ object SecurityProviderModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> = context.secureSessionDataStore
 }
-

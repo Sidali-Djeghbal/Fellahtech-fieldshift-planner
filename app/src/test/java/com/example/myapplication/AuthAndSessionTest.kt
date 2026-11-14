@@ -1,7 +1,11 @@
 package com.example.myapplication
 
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.myapplication.core.common.UiState
 import com.example.myapplication.core.network.ApiCallFailure
+import com.example.myapplication.core.network.ApiEndpointConfig
 import com.example.myapplication.core.network.ApiErrorParser
 import com.example.myapplication.core.network.AuthApiService
 import com.example.myapplication.core.network.AuthInterceptor
@@ -26,6 +30,8 @@ import com.example.myapplication.core.network.TokenRefreshApiService
 import com.example.myapplication.core.network.TokenRefreshAuthenticator
 import com.example.myapplication.core.network.UserProfileDto
 import com.example.myapplication.core.network.WarningNoticeDto
+import com.example.myapplication.core.security.KeystoreCryptoManager
+import com.example.myapplication.core.security.SecureSessionStore
 import com.example.myapplication.data.auth.AuthRepositoryImpl
 import com.example.myapplication.domain.auth.AuthResult
 import com.example.myapplication.domain.auth.SessionState
@@ -33,8 +39,12 @@ import com.example.myapplication.feature.auth.AuthEntryTab
 import com.example.myapplication.feature.auth.AuthValidationError
 import com.example.myapplication.feature.auth.AuthViewModel
 import com.example.myapplication.feature.profile.ProfileViewModel
+import java.io.File
 import java.io.IOException
+import java.security.InvalidKeyException
 import java.util.concurrent.TimeUnit
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 import javax.inject.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -184,13 +194,14 @@ class AuthAndSessionTest {
     }
 
     @Test
-    fun `authInterceptor injects correct header per endpoint security scheme`() {
+    fun `authInterceptor injects correct header on same-origin requests`() {
         val store = FakeCredentialStore(
             access = "access-123",
             refresh = "refresh-123",
             guest = "guest-123"
         )
-        val interceptor = AuthInterceptor(store)
+        val endpointConfig = ApiEndpointConfig(rawBaseUrl = "http://localhost/api/v1/")
+        val interceptor = AuthInterceptor(store, endpointConfig)
 
         val loginReq = captureInterceptedRequest(interceptor, "http://localhost/api/v1/auth/login")
         assertNull(loginReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
@@ -210,6 +221,90 @@ class AuthAndSessionTest {
 
         val sharedReq = captureInterceptedRequest(interceptor, "http://localhost/api/v1/farms")
         assertEquals("Bearer access-123", sharedReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
+    }
+
+    @Test
+    fun `authInterceptor never transmits credentials to different host, port, or scheme`() {
+        val store = FakeCredentialStore(
+            access = "super-secret-access",
+            refresh = "super-secret-refresh",
+            guest = "guest-secret-token"
+        )
+        val endpointConfig = ApiEndpointConfig(rawBaseUrl = "http://localhost:8000/api/v1/")
+        val interceptor = AuthInterceptor(store, endpointConfig)
+
+        // 1. Different host
+        val untrustedHostReq = captureInterceptedRequest(interceptor, "http://attacker.com/api/v1/auth/me")
+        assertNull(untrustedHostReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
+        assertNull(untrustedHostReq.header(AuthInterceptor.HEADER_GUEST_TOKEN))
+
+        // 2. Different port
+        val untrustedPortReq = captureInterceptedRequest(interceptor, "http://localhost:9000/api/v1/auth/me")
+        assertNull(untrustedPortReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
+        assertNull(untrustedPortReq.header(AuthInterceptor.HEADER_GUEST_TOKEN))
+
+        // 3. Different scheme (https vs http)
+        val untrustedSchemeReq = captureInterceptedRequest(interceptor, "https://localhost:8000/api/v1/auth/me")
+        assertNull(untrustedSchemeReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
+        assertNull(untrustedSchemeReq.header(AuthInterceptor.HEADER_GUEST_TOKEN))
+
+        // 4. Guest endpoint on different host
+        val untrustedGuestReq = captureInterceptedRequest(interceptor, "http://attacker.com/api/v1/demo/session")
+        assertNull(untrustedGuestReq.header(AuthInterceptor.HEADER_GUEST_TOKEN))
+
+        // 5. Matching origin succeeds
+        val trustedReq = captureInterceptedRequest(interceptor, "http://localhost:8000/api/v1/auth/me")
+        assertEquals("Bearer super-secret-access", trustedReq.header(AuthInterceptor.HEADER_AUTHORIZATION))
+    }
+
+    @Test
+    fun `keystoreCryptoManager recovers from invalidated key without crash or data leak`() {
+        val crypto = InvalidationRecoveryCryptoManager()
+        val plaintext = """{"accessToken":"test-token","refreshToken":"ref-token"}"""
+
+        // First encrypt attempt hits invalidated key, catches it, calls deleteKey(), generates fresh key, and succeeds.
+        val encrypted = crypto.encrypt(plaintext)
+        assertNotNull(encrypted)
+        assertTrue(encrypted.isNotBlank())
+        assertEquals(1, crypto.deleteKeyCallCount)
+
+        // Decrypt using the new key yields original plaintext
+        val decrypted = crypto.decrypt(encrypted)
+        assertEquals(plaintext, decrypted)
+
+        // Decrypt on corrupted payload returns null safely
+        assertNull(crypto.decrypt("not-a-valid-base64-or-iv-payload"))
+    }
+
+    @Test
+    fun `secureSessionStore safe initialization and corrupted payload cleanup`() = runTest {
+        val tempDir = java.nio.file.Files.createTempDirectory("fieldshift_test_session").toFile()
+        try {
+            val testDataStore = PreferenceDataStoreFactory.create(
+                produceFile = { File(tempDir, "test.preferences_pb") }
+            )
+            val crypto = TestCryptoManager()
+            val store = SecureSessionStore(testDataStore, crypto, json)
+
+            // Save tokens -> encrypted
+            store.saveBearerTokens("acc-1", "ref-1", 3600)
+            assertEquals("acc-1", store.getAccessToken())
+            assertEquals("ref-1", store.getRefreshToken())
+
+            // Corrupt the stored data in dataStore
+            val key = stringPreferencesKey("encrypted_credentials_v1")
+            testDataStore.edit { prefs ->
+                prefs[key] = "corrupted-unusable-ciphertext"
+            }
+
+            // A new store instance warming up with corrupted payload clears dataStore safely without throwing
+            val store2 = SecureSessionStore(testDataStore, crypto, json)
+            val restored = store2.warmUp()
+            assertNull(restored.accessToken)
+            assertNull(store2.getAccessToken())
+        } finally {
+            tempDir.deleteRecursively()
+        }
     }
 
     @Test
@@ -430,6 +525,47 @@ class AuthAndSessionTest {
         val errorBody = """{"error":{"code":"ERR_$code","message":"HTTP $code"}}"""
             .toResponseBody("application/json".toMediaType())
         return HttpException(retrofit2.Response.error<Any>(code, errorBody))
+    }
+
+    private class InvalidationRecoveryCryptoManager : KeystoreCryptoManager() {
+        var deleteKeyCallCount = 0
+        var shouldFailInitialKey = true
+        private val key1 = generateJvmAesKey()
+        private val key2 = generateJvmAesKey()
+
+        override fun getOrCreateSecretKey(): SecretKey {
+            return if (shouldFailInitialKey) key1 else key2
+        }
+
+        override fun generateNewSecretKey(): SecretKey {
+            shouldFailInitialKey = false
+            return key2
+        }
+
+        override fun deleteKey() {
+            deleteKeyCallCount++
+        }
+
+        override fun encryptWithKey(plaintext: String, secretKey: SecretKey): String {
+            if (secretKey == key1 && shouldFailInitialKey) {
+                throw InvalidKeyException("KeyPermanentlyInvalidatedException: Key invalidated due to biometric/lock change")
+            }
+            return super.encryptWithKey(plaintext, secretKey)
+        }
+
+        private fun generateJvmAesKey(): SecretKey {
+            val kg = KeyGenerator.getInstance("AES")
+            kg.init(256)
+            return kg.generateKey()
+        }
+    }
+
+    private class TestCryptoManager : KeystoreCryptoManager() {
+        private val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+
+        override fun getOrCreateSecretKey(): SecretKey = key
+        override fun generateNewSecretKey(): SecretKey = key
+        override fun deleteKey() = Unit
     }
 
     private class FakeCredentialStore(

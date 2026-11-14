@@ -9,7 +9,7 @@ import retrofit2.http.Query
 
 /**
  * Retrofit service for FieldShift Planner Authentication and Demo endpoints
- * matching `docs/openapi.yaml` (OpenAPI v3.2, base path `/api/v1`).
+ * matching `docs/openapi-v3.2.yaml` (OpenAPI v3.2, base path `/api/v1`).
  */
 interface AuthApiService {
 
