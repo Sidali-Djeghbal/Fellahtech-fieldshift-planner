@@ -6,12 +6,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RefreshClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -40,9 +45,27 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        // Note: Never log Authorization, X-Guest-Token, or refresh token headers.
+    @RefreshClient
+    fun provideRefreshOkHttpClient(): OkHttpClient {
+        // Dedicated client without AuthInterceptor/TokenRefreshAuthenticator to prevent
+        // recursive 401 handling and ensure zero token logging.
         return OkHttpClient.Builder()
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenRefreshAuthenticator: TokenRefreshAuthenticator
+    ): OkHttpClient {
+        // Never attach HttpLoggingInterceptor with BODY/HEADERS to avoid leaking tokens/passwords.
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .authenticator(tokenRefreshAuthenticator)
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -60,5 +83,43 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
     }
-}
 
+    @Provides
+    @Singleton
+    fun provideRetrofit(
+        retrofitBuilder: Retrofit.Builder,
+        endpointConfig: ApiEndpointConfig
+    ): Retrofit {
+        require(endpointConfig.isConfigured) {
+            "API_BASE_URL is not configured. Set fieldshift.api.baseUrl in local.properties."
+        }
+        return retrofitBuilder
+            .baseUrl(endpointConfig.normalizedBaseUrl)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTokenRefreshApiService(
+        @RefreshClient refreshOkHttpClient: OkHttpClient,
+        json: Json,
+        endpointConfig: ApiEndpointConfig
+    ): TokenRefreshApiService {
+        require(endpointConfig.isConfigured) {
+            "API_BASE_URL is not configured. Set fieldshift.api.baseUrl in local.properties."
+        }
+        val contentType = "application/json".toMediaType()
+        return Retrofit.Builder()
+            .baseUrl(endpointConfig.normalizedBaseUrl)
+            .client(refreshOkHttpClient)
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+            .create(TokenRefreshApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
+        return retrofit.create(AuthApiService::class.java)
+    }
+}
