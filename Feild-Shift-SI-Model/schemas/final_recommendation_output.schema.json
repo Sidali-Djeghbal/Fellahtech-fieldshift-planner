@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fieldshift.dz/schemas/final_recommendation_output.schema.json",
+  "title": "Field Shift Final Recommendation Output Contract (Phase J)",
+  "description": "Strict JSON Schema Draft 2020-12 contract unifying Phase F Field Profile, Phase G Knowledge/Constraints, Phase H Candidates, and Phase I Multi-Objective Scoring, Pareto, and Sensitivity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "dataset_version_used",
+    "generated_at",
+    "status",
+    "language",
+    "decision_engine_version",
+    "overall_summary",
+    "disclaimer",
+    "field_plans"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "minLength": 1 },
+    "request_id": { "type": "string", "minLength": 1 },
+    "dataset_version_used": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "minLength": 10 },
+    "status": { "type": "string", "enum": ["COMPLETE", "PARTIAL", "FAILED"] },
+    "language": { "type": "string", "enum": ["en", "fr", "ar"] },
+    "decision_engine_version": { "type": "string", "minLength": 1 },
+    "overall_summary": { "type": "string", "minLength": 1 },
+    "disclaimer": { "type": "string", "minLength": 1 },
+    "field_plans": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": { "$ref": "#/$defs/FieldPlan" }
+    }
+  },
+  "$defs": {
+    "EvidenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_source",
+        "parameter",
+        "observed_value",
+        "unit",
+        "period",
+        "derived",
+        "interpretation"
+      ],
+      "properties": {
+        "data_source": { "type": "string", "minLength": 1 },
+        "parameter": { "type": "string", "minLength": 1 },
+        "observed_value": {
+          "type": ["number", "string", "boolean", "array", "object", "null"]
+        },
+        "unit": { "type": ["string", "null"] },
+        "period": { "type": "string", "minLength": 1 },
+        "derived": { "type": "boolean" },
+        "interpretation": { "type": "string", "minLength": 1 },
+        "spatial_resolution": { "type": ["string", "null"] },
+        "quality_status": { "type": ["string", "null"] }
+      }
+    },
+    "ObjectiveScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "status",
+        "evidence",
+        "evidence_classification",
+        "confidence_or_uncertainty",
+        "missing_information",
+        "applicability_condition",
+        "explanation",
+        "active_in_ranking",
+        "normalized_weight"
+      ],
+      "properties": {
+        "score": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "status": {
+          "type": "string",
+          "enum": ["SCORED", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"]
+        },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "evidence_classification": { "type": "string", "minLength": 1 },
+        "confidence_or_uncertainty": { "type": "string", "minLength": 1 },
+        "missing_information": { "type": "array", "items": { "type": "string" } },
+        "applicability_condition": { "type": "string", "minLength": 1 },
+        "explanation": { "type": "string", "minLength": 1 },
+        "active_in_ranking": { "type": "boolean" },
+        "normalized_weight": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "qualitative_market_tiers": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "SeasonSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order",
+        "season",
+        "year",
+        "planting_month",
+        "crop_id",
+        "crop_name",
+        "category",
+        "role",
+        "selection_status",
+        "notes"
+      ],
+      "properties": {
+        "order": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "season": { "type": "string", "enum": ["Winter", "Spring", "Summer", "Autumn"] },
+        "year": { "type": "integer", "minimum": 2024, "maximum": 2039 },
+        "planting_month": { "type": ["integer", "null"], "minimum": 1, "maximum": 12 },
+        "crop_id": { "type": "string", "minLength": 1 },
+        "crop_name": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "selection_status": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      }
+    },
+    "StrategyExplanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "reasons",
+        "evidence",
+        "benefits",
+        "risks",
+        "assumptions",
+        "information_gaps",
+        "needs_local_review",
+        "review_checklist"
+      ],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EvidenceItem" }
+        },
+        "benefits": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "information_gaps": { "type": "array", "items": { "type": "string" } },
+        "needs_local_review": { "type": "boolean" },
+        "review_checklist": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "StrategyItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy_id",
+        "name",
+        "is_existing_rotation",
+        "description",
+        "seasons",
+        "feasibility_status",
+        "scores",
+        "confidence",
+        "pareto_status",
+        "dominated_by",
+        "rank",
+        "weighted_score",
+        "explanation"
+      ],
+      "properties": {
+        "strategy_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "is_existing_rotation": { "type": "boolean" },
+        "description": { "type": "string", "minLength": 1 },
+        "seasons": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/SeasonSlot" }
+        },
+        "feasibility_status": {
+          "type": "string",
+          "enum": [
+            "FEASIBLE_PASS",
+            "CONDITIONALLY_FEASIBLE_WITH_WARNINGS_OR_UNKNOWNS",
+            "UNVERIFIED_HARD_UNKNOWN",
+            "INFEASIBLE_HARD_CONSTRAINT",
+            "INFEASIBLE_CONSTRAINT"
+          ]
+        },
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "water_efficiency",
+            "soil_improvement",
+            "nitrogen_contribution",
+            "pest_disease_disruption",
+            "erosion_protection",
+            "income_potential",
+            "forage_value",
+            "farmer_priority_fit"
+          ],
+          "properties": {
+            "water_efficiency": { "$ref": "#/$defs/ObjectiveScore" },
+            "soil_improvement": { "$ref": "#/$defs/ObjectiveScore" },
+            "nitrogen_contribution": { "$ref": "#/$defs/ObjectiveScore" },
+            "pest_disease_disruption": { "$ref": "#/$defs/ObjectiveScore" },
+            "erosion_protection": { "$ref": "#/$defs/ObjectiveScore" },
+            "income_potential": { "$ref": "#/$defs/ObjectiveScore" },
+            "forage_value": { "$ref": "#/$defs/ObjectiveScore" },
+            "farmer_priority_fit": { "$ref": "#/$defs/ObjectiveScore" }
+          }
+        },
+        "confidence": {
+          "type": "object",
+          "required": [
+            "level",
+            "score_coverage_ratio",
+            "scored_objectives_count",
+            "partial_objectives_count",
+            "unknown_objectives_count",
+            "not_applicable_objectives_count"
+          ],
+          "properties": {
+            "level": { "type": "string", "minLength": 1 },
+            "score_coverage_ratio": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+            "scored_objectives_count": { "type": "integer", "minimum": 0 },
+            "partial_objectives_count": { "type": "integer", "minimum": 0 },
+            "unknown_objectives_count": { "type": "integer", "minimum": 0 },
+            "not_applicable_objectives_count": { "type": "integer", "minimum": 0 },
+            "unresolved_constraints_summary": { "type": "object" },
+            "regional_caveats": { "type": "object" }
+          }
+        },
+        "pareto_status": {
+          "type": "string",
+          "enum": [
+            "NON_DOMINATED_PARETO_FRONT",
+            "DOMINATED",
+            "EXCLUDED_INFEASIBLE",
+            "UNRANKED_INSUFFICIENT_DATA"
+          ]
+        },
+        "dominated_by": { "type": "array", "items": { "type": "string" } },
+        "rank": { "type": ["integer", "null"], "minimum": 1 },
+        "weighted_score": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "provisional": { "type": "boolean" },
+        "land_use_status": { "type": ["string", "null"] },
+        "stability_metrics": { "type": ["object", "null"] },
+        "explanation": { "$ref": "#/$defs/StrategyExplanation" }
+      }
+    },
+    "RequestedCropResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "crop_id",
+        "crop_name",
+        "outcome",
+        "reason",
+        "included_in_strategy_ids",
+        "feasibility_statuses"
+      ],
+      "properties": {
+        "crop_id": { "type": "string", "minLength": 1 },
+        "crop_name": { "type": ["string", "null"] },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "included",
+            "excluded",
+            "not_evaluated",
+            "unavailable_due_to_insufficient_evidence"
+          ]
+        },
+        "reason": { "type": "string", "minLength": 1 },
+        "included_in_strategy_ids": { "type": "array", "items": { "type": "string" } },
+        "feasibility_statuses": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "FieldInsights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bare_field_periods",
+        "stress_periods",
+        "climate_trend_summary"
+      ],
+      "properties": {
+        "bare_field_periods": { "type": "array", "items": { "type": "object" } },
+        "stress_periods": { "type": "array", "items": { "type": "object" } },
+        "climate_trend_summary": { "type": "object" }
+      }
+    },
+    "DataQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completeness_score",
+        "confidence_note",
+        "missing_data",
+        "warnings",
+        "limitations",
+        "input_completeness_flags"
+      ],
+      "properties": {
+        "completeness_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "confidence_note": { "type": "string", "minLength": 1 },
+        "critical_data_adequacy": { "type": "object" },
+        "missing_data": { "type": "array", "items": { "type": "string" } },
+        "warnings": { "type": "array", "items": { "type": "string" } },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "input_completeness_flags": { "type": "object" }
+      }
+    },
+    "FieldPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_id",
+        "field_name",
+        "status",
+        "partial_reason",
+        "field_insights",
+        "strategies",
+        "suggested_strategy_id",
+        "recommendation_status",
+        "pareto_summary",
+        "ranking_methodology",
+        "sensitivity_summary",
+        "requested_crop_results",
+        "data_quality"
+      ],
+      "properties": {
+        "field_id": { "type": "string", "minLength": 1 },
+        "field_name": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["COMPLETE", "PARTIAL", "NO_ELIGIBLE_STRATEGY"] },
+        "partial_reason": { "type": ["string", "null"] },
+        "field_insights": { "$ref": "#/$defs/FieldInsights" },
+        "strategies": { "type": "array", "items": { "$ref": "#/$defs/StrategyItem" } },
+        "suggested_strategy_id": { "type": ["string", "null"] },
+        "recommendation_status": { "type": "string", "minLength": 1 },
+        "decision_gate": { "type": "object" },
+        "land_use_assessment": { "type": "object" },
+        "temporal_validation": { "type": "object" },
+        "water_balance_assessment": { "type": "object" },
+        "pareto_summary": { "type": "object" },
+        "ranking_methodology": { "type": "object" },
+        "sensitivity_summary": { "type": "object" },
+        "requested_crop_results": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/RequestedCropResult" }
+        },
+        "data_quality": { "$ref": "#/$defs/DataQuality" }
+      }
+    }
+  }
+}

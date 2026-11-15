@@ -1,0 +1,21 @@
+# Byte-compiled / Python caches & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.venv/
+
+# OS / IDE / temp / log files
+.DS_Store
+*.log
+*.tmp
+
+# Large raw & reproducible GeoTIFF rasters (exceeds GitHub 100 MB limit / regenerable locally)
+data/land_cover/guelma_crop_frequency_2021_2025*.tif
+data/land_cover/*.aux.xml
+data/SENTINEL2/raw/phaseA_2024_03/*.tif
+data/SENTINEL2/raw/phaseB_benchmark_2024_03/*.tif
+data/SENTINEL2/raw/gee_exports/*.tif
+data/INTEGRATED/spatial/*.tif
+*.tif.aux.xml

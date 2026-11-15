@@ -1,0 +1,17 @@
+services:
+  fieldshift:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fieldshift-si-model:v4
+    container_name: fieldshift-dss
+    ports:
+      - "8000:8000"
+    environment:
+      - FIELDSHIFT_SQLITE_PATH=/app/state/fieldshift_analyses.db
+    volumes:
+      - fieldshift_state:/app/state
+    restart: unless-stopped
+
+volumes:
+  fieldshift_state:

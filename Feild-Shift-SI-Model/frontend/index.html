@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Shift — Guelma Crop Rotation Decision Support</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Field Shift — Guelma Crop Rotation DSS</h1>
+      <p class="subtitle">Draw your parcel once. Soil, climate &amp; vegetation layers are extracted automatically.</p>
+    </div>
+    <div id="apiHealthBadge" class="badge badge-unknown">Checking backend...</div>
+  </header>
+
+  <main class="container">
+    <!-- Left Column: Farmer Intake Form (Strictly Non-Technical) -->
+    <section class="card">
+      <h2>1. Draw Field Boundary (Guelma Wilaya)</h2>
+      <p class="muted">
+        Click points on the Wilaya map canvas below to draw a polygon, or load a sample zone / paste GeoJSON Polygon coordinates.
+        Do <strong>not</strong> enter soil pH, clay, NDVI, or rainfall manually.
+      </p>
+
+      <div class="map-box" title="Click to add vertices; minimum 3 vertices to close polygon">
+        <canvas id="offlineCanvas" width="420" height="270"></canvas>
+      </div>
+
+      <div class="actions-bar" style="margin-top:0; margin-bottom:0.6rem;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnPresetBelkheir">Sample: Belkheir Valley</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnPresetTamlouka">Sample: Tamlouka South</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnPresetPeriUrban">Sample: Peri-Urban Check</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnUndoVertex">Undo Vertex</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnClearPoly">Clear Map</button>
+      </div>
+
+      <div class="field-group">
+        <label for="polygonJson">Active GeoJSON Polygon (EPSG:4326)</label>
+        <textarea id="polygonJson" rows="3" spellcheck="false"></textarea>
+      </div>
+
+      <div class="row-2">
+        <div class="field-group">
+          <label for="fieldId">Field ID *</label>
+          <input type="text" id="fieldId" value="FLD_GUELMA_PILOT_01" required />
+        </div>
+        <div class="field-group">
+          <label for="fieldName">Field Name (optional)</label>
+          <input type="text" id="fieldName" placeholder="e.g. Seybouse Parcel North" />
+        </div>
+      </div>
+
+      <h2>2. Operational Water Access (Farmer-Known)</h2>
+      <div class="row-3">
+        <div class="field-group">
+          <label for="waterAvail">Availability *</label>
+          <select id="waterAvail">
+            <option value="limited">Limited</option>
+            <option value="moderate">Moderate</option>
+            <option value="abundant">Abundant</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="waterSource">Source *</label>
+          <select id="waterSource">
+            <option value="rainfed">Rainfed</option>
+            <option value="reservoir">Reservoir</option>
+            <option value="river">River (Seybouse)</option>
+            <option value="well">Well</option>
+            <option value="groundwater">Groundwater</option>
+            <option value="other">Other</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="irrigSys">System *</label>
+          <select id="irrigSys">
+            <option value="none">None</option>
+            <option value="drip">Drip</option>
+            <option value="sprinkler">Sprinkler</option>
+            <option value="surface">Surface</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+
+      <h2>3. Crop History &amp; Planning Horizon</h2>
+      <div class="field-group">
+        <label for="historyMode">Recent Crop History Status</label>
+        <select id="historyMode">
+          <option value="provided">Provide remembered crops</option>
+          <option value="null">Not Provided / Unknown (null)</option>
+          <option value="empty">Confirmed No Recent Crop ([])</option>
+        </select>
+      </div>
+      <div id="historyListWrap" class="field-group">
+        <div id="historyRows"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAddHistory">+ Add Season</button>
+      </div>
+
+      <div class="row-3">
+        <div class="field-group">
+          <label for="startSeason">Start Season *</label>
+          <select id="startSeason">
+            <option value="Autumn">Autumn</option>
+            <option value="Winter">Winter</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="startYear">Start Year *</label>
+          <input type="number" id="startYear" value="2026" min="2024" max="2035" />
+        </div>
+        <div class="field-group">
+          <label for="horizonSeasons">Horizon (2–4) *</label>
+          <input type="number" id="horizonSeasons" value="3" min="2" max="4" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label for="planningMode">Planning Mode *</label>
+        <select id="planningMode">
+          <option value="CURRENT_PLANNING">Current / Upcoming Season Planning (Rejects Past Windows)</option>
+          <option value="HISTORICAL_SIMULATION">Historical Backtesting / Simulation Mode</option>
+        </select>
+      </div>
+
+      <h2>4. Optional Priorities &amp; Operational Constraints</h2>
+      <p class="muted" style="margin-top:0;">
+        Verified local crop yields, farmgate prices, and production costs are not yet available in API mode;
+        <code>income_weight</code> is therefore omitted here (qualitative market tiers are still reported, and any
+        positive <code>income_weight</code> sent directly via API falls back to non-monetary scorable priorities with an explicit warning).
+      </p>
+      <div class="row-2">
+        <div class="field-group">
+          <label for="forageMode">Livestock Forage Requirement</label>
+          <select id="forageMode">
+            <option value="null">Not Provided (null — keep inactive)</option>
+            <option value="zero">None Needed (0.0 weight)</option>
+            <option value="0.30">Moderate Priority (0.30)</option>
+            <option value="0.60">High Livestock Priority (0.60)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="equipmentMode">Equipment Constraints</label>
+          <select id="equipmentMode">
+            <option value="null">Not Provided (null — unknown)</option>
+            <option value="empty">Confirmed No Constraints ([])</option>
+            <option value="no_hay_baler">No Hay Baler</option>
+            <option value="no_mower">No Mower / Cutter</option>
+            <option value="no_drip_irrigation">No Drip Irrigation Equipment</option>
+            <option value="no_precision_planter">No Precision Planter</option>
+            <option value="no_potato_harvester">No Potato Harvester</option>
+            <option value="no_sunflower_header">No Sunflower Header</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div class="field-group">
+          <label for="targetCrop">Target Crop Interest (optional)</label>
+          <select id="targetCrop">
+            <option value="">— None Selected —</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="excludedCrop">Exclude Crop (optional)</label>
+          <select id="excludedCrop">
+            <option value="">— None Selected —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button type="button" class="btn btn-secondary" id="btnValidate">Validate Polygon</button>
+        <button type="button" class="btn" id="btnAnalyze">Analyze &amp; Recommend</button>
+      </div>
+      <div id="validationOutput" class="hidden" style="margin-top:0.75rem;"></div>
+    </section>
+
+    <!-- Right Column: Field Profile + Transparent Recommendations -->
+    <section>
+      <div id="welcomeCard" class="card">
+        <h2>Explainable Rotation Advisory Output</h2>
+        <div class="notice notice-info">
+          Draw or load a Guelma parcel polygon on the left and click <strong>Analyze &amp; Recommend</strong>.
+          The system automatically extracts 250 m SoilGrids texture/SOC/pH, 10 m cropland frequency,
+          Sentinel-2 NDVI, 11 km GPM/SMAP, and NASA POWER baselines, then runs Phase G–J rules.
+        </div>
+        <div class="notice notice-conditional">
+          <strong>Scientific Scope Notice:</strong> Outputs provide ordinal decision-support rankings and
+          agronomic rule explanations. They do <strong>not</strong> predict harvest yield (t/ha), score quantitative
+          farm profit (DZD/ha; <code>income_potential</code> remains <code>UNKNOWN</code> and <code>income_weight</code>
+          cannot steer web/API rankings without verified local enterprise budgets), or replace on-farm salinity (ECe) and drainage checks.
+        </div>
+      </div>
+
+      <div id="errorCard" class="card hidden"></div>
+
+      <div id="resultsWrap" class="hidden">
+        <div class="card" style="margin-bottom:1rem;">
+          <h2>Generated Field Profile Summary (Auto-Extracted)</h2>
+          <div id="fieldProfileBox"></div>
+        </div>
+
+        <div class="card">
+          <h2>Crop Rotation Strategies &amp; Explainability</h2>
+          <div id="overallBanner"></div>
+          <div id="requestedCropsBox"></div>
+          <div id="strategiesList"></div>
+          <div id="qualityFooter"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

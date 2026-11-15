@@ -1,0 +1,2036 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Field Shift - Guelma Wilaya, Algeria",
+  "phase": "Phase G - Agronomic Knowledge Base",
+  "notes": "Strict zero-fabrication policy: missing or uncalibrated local values are explicitly value=null with evidence_classification='UNKNOWN'. Parameters reuse Phase E verified CSVs.",
+  "crops": {
+    "DURUM_WHEAT": {
+      "crop_id": "DURUM_WHEAT",
+      "canonical_name": "Durum Wheat",
+      "scientific_name": "Triticum durum",
+      "crop_category": "Winter Cereal",
+      "botanical_family": "Poaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya & northern Algeria cereal zones"
+        },
+        "planting_window": {
+          "value": "Late Oct - Mid Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "Jun - Jul",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 180, "max": 220},
+          "unit": "days",
+          "source": "FAO-56 (Allen et al. 1998); ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean winter cereal belt"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_OR_SUPPLEMENTAL",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC / ICARDA",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma sub-humid valley to semi-arid plains"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 400.0,
+          "unit": "mm/year",
+          "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_06_PRECIP (ITGC/ICARDA)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma Mediterranean rainfed zones (subject to seasonal distribution)"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "MODERATE_HIGH_AT_ANTHESIS", "ky_seasonal": 1.05},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56 (Allen et al. 1998); crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Global FAO-56 parameter; sensitive to Spring terminal heat/drought in southern Guelma"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean cereal zones"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 7.5, "tolerable_ph_max": 8.5, "preferred_textures": ["Loam", "Clay loam", "Silty clay loam", "Clay"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; Sys et al. (1993); crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma clay loam plains & vertisols"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "MODERATE", "note": "Sensitive to severe winter waterlogging during tillering; tolerates clay loam if surface-drained."},
+          "unit": "qualitative class",
+          "source": "Sys et al. (1993); FAO Vertisol guide; CON_01_TEXTURE",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma Seybouse alluvial & heavy clay plains"
+        },
+        "root_depth_m": {
+          "value": {"min": 1.0, "max": 1.5},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep Mediterranean soils (limited if unmeasured caliche crust)"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.30, "kc_mid": 1.15, "kc_end_min": 0.25, "kc_end_max": 0.40},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 single-Kc crop coefficient (uncalibrated locally)"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (Phase E CON_04/CON_05)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Not locally quantified; qualitative demand is high (nutrient demanding)"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Poaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "NEUTRAL_TO_MODERATE_POSITIVE_WITH_RESIDUE", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Dependent on whether straw is retained vs baled/grazed in Guelma"
+        },
+        "residue_management_considerations": {
+          "value": "Heavy cereal stubble carries over take-all, Fusarium root rot, and wild oat grass seeds; stubble grazing reduces residue C return unless balanced with forage.",
+          "unit": "qualitative guidance",
+          "source": "ITGC Algeria; ICARDA; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma cereal-livestock systems"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 2, "max_consecutive_cereal_years": 2, "key_hazards": ["Take-all (Gaeumannomyces)", "Fusarium root rot", "Wild oat (Avena spp.)"]},
+          "unit": "years & pathogen list",
+          "source": "CON_11_SEQUENCE; ITGC / ICARDA",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Algerian Mediterranean cereal monoculture belts"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Seedbed tillage", "Grain drill", "Combine harvester"], "vertisol_constraint": "Narrow winter tillage moisture window in Seybouse heavy clay (>32% clay)", "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_01_TEXTURE; CON_14_FARMER_OPS",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma alluvial & upland cereal farms"
+        }
+      }
+    },
+    "SOFT_WHEAT": {
+      "crop_id": "SOFT_WHEAT",
+      "canonical_name": "Soft Wheat",
+      "scientific_name": "Triticum aestivum",
+      "crop_category": "Winter Cereal",
+      "botanical_family": "Poaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "REGIONAL_ALGERIAN_ITGC",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma interior & foothill zones"
+        },
+        "planting_window": {
+          "value": "Late Oct - Mid Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "Jun - Jul",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 180, "max": 210},
+          "unit": "days",
+          "source": "FAO-56 (Allen et al. 1998); ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean interior cereal plateaus"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_OR_SUPPLEMENTAL",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 400.0,
+          "unit": "mm/year",
+          "source": "CON_06_PRECIP (ITGC/ICARDA cereal belt)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma Mediterranean rainfed plains"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "MODERATE_HIGH_WITH_HIGHER_FROST_TOLERANCE", "ky_seasonal_min": 1.00, "ky_seasonal_max": 1.15},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56 (Allen et al. 1998); crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Slightly higher frost resilience in cool interior Guelma plateaus"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean cereal zones"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 7.5, "tolerable_ph_max": 8.5, "preferred_textures": ["Loam", "Clay loam", "Silty clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma medium-to-heavy loam & clay loam"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "MODERATE", "note": "Requires surface drainage in prolonged winter rains."},
+          "unit": "qualitative class",
+          "source": "ITGC Algeria; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma lowlands"
+        },
+        "root_depth_m": {
+          "value": {"min": 1.0, "max": 1.5},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean cereal soils"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.30, "kc_mid": 1.15, "kc_end_min": 0.25, "kc_end_max": 0.40},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (Phase E CON_04/CON_05)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured parcel mineral N/P/K status"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Poaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "NEUTRAL_TO_MODERATE_POSITIVE_WITH_RESIDUE", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma cereal farming systems"
+        },
+        "residue_management_considerations": {
+          "value": "Shares cereal disease and wild oat carryover with Durum Wheat; avoid wheat-after-wheat.",
+          "unit": "qualitative guidance",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 2, "max_consecutive_cereal_years": 2, "key_hazards": ["Take-all", "Fusarium", "Grass weeds"]},
+          "unit": "years & pathogen list",
+          "source": "CON_11_SEQUENCE; ITGC Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Algerian cereal rotation zones"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Seedbed tillage", "Grain drill", "Combine harvester"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Regional mechanized cereal operations"
+        }
+      }
+    },
+    "BARLEY": {
+      "crop_id": "BARLEY",
+      "canonical_name": "Barley",
+      "scientific_name": "Hordeum vulgare",
+      "crop_category": "Winter Cereal",
+      "botanical_family": "Poaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Semi-Arid Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "All Guelma, especially southern semi-arid communes (Tamlouka/Ain Makhlouf)"
+        },
+        "planting_window": {
+          "value": "Oct - Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "May - Jun",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 140, "max": 180},
+          "unit": "days",
+          "source": "FAO-56; ITGC Semi-Arid Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Earlier maturity escapes Spring terminal drought"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv; CON_06_PRECIP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma semi-arid southern plains (Tamlouka 436 mm down to 250 mm bands)"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 250.0,
+          "unit": "mm/year",
+          "source": "CON_06_PRECIP (ITGC Semi-Arid Algeria)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Semi-arid Algerian high plains"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "LOW_TO_MODERATE_DROUGHT_ESCAPE", "ky_seasonal_min": 1.00, "ky_seasonal_max": 1.15},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; ITGC Semi-Arid Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Drier southern Guelma communes"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE_HIGH_UP_TO_8_DSM",
+          "unit": "FAO-29 tolerance class",
+          "source": "FAO-29 Salinity; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Seybouse slightly saline zones & southern plains"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 7.5, "tolerable_ph_max": 8.0, "preferred_textures": ["Sandy loam", "Loam", "Clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma light to medium-heavy well-drained soils"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "HIGH_ON_POOR_DRAINAGE", "note": "Intolerant of prolonged waterlogging and acid pH < 5.5."},
+          "unit": "qualitative class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Avoid waterlogged Seybouse depressions"
+        },
+        "root_depth_m": {
+          "value": {"min": 1.0, "max": 1.5},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep Mediterranean soils"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.30, "kc_mid": 1.15, "kc_end_min": 0.25, "kc_end_max": 0.25},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (Phase E CON_04/CON_05)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Poaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "POSITIVE_IF_STRAW_RETAINED_OR_GRAZED_MODERATELY", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Livestock-integrated grain/straw systems in southern Guelma"
+        },
+        "residue_management_considerations": {
+          "value": "Straw holds high sheep livestock fodder value in semi-arid communes, creating a trade-off between feed export and soil organic cover.",
+          "unit": "qualitative guidance",
+          "source": "CON_12_LEGUME_CEREAL; CON_14_FARMER_OPS",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Tamlouka, Ain Makhlouf, Oued Zenati sheep-cereal belts"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 2, "max_consecutive_cereal_years": 2, "key_hazards": ["Net blotch", "Foliar diseases", "Root rot"]},
+          "unit": "years & pathogen list",
+          "source": "CON_11_SEQUENCE; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma semi-arid plains"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Seedbed tillage", "Grain drill", "Combine harvester", "Straw baler optional"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma mechanized farms"
+        }
+      }
+    },
+    "FABA_BEAN": {
+      "crop_id": "FABA_BEAN",
+      "canonical_name": "Faba Bean",
+      "scientific_name": "Vicia faba",
+      "crop_category": "Winter Food Legume",
+      "botanical_family": "Fabaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Sub-humid & alluvial Guelma plains"
+        },
+        "planting_window": {
+          "value": "Mid Oct - Nov",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "May - Jun",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 150, "max": 190},
+          "unit": "days",
+          "source": "FAO-56 (Allen et al. 1998); ITGC pulse trials",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Northern Algerian pulse zones"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_OR_SUPPLEMENTAL",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Favors >=450 mm sub-humid northern/central Guelma"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 450.0,
+          "unit": "mm/year",
+          "source": "docs/phaseE/crop_system_inventory.csv (>=450mm pref.)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Northern Algeria rainfed faba bean zones"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "HIGH_AT_FLOWERING_POD_SET", "ky_seasonal": 1.10},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "High risk in dry springs (<100 mm MAM)"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATELY_SENSITIVE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO-29 Salinity; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Seybouse irrigated perimeter salinity warning"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.5, "optimal_ph_max": 8.0, "preferred_textures": ["Loam", "Silt loam", "Clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma deep structured neutral-to-alkaline clay loams"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "MODERATE_HIGH", "note": "Requires surface drainage; prolonged winter saturation triggers root rot."},
+          "unit": "qualitative class",
+          "source": "CON_01_TEXTURE; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Alluvial Seybouse soils"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.8, "max": 1.0},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep clay loam"
+        },
+        "kc_profile": {
+          "value": {"kc_ini_min": 0.40, "kc_ini_max": 0.50, "kc_mid": 1.15, "kc_end_min": 0.30, "kc_end_max": 0.35},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (CON_04/CON_12)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "P/K lab measurements absent locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": {"min": 100.0, "max": 200.0},
+          "unit": "kg N/ha",
+          "source": "ITGC/MDPI Algeria pulse trials; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean literature range; actual plot N credit depends on nodulation (unobserved)"
+        },
+        "som_contribution": {
+          "value": {"direction": "HIGH_POSITIVE_CLAY_STRUCTURE_AND_N_RICH_RESIDUE", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "CON_03_SOC; CON_12_LEGUME_CEREAL",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Targets low-SOC (<18 g/kg) Guelma cereal soils"
+        },
+        "residue_management_considerations": {
+          "value": "Nitrogen-rich stems/roots improve clay tilth and mineralize ahead of succeeding wheat; manage Ascochyta/Botrytis infected haulms cleanly.",
+          "unit": "qualitative guidance",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma cereal-legume systems"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "recommended_return_break_years": 4, "key_hazards": ["Orobanche crenata (broomrape)", "Botrytis chocolate spot", "Ascochyta fabae"]},
+          "unit": "years & pathogen list",
+          "source": "CON_11_SEQUENCE; ITGC/MDPI Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Northern Algerian faba bean zones"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Precision/row seeder", "Weed control", "Harvester/hand-picking"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma pulse fields"
+        }
+      }
+    },
+    "CHICKPEA_WINTER": {
+      "crop_id": "CHICKPEA_WINTER",
+      "canonical_name": "Winter Chickpea",
+      "scientific_name": "Cicer arietinum",
+      "crop_category": "Winter Food Legume",
+      "botanical_family": "Fabaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "REGIONAL_ALGERIAN_ITGC",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "ICARDA-ITGC Winter Chickpea Program; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Algerian northern & interior plains (Ascochyta/cold-tolerant seed required)"
+        },
+        "planting_window": {
+          "value": "Late Nov - Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "May - Jun",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 160, "max": 190},
+          "unit": "days",
+          "source": "ICARDA-ITGC; FAO-56",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean winter-sown chickpea"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class",
+          "source": "ICARDA-ITGC Winter Chickpea Program; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Captures winter moisture in rainfed Algerian cereal zones"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 300.0,
+          "unit": "mm/year",
+          "source": "ICARDA-ITGC; CON_06_PRECIP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Oued Zenati / Tamlouka / Guelma plains"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "MODERATE_WINTER_MOISTURE_CAPTURE", "ky_seasonal": 1.00},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; ICARDA-ITGC",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma plains"
+        },
+        "salinity_tolerance": {
+          "value": "SENSITIVE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; FAO-29",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Irrigated salinity caution zones"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 8.0, "preferred_textures": ["Loam", "Sandy loam", "Light-to-medium Clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "Sys et al. (1993); crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Well-drained soils in Guelma"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "HIGH", "note": "Highly sensitive to winter waterlogging and compacted wet clay; demands Ascochyta-tolerant cultivars."},
+          "unit": "qualitative class",
+          "source": "Sys et al. (1993); crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Critical check on >32% clay fields without DEM slope"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.6, "max": 1.0},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean chickpea"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.40, "kc_mid": 1.00, "kc_end_min": 0.30, "kc_end_max": 0.35},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (Phase E CON_04)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": null,
+          "unit": "kg N/ha (qualitative symbiotic N fixer)",
+          "source": "CON_12_LEGUME_CEREAL (no Guelma-specific numeric N value in Phase E CSV)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Confirmed legume break benefit; exact kg N/ha varies with local nodulation (CON_12)"
+        },
+        "som_contribution": {
+          "value": {"direction": "POSITIVE_LEGUME_RESIDUE_AND_FALLOW_REPLACEMENT", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ICARDA-ITGC; CON_03_SOC",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Replaces bare fallow on Guelma plains"
+        },
+        "residue_management_considerations": {
+          "value": "Ascochyta rabiei survives on infested chickpea debris; bury or isolate infected residues before next legume return.",
+          "unit": "qualitative guidance",
+          "source": "ICARDA-ITGC; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Humid/cool Guelma winters"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "key_hazards": ["Ascochyta rabiei blight", "Fusarium wilt"]},
+          "unit": "years & pathogen list",
+          "source": "ICARDA-ITGC; CON_11_SEQUENCE",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Requisite >=3 year gap between chickpea crops"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Row/grain drill", "Fungicide sprayer for blight", "Combine/manual harvest"], "seed_dependency": "Requires certified Ascochyta-tolerant winter cultivar seed", "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "ICARDA-ITGC; CON_14_FARMER_OPS",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma winter chickpea adoption constraint"
+        }
+      }
+    },
+    "CHICKPEA_SPRING": {
+      "crop_id": "CHICKPEA_SPRING",
+      "canonical_name": "Spring Chickpea",
+      "scientific_name": "Cicer arietinum",
+      "crop_category": "Spring Food Legume",
+      "botanical_family": "Fabaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Spring"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ICARDA-ITGC",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Spring planting when winter wet blocks Autumn sowing"
+        },
+        "planting_window": {
+          "value": "Feb - Early Mar",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "Jun - Jul",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 100, "max": 130},
+          "unit": "days",
+          "source": "ICARDA-ITGC; FAO-56",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean traditional spring chickpea"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv; CON_06_PRECIP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Relies on stored winter soil moisture & Spring rainfall"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 300.0,
+          "unit": "mm/year",
+          "source": "CON_06_PRECIP; ICARDA-ITGC",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Vulnerable if Spring rainfall drops sharply (CON_06: 51 mm dry Spring)"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "MODERATE_HIGH_SPRING_TERMINAL_HEAT", "ky_seasonal": 1.00},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; CON_06_PRECIP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Southern & central Guelma Spring-Summer dry spells"
+        },
+        "salinity_tolerance": {
+          "value": "SENSITIVE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; FAO-29",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Irrigated salinity warning zones"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 8.0, "preferred_textures": ["Loam", "Clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Well-drained loams in Guelma"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "MODERATE", "note": "Escapes winter cold/wetness by Feb-Mar sowing; needs non-crusted seedbed."},
+          "unit": "qualitative class",
+          "source": "ICARDA-ITGC; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma clay loams"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.6, "max": 0.9},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean spring chickpea"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.40, "kc_mid": 1.00, "kc_end_min": 0.30, "kc_end_max": 0.35},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": null,
+          "unit": "kg N/ha (qualitative symbiotic N fixer)",
+          "source": "CON_12_LEGUME_CEREAL (no Guelma numeric N figure in Phase E CSV)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Positive break effect noted; exact kg N/ha varies with spring moisture & nodulation"
+        },
+        "som_contribution": {
+          "value": {"direction": "LOW_TO_MODERATE_POSITIVE_BREAK", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ICARDA-ITGC; CON_03_SOC",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Shorter cycle produces less biomass than Winter Faba Bean / Vetch-Oat"
+        },
+        "residue_management_considerations": {
+          "value": "Breaks winter cereal grass weeds cleanly via late-winter cultivation; manage Fusarium/Ascochyta residues.",
+          "unit": "qualitative guidance",
+          "source": "ICARDA-ITGC; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma plains"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "key_hazards": ["Fusarium wilt", "Ascochyta rabiei"]},
+          "unit": "years & pathogen list",
+          "source": "ICARDA-ITGC; CON_11_SEQUENCE",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Shares genus pathogen return interval with CHICKPEA_WINTER"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Spring seedbed pass", "Row drill", "Harvest"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma traditional pulse farming"
+        }
+      }
+    },
+    "LENTIL": {
+      "crop_id": "LENTIL",
+      "canonical_name": "Lentil",
+      "scientific_name": "Lens culinaris",
+      "crop_category": "Winter/Early-Spring Pulse",
+      "botanical_family": "Fabaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter", "Spring"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv (Nov - Jan or Feb interior)",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma drier/lighter plains (Ain Rekada, Oued Zenati, Tamlouka)"
+        },
+        "planting_window": {
+          "value": "Nov - Jan (or Feb interior)",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "May - Jun",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 120, "max": 160},
+          "unit": "days",
+          "source": "FAO EcoCrop; ICARDA",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean dryland lentil"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Low-to-moderate moisture zones"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 300.0,
+          "unit": "mm/year",
+          "source": "ICARDA; CON_06_PRECIP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Semi-arid Algerian plains"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "MODERATE_DROUGHT_ADAPTED_NO_WATERLOGGING", "ky_seasonal": 1.00},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO EcoCrop; ICARDA",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Drier western/southern Guelma communes"
+        },
+        "salinity_tolerance": {
+          "value": "SENSITIVE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; FAO-29",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Saline risk areas"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 8.0, "tolerable_ph_min": 5.5, "tolerable_ph_max": 8.5, "preferred_textures": ["Sandy loam", "Loam"], "avoid_heavy_clay_pct_above": 35.0},
+          "unit": "pH (H2O) & clay % threshold",
+          "source": "Sys et al. (1993); CON_01_TEXTURE; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Explicit CON_01 warning on >35% heavy clay in Guelma"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "EXTREME", "note": "Extremely sensitive to waterlogging and heavy impermeable Seybouse depressions."},
+          "unit": "qualitative class",
+          "source": "Sys et al. (1993); CON_01_TEXTURE",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Requires non-puddling field drainage confirmation"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.5, "max": 0.8},
+          "unit": "m",
+          "source": "FAO-56 / EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean dryland soils"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.40, "kc_mid": 1.10, "kc_end": 0.30},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": null,
+          "unit": "kg N/ha (qualitative symbiotic N fixer)",
+          "source": "CON_12_LEGUME_CEREAL (no Guelma numeric N figure in Phase E CSV)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Legume break crop; exact fixation rate unmeasured locally"
+        },
+        "som_contribution": {
+          "value": {"direction": "MODERATE_POSITIVE_LEGUME_BREAK", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ICARDA; CON_03_SOC",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Dryland cereal-lentil belts"
+        },
+        "residue_management_considerations": {
+          "value": "Clean cereal grass weed break; avoid short return where Ascochyta lentis or Orobanche exist.",
+          "unit": "qualitative guidance",
+          "source": "ICARDA; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma dry plains"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "key_hazards": ["Ascochyta lentis", "Fusarium", "Orobanche"]},
+          "unit": "years & pathogen list",
+          "source": "ICARDA; CON_11_SEQUENCE",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Algerian pulse rotation rules"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Level seedbed rolling for low-pod harvest", "Cutterbar / hand pulling"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Requires stone-free level seedbed for mechanical mowing"
+        }
+      }
+    },
+    "VETCH_OAT": {
+      "crop_id": "VETCH_OAT",
+      "canonical_name": "Vetch-Oat",
+      "scientific_name": "Vicia sativa + Avena sativa",
+      "crop_category": "Forage Legume-Cereal Mix",
+      "botanical_family": "Fabaceae+Poaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "REGIONAL_ALGERIAN_ITGC",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC / REFORMA / CIHEAM ArimNet Algeria",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "All Guelma Wilaya zones"
+        },
+        "planting_window": {
+          "value": "Nov - Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "harvest_window": {
+          "value": "Apr - May (Hay cut)",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": {"min": 140, "max": 170},
+          "unit": "days",
+          "source": "ITGC / CIHEAM ArimNet Algeria; FAO-56 Forage",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean forage fallow replacement"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Rainfed across northern and southern Guelma"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 300.0,
+          "unit": "mm/year",
+          "source": "CON_06_PRECIP; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Algerian cereal-livestock zones"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "LOW_TO_MODERATE_EARLY_HAY_CUT", "ky_seasonal_min": 0.90, "ky_seasonal_max": 1.00},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56 Forage; CIHEAM ArimNet Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Cut in Apr-May before severe Summer moisture deficit"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO-56 Forage / EcoCrop",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Wide Mediterranean adaptability"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 7.5, "preferred_textures": ["Loam", "Clay loam", "Silty clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "ITGC / CIHEAM Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Wide soil adaptability across Guelma"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "LOW_TO_MODERATE", "note": "Poor drainage slows early growth; more resilient than chickpea/lentil on clay loam."},
+          "unit": "qualitative class",
+          "source": "ITGC Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma plains"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.6, "max": 1.0},
+          "unit": "m",
+          "source": "FAO-56 Forage",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma plains"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.45, "kc_mid_min": 1.05, "kc_mid_max": 1.15, "kc_end_min": 0.40, "kc_end_max": 0.60},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 Forage",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": null,
+          "unit": "kg N/ha (mixed Vicia sativa N fixation depends on vetch:oat ratio)",
+          "source": "CON_12_LEGUME_CEREAL; CIHEAM ArimNet Algeria",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Confirmed positive N-building fallow replacement; net kg N depends on vetch fraction & hay export"
+        },
+        "som_contribution": {
+          "value": {"direction": "HIGH_POSITIVE_ROOT_RESIDUE_AND_SOC_REBUILD", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "ITGC / REFORMA / CIHEAM ArimNet Algeria; CON_03_SOC",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Best-proven Algerian fallow replacement for low-SOC plains"
+        },
+        "residue_management_considerations": {
+          "value": "CRITICAL timing: mow/cut in Apr-May BEFORE grass weed (wild oat/ryegrass) seed shed to preserve weed-break benefit for succeeding wheat.",
+          "unit": "qualitative guidance",
+          "source": "crop_system_inventory.csv; ITGC Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma mixed crop-livestock farms"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 2, "key_hazards": ["Oat component maintains partial Poaceae disease host if oat-heavy; avoid continuous consecutive Vetch-Oat."]},
+          "unit": "years & hazard note",
+          "source": "crop_system_inventory.csv; CON_11_SEQUENCE",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Algerian rotation monitoring"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Forage drill", "Mower", "Hay rake & baler"], "equipment_tags_sensitive": ["no_hay_baler", "no_mower"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS; ITGC",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Requires hay mowing/baling logistics in Apr-May"
+        }
+      }
+    },
+    "TOMATO_IND": {
+      "crop_id": "TOMATO_IND",
+      "canonical_name": "Processing Tomato",
+      "scientific_name": "Solanum lycopersicum",
+      "crop_category": "Irrigated Vegetable / Cash",
+      "botanical_family": "Solanaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Spring"],
+          "unit": "season enum",
+          "source": "DSA Guelma / Cahiers Agricultures Bouchegouf studies; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma-Bouchegouf irrigated perimeter ONLY"
+        },
+        "planting_window": {
+          "value": "Mar - Apr",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma-Bouchegouf perimeter"
+        },
+        "harvest_window": {
+          "value": "Jul - Sep",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Can harvest prior to late-Oct winter wheat sowing"
+        },
+        "growing_duration_days": {
+          "value": {"min": 120, "max": 150},
+          "unit": "days",
+          "source": "FAO-56; Bouchegouf studies",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma irrigated summer vegetable"
+        },
+        "water_requirement_category": {
+          "value": "STRICTLY_IRRIGATED",
+          "unit": "regime class",
+          "source": "CON_13_IRRIGATION; DSA Guelma / Bouchegouf studies",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Zero tolerance for rainfed Summer drought (~38-49 mm summer rain)"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": null,
+          "unit": "mm/year (N/A - strictly irrigated summer crop)",
+          "source": "CON_13_IRRIGATION",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Must rely on verified irrigation, not rainfed precipitation"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "VERY_HIGH_BLOSSOM_END_ROT", "ky_seasonal": 1.05},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Sensitive to Summer Bouhamdane dam rationing & erratic drip moisture"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATELY_SENSITIVE_THRESHOLD_2_5_DSM",
+          "unit": "ECe ~2.5 dS/m (FAO-29)",
+          "source": "FAO-29 Salinity; Seybouse salinization studies",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Seybouse irrigated perimeter (~20% salinization pocket hazard; local ECe unmeasured)"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 6.8, "tolerable_ph_min": 5.5, "tolerable_ph_max": 7.5, "preferred_textures": ["Loam", "Clay loam"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep structured loams/clay loams with good aeration"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "HIGH", "note": "Requires good soil aeration; standing water causes Phytophthora root rot."},
+          "unit": "qualitative class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma alluvial plains"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.7, "max": 1.2},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep loamy irrigated beds"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.60, "kc_mid": 1.15, "kc_end_min": 0.70, "kc_end_max": 0.90},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha (high fertilized input noted qualitatively; residual P/K benefits next wheat)",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE (DSA Guelma / Bouchegouf studies)",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured plot P/K reserves"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Solanaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "LOW_TO_NEGATIVE_UNLESS_RESIDUE_OR_MANURE_ADDED", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "Cahiers Agricultures Bouchegouf; CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Intensive irrigated rental vegetable parcels"
+        },
+        "residue_management_considerations": {
+          "value": "Destroy or export tomato vines infested with Verticillium, Fusarium, nematodes, or Orobanche; intensive weed control cleans seedbed for subsequent wheat.",
+          "unit": "qualitative guidance",
+          "source": "CON_11_SEQUENCE; Bouchegouf studies",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma-Bouchegouf perimeter"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "recommended_return_break_years": 4, "key_hazards": ["Verticillium wilt", "Fusarium wilt", "Root-knot nematodes", "Orobanche ramosa"], "shared_family_incompatible": ["POTATO", "Solanaceae"]},
+          "unit": "years & family exclusions",
+          "source": "CON_11_SEQUENCE; Bouchegouf studies",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Strict Solanaceae 3-4 yr rotation break"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Deep tillage & bed shaping", "Drip lateral installation", "Seedling transplanter/manual", "Summer harvest"], "equipment_tags_sensitive": ["no_drip_irrigation", "no_precision_planter"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "Bouchegouf studies; CON_13_IRRIGATION",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma irrigated industrial tomato hub"
+        }
+      }
+    },
+    "POTATO": {
+      "crop_id": "POTATO",
+      "canonical_name": "Potato",
+      "scientific_name": "Solanum tuberosum",
+      "crop_category": "Irrigated Tuber Crop",
+      "botanical_family": "Solanaceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "HYPOTHESIS_NEEDS_DSA_CHECK",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Spring", "Autumn"],
+          "unit": "season enum (Jan-Feb/Spring & Aug-Sep/Autumn)",
+          "source": "docs/phaseE/crop_system_inventory.csv; FAO-56",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Needs DSA Guelma verification for local saison/arriere-saison dates"
+        },
+        "planting_window": {
+          "value": "Jan-Feb (Spring) / Aug-Sep (Autumn)",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "HYPOTHESIS_NEEDS_DSA_CHECK"
+        },
+        "harvest_window": {
+          "value": "May-Jun / Nov-Dec",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Autumn crop Nov-Dec harvest creates tight/overlapping transition into winter cereals"
+        },
+        "growing_duration_days": {
+          "value": {"min": 100, "max": 130},
+          "unit": "days",
+          "source": "FAO-56; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean irrigated potato"
+        },
+        "water_requirement_category": {
+          "value": "STRICTLY_IRRIGATED",
+          "unit": "regime class",
+          "source": "FAO-56 (low depletion p~0.35); CON_13_IRRIGATION",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Shallow roots demand frequent reliable irrigation"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": null,
+          "unit": "mm/year (N/A - strictly irrigated crop)",
+          "source": "CON_13_IRRIGATION",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Must not be recommended rainfed"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "EXTREME_SHALLOW_ROOTS", "ky_seasonal": 1.10},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATELY_SENSITIVE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO-29 Salinity; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Seybouse salinity warning"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 5.0, "optimal_ph_max": 6.2, "scab_warning_ph_above": 6.5, "preferred_textures": ["Sandy loam", "Loam"], "heavy_clay_warning_pct_above": 35.0},
+          "unit": "pH (H2O) & clay % threshold",
+          "source": "CON_01_TEXTURE; CON_02_PH (Sys et al. 1993; FAO EcoCrop)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "96.95% of Guelma cropland is Clay loam with pH 6.78-7.43 -> widespread scab & compaction caution"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "HIGH", "note": "Heavy clay deforms tubers and impedes oxygen diffusion & mechanical digging."},
+          "unit": "qualitative class",
+          "source": "Sys et al. (1993); CON_01_TEXTURE",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Critical check on Guelma clay loams without DEM"
+        },
+        "root_depth_m": {
+          "value": {"min": 0.4, "max": 0.6},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Shallow effective rooting"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.50, "kc_mid": 1.15, "kc_end_min": 0.75, "kc_end_max": 0.85},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Solanaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "NEGATIVE_TILLAGE_AND_SOIL_DISTURBANCE", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "Sys et al. (1993); CON_03_SOC",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Intensive ridging/digging accelerates SOC oxidation on low-SOC fields"
+        },
+        "residue_management_considerations": {
+          "value": "Cull volunteer tubers to avoid blight & cyst nematode bridge across rotations.",
+          "unit": "qualitative guidance",
+          "source": "CON_11_SEQUENCE; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean potato systems"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "recommended_return_break_years": 4, "key_hazards": ["Late blight", "Cyst/root nematodes", "Verticillium", "Common scab (pH>6.5)"], "shared_family_incompatible": ["TOMATO_IND", "Solanaceae"]},
+          "unit": "years & family exclusions",
+          "source": "CON_11_SEQUENCE; crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Never adjacent to Processing Tomato"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Deep loose seedbed prep", "Tuber planter", "Ridger/hiller", "Potato digger/harvester"], "equipment_tags_sensitive": ["no_potato_harvester", "no_precision_planter"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "Sys et al. (1993); CON_14_FARMER_OPS",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Heavy clay clogs mechanical diggers in wet periods"
+        }
+      }
+    },
+    "SUNFLOWER": {
+      "crop_id": "SUNFLOWER",
+      "canonical_name": "Sunflower",
+      "scientific_name": "Helianthus annuus",
+      "crop_category": "Spring/Summer Oilseed",
+      "botanical_family": "Asteraceae",
+      "annual_or_perennial": "Annual",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "HYPOTHESIS_NEEDS_DSA_CHECK",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Spring"],
+          "unit": "season enum",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Candidate oilseed diversification; requires DSA Guelma validation"
+        },
+        "planting_window": {
+          "value": "Mar - Apr",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "HYPOTHESIS_NEEDS_DSA_CHECK"
+        },
+        "harvest_window": {
+          "value": "Aug - Sep",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "HYPOTHESIS_NEEDS_DSA_CHECK"
+        },
+        "growing_duration_days": {
+          "value": {"min": 120, "max": 140},
+          "unit": "days",
+          "source": "FAO-56; FAO AquaCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean spring-sown oilseed"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_OR_SUPPLEMENTAL",
+          "unit": "regime class",
+          "source": "crop_system_inventory.csv; CON_06_PRECIP; CON_07_TEMP",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Sub-humid northern deep soils or supplemental irrigation due to Summer heat >35 C"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 500.0,
+          "unit": "mm/year (with deep clay moisture reserve)",
+          "source": "CON_06_PRECIP; crop_system_inventory.csv (sub-humid northern deep clay hypothesis)",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "LOW_HYPOTHESIS",
+          "geographic_applicability": "Untested locally at scale in Guelma; supplemental irrigation reduces heat stress"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "HIGH_AT_FLOWERING_HEAD_FILL_DEEP_TAPROOT", "ky_seasonal": 0.95},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56; FAO AquaCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Summer heat >35 C in Guelma penalizes rainfed yield"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE",
+          "unit": "qualitative FAO-29 class",
+          "source": "FAO EcoCrop; FAO-29",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean soils"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 7.5, "preferred_textures": ["Loam", "Clay loam", "Silty clay loam", "Clay"]},
+          "unit": "pH (H2O) & USDA texture class",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Medium-to-heavy deep soils (taproot exploits deep clay moisture)"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "MODERATE", "note": "Requires deep rootable profile (>1.0 m without shallow caliche pan; bedrock depth unmeasured in CON_05)."},
+          "unit": "qualitative class",
+          "source": "CON_05_DEPTH; FAO EcoCrop",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Requires rootable soil depth verification"
+        },
+        "root_depth_m": {
+          "value": {"min": 1.0, "max": 1.5},
+          "unit": "m",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Deep taproot"
+        },
+        "kc_profile": {
+          "value": {"kc_ini": 0.35, "kc_mid_min": 1.10, "kc_mid_max": 1.15, "kc_end": 0.35},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 (Allen et al. 1998)",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Requires local DSA oilseed trials"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Asteraceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "MODERATE_DEEP_ROOT_SUBSOIL_STALK_RESIDUE", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "FAO AquaCrop; crop_system_inventory.csv",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "LOW_HYPOTHESIS",
+          "geographic_applicability": "Hypothesized broadleaf break crop"
+        },
+        "residue_management_considerations": {
+          "value": "Deep taproot can deplete subsoil moisture before following winter wheat if Autumn rains arrive late; chop woody stalks before wheat drill.",
+          "unit": "qualitative guidance",
+          "source": "crop_system_inventory.csv; CON_08_ROOT_SM",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Guelma rainfed plains"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 3, "recommended_return_break_years": 4, "key_hazards": ["Sclerotinia rot", "Orobanche cumana"]},
+          "unit": "years & pathogen list",
+          "source": "crop_system_inventory.csv; CON_11_SEQUENCE",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Avoid <3-4 yr return and caution overlapping Sclerotinia hosts (e.g. faba bean/chickpea if Sclerotinia present)"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Precision row planter", "Row cultivation", "Sunflower header combine"], "equipment_tags_sensitive": ["no_precision_planter", "no_sunflower_header"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS; Algerian oilseed trials note",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Local specialized planter/header availability often limited in Guelma"
+        }
+      }
+    },
+    "OLIVE": {
+      "crop_id": "OLIVE",
+      "canonical_name": "Olive",
+      "scientific_name": "Olea europaea",
+      "crop_category": "Perennial Tree Crop",
+      "botanical_family": "Oleaceae",
+      "annual_or_perennial": "Perennial",
+      "in_annual_rotation_scope": false,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": [],
+          "unit": "N/A (Permanent orchard; EXCLUDED from annual rotation)",
+          "source": "docs/phaseE/crop_system_inventory.csv; DSA Guelma olive sector",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Permanent foothill/upland orchards in Guelma (Bouchekouf, Roknia, etc.)"
+        },
+        "planting_window": {
+          "value": "Permanent orchard",
+          "unit": "lifecycle",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma uplands & foothills"
+        },
+        "harvest_window": {
+          "value": "Oct - Dec (Harvest)",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma Wilaya"
+        },
+        "growing_duration_days": {
+          "value": null,
+          "unit": "Perennial tree crop (multi-decade)",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Non-annual crop"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_OR_SUPPLEMENTAL",
+          "unit": "regime class",
+          "source": "docs/phaseE/crop_system_inventory.csv; FAO-56 Tree Crops",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Rainfed / dry-spell supplemental irrigation"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 350.0,
+          "unit": "mm/year",
+          "source": "FAO EcoCrop; DSA Guelma olive zones",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Mediterranean rainfed olive groves"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "LOW_SCLEROPHYLL_TREE_DROUGHT_HARDY", "ky_seasonal": 0.80},
+          "unit": "dimensionless Ky (FAO-56)",
+          "source": "FAO-56 Tree Crops; FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma foothill olive belts"
+        },
+        "salinity_tolerance": {
+          "value": "MODERATE",
+          "unit": "qualitative FAO EcoCrop class",
+          "source": "FAO EcoCrop",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Calcareous foothills"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 6.0, "optimal_ph_max": 8.5, "preferred_textures": ["Sandy loam", "Loam", "Stony calcareous hill soils"]},
+          "unit": "pH (H2O) & soil type",
+          "source": "FAO EcoCrop; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Well-drained foothill slopes"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "EXTREME_ROOT_ASPHYXIA", "note": "Heavy flat poorly-drained vertisols cause olive root asphyxia."},
+          "unit": "qualitative class",
+          "source": "crop_system_inventory.csv; FAO EcoCrop",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Must exclude flat poorly-drained alluvial clay bottoms"
+        },
+        "root_depth_m": {
+          "value": {"min": 1.2, "max": 1.7},
+          "unit": "m",
+          "source": "FAO-56 Tree Crops",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Permanent tree orchard"
+        },
+        "kc_profile": {
+          "value": {"kc_ini_min": 0.50, "kc_ini_max": 0.65, "kc_mid_min": 0.65, "kc_mid_max": 0.70, "kc_end_min": 0.50, "kc_end_max": 0.65},
+          "unit": "dimensionless FAO-56 Kc",
+          "source": "FAO-56 Tree Crops",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Standard FAO-56 parameter"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": null,
+          "unit": "kg N-P-K/ha",
+          "source": "NONE_LOCAL_QUANTITATIVE_SOURCE",
+          "evidence_classification": "UNKNOWN",
+          "confidence": "UNMEASURED_UNKNOWN",
+          "geographic_applicability": "Unmeasured locally"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Biophysical Oleaceae non-legume physiology",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "PERMANENT_CANOPY_MULCH_AND_PRUNING_RESIDUES", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "DSA Guelma olive sector; CON_09_VEG_BEHAVIOR",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Permanent foothill tree anchor"
+        },
+        "residue_management_considerations": {
+          "value": "Permanent orchard; pruning & under-tree cover crop considerations distinct from annual field crop rotation.",
+          "unit": "qualitative guidance",
+          "source": "DSA Guelma olive sector; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma foothills"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": null, "note": "Never recommend converting permanent olive orchards into annual cereal rotations."},
+          "unit": "permanent guard",
+          "source": "crop_system_inventory.csv; CON_09_VEG_BEHAVIOR",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Excluded from annual sequence rotation"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Orchard pruning", "Under-canopy harrowing", "Manual/shaker harvest"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "DSA Guelma olive sector",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "MODERATE",
+          "geographic_applicability": "Steep foothill olive groves"
+        }
+      }
+    },
+    "BARE_FALLOW": {
+      "crop_id": "BARE_FALLOW",
+      "canonical_name": "Bare Fallow",
+      "scientific_name": "N/A (Uncropped / Worked Rest)",
+      "crop_category": "Traditional Rest / Weed Fallow",
+      "botanical_family": "None",
+      "annual_or_perennial": "Annual Period",
+      "in_annual_rotation_scope": true,
+      "guelma_evidence_status": "LOCAL_VERIFIED_REGIONAL",
+      "parameters": {
+        "suitable_planting_seasons": {
+          "value": ["Autumn", "Winter", "Spring"],
+          "unit": "season enum (resting agricultural campaign)",
+          "source": "docs/phaseE/crop_system_inventory.csv; ITGC / ICARDA Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Counterfactual baseline in semi-arid High Plains (Tamlouka/Oued Zenati)"
+        },
+        "planting_window": {
+          "value": "Oct - May (Fallow rest window)",
+          "unit": "calendar window",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma semi-arid plains"
+        },
+        "harvest_window": {
+          "value": "N/A",
+          "unit": "none",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Uncropped counterfactual"
+        },
+        "growing_duration_days": {
+          "value": null,
+          "unit": "N/A (seasonal rest period)",
+          "source": "docs/phaseE/crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Annual rest period"
+        },
+        "water_requirement_category": {
+          "value": "RAINFED_SEMI_ARID_TOLERANT",
+          "unit": "regime class (rainfed moisture storage counterfactual)",
+          "source": "ITGC / ICARDA / CIHEAM Algeria cereal-fallow literature",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "High Plains moisture-storage baseline"
+        },
+        "min_annual_rainfed_precip_mm": {
+          "value": 0.0,
+          "unit": "mm/year",
+          "source": "Uncropped rest counterfactual",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal baseline"
+        },
+        "drought_sensitivity": {
+          "value": {"level": "NOT_APPLICABLE_BASELINE_STORAGE", "ky_seasonal": null},
+          "unit": "N/A",
+          "source": "crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Uncropped soil rest"
+        },
+        "salinity_tolerance": {
+          "value": "ALL_SALINITY_RANGES_NO_CROP",
+          "unit": "qualitative class",
+          "source": "Uncropped counterfactual",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "HIGH",
+          "geographic_applicability": "Note: bare evaporation without cover can wick salts upward in irrigated saline spots"
+        },
+        "soil_suitability": {
+          "value": {"optimal_ph_min": 0.0, "optimal_ph_max": 14.0, "preferred_textures": ["All"], "slope_erosion_caution": "Winter bare soil increases erosion risk on >5% slopes (DEM missing locally)."},
+          "unit": "all",
+          "source": "ITGC / ICARDA Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "High erosion penalty on sloped terrain (requires DEM slope)"
+        },
+        "soil_drainage_requirements": {
+          "value": {"waterlogging_sensitivity": "NONE_EROSION_RISK_IF_SLOPED", "note": "Bare winter soil increases runoff & sheet erosion risk on >5% slopes."},
+          "unit": "qualitative class",
+          "source": "ITGC / CIHEAM Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Sloped northern & foothill Guelma zones"
+        },
+        "root_depth_m": {
+          "value": null,
+          "unit": "N/A (no crop roots)",
+          "source": "crop_system_inventory.csv",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Uncropped counterfactual"
+        },
+        "kc_profile": {
+          "value": {"kc_ini_min": 0.20, "kc_ini_max": 0.30, "kc_mid_min": 0.20, "kc_mid_max": 0.30, "kc_end_min": 0.15, "kc_end_max": 0.25},
+          "unit": "dimensionless FAO-56 bare/sparse weed Kc",
+          "source": "FAO-56; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Mediterranean fallow baseline"
+        },
+        "nutrient_requirements_quantitative": {
+          "value": 0.0,
+          "unit": "kg N-P-K/ha",
+          "source": "Uncropped baseline",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Zero fertilizer applied"
+        },
+        "nitrogen_fixation_potential_kg_n_ha": {
+          "value": 0.0,
+          "unit": "kg N/ha",
+          "source": "Uncropped / volunteer weeds",
+          "evidence_classification": "HARD_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Universal"
+        },
+        "som_contribution": {
+          "value": {"direction": "NEUTRAL_TO_NEGATIVE_OXIDATION_WHEN_WORKED", "quantitative_t_c_ha_yr": null},
+          "unit": "qualitative balance",
+          "source": "CON_03_SOC; ITGC/CIHEAM Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Disfavored on depleted SOC <18 g/kg vs Vetch-Oat / Legume fallow replacement"
+        },
+        "residue_management_considerations": {
+          "value": "Worked fallow reduces cereal foliar diseases but provides zero forage/grain output and accelerates SOC loss if tilled repeatedly; unworked weedy fallow increases weed seedbanks.",
+          "unit": "qualitative guidance",
+          "source": "ITGC / ICARDA / CIHEAM Algeria; crop_system_inventory.csv",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma cereal-fallow counterfactual"
+        },
+        "pest_and_disease_rotation_considerations": {
+          "value": {"min_return_break_years": 1, "note": "Interrupts cereal host when worked cleanly; consecutive uncropped years prohibited in sustainable rotation."},
+          "unit": "break baseline",
+          "source": "ITGC / ICARDA Algeria",
+          "evidence_classification": "SOFT_CONSTRAINT",
+          "confidence": "HIGH",
+          "geographic_applicability": "Guelma plains"
+        },
+        "machinery_and_operations": {
+          "value": {"operations": ["Optional shallow discing or sheep grazing"], "quantitative_fuel_hr": null},
+          "unit": "operation set",
+          "source": "CON_14_FARMER_OPS",
+          "evidence_classification": "EXPERT_ASSUMPTION",
+          "confidence": "HIGH",
+          "geographic_applicability": "Traditional low-input baseline"
+        }
+      }
+    }
+  }
+}

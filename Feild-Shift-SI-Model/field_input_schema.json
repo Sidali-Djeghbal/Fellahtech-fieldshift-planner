@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fieldshift.dz/schemas/field_input_schema.json",
+  "title": "Field Shift Minimal Farmer Input Contract",
+  "description": "Strict minimal farmer-facing intake schema for Field Shift (Guelma Wilaya). Farmers provide only drawn field geometry, operational water access, optional/remembered crop history, planning horizon, and optional preferences. Null/omitted (not provided) is strictly preserved distinctly from [] (explicitly confirmed empty). Technical soil properties, remote-sensing indices, meteorological observations, terrain metrics, and data-quality tags are strictly excluded.",
+  "type": "object",
+  "required": ["field", "water", "planning"],
+  "additionalProperties": false,
+  "x_forbidden_technical_inputs": [
+    "soil_ph",
+    "soil_organic_carbon",
+    "soil_organic_matter",
+    "clay_pct",
+    "sand_pct",
+    "silt_pct",
+    "cec",
+    "soil_type",
+    "usda_texture",
+    "nitrogen",
+    "ndvi",
+    "evi",
+    "ndmi",
+    "ndre",
+    "rainfall_mm",
+    "precipitation_mm",
+    "temperature_c",
+    "elevation_m",
+    "slope_deg",
+    "quality_status",
+    "data_quality_metadata"
+  ],
+  "properties": {
+    "field": {
+      "type": "object",
+      "description": "One farmer-drawn field identifier and spatial boundary polygon.",
+      "required": ["field_id", "geometry"],
+      "additionalProperties": false,
+      "properties": {
+        "field_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "field_name": {
+          "type": ["string", "null"],
+          "maxLength": 120
+        },
+        "geometry": {
+          "type": "object",
+          "description": "Exactly one GeoJSON Polygon drawn on the map (EPSG:4326 unless geometry_crs specifies otherwise).",
+          "required": ["type", "coordinates"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "const": "Polygon" },
+            "coordinates": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "minItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 3,
+                  "items": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "geometry_crs": {
+          "type": "string",
+          "default": "EPSG:4326"
+        }
+      }
+    },
+    "water": {
+      "type": "object",
+      "description": "Operational water and irrigation status known to the farmer.",
+      "required": ["availability", "source", "irrigation_system"],
+      "additionalProperties": false,
+      "properties": {
+        "availability": {
+          "type": "string",
+          "enum": ["limited", "moderate", "abundant", "unknown"]
+        },
+        "source": {
+          "type": "string",
+          "enum": ["groundwater", "well", "reservoir", "river", "rainfed", "other", "unknown"]
+        },
+        "irrigation_system": {
+          "type": "string",
+          "enum": ["drip", "sprinkler", "surface", "none", "unknown"]
+        }
+      }
+    },
+    "crop_history": {
+      "type": ["array", "null"],
+      "description": "Remembered prior seasonal crops. Null/omitted = not provided; [] = explicitly confirmed no recent crop history.",
+      "minItems": 0,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["season", "year", "crop_name_raw"],
+        "additionalProperties": false,
+        "properties": {
+          "season": { "type": "string", "enum": ["Winter", "Spring", "Summer", "Autumn"] },
+          "year": { "type": "integer", "minimum": 2010, "maximum": 2035 },
+          "planting_month": { "type": ["integer", "null"], "minimum": 1, "maximum": 12 },
+          "crop_id": { "type": ["string", "null"], "maxLength": 64 },
+          "crop_name_raw": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "yield_tons_per_hectare": { "type": ["number", "null"], "minimum": 0.0, "maximum": 200.0 },
+          "notes": { "type": ["string", "null"], "maxLength": 500 }
+        }
+      }
+    },
+    "planning": {
+      "type": "object",
+      "description": "Requested planning start window and horizon.",
+      "required": ["start_season", "start_year", "horizon_seasons"],
+      "additionalProperties": false,
+      "properties": {
+        "start_season": { "type": "string", "enum": ["Winter", "Spring", "Summer", "Autumn"] },
+        "start_year": { "type": "integer", "minimum": 2024, "maximum": 2035 },
+        "horizon_seasons": { "type": "integer", "minimum": 2, "maximum": 4 },
+        "planting_month": { "type": ["integer", "null"], "minimum": 1, "maximum": 12 },
+        "planning_mode": {
+          "type": ["string", "null"],
+          "enum": ["CURRENT_PLANNING", "HISTORICAL_SIMULATION", null],
+          "default": "CURRENT_PLANNING"
+        }
+      }
+    },
+    "preferences": {
+      "type": ["object", "null"],
+      "description": "Optional farmer preferences, targets, exclusions, machinery constraints, and objective weights. Null/omitted = not provided; [] = explicitly confirmed empty.",
+      "additionalProperties": false,
+      "properties": {
+        "target_crop_ids": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "excluded_crop_ids": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "equipment_constraints": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "water_saving_weight": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "soil_improvement_weight": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "income_weight": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "risk_reduction_weight": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "forage_value_weight": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Field Shift - Guelma Wilaya, Algeria",
+  "phase": "Phase G - Agronomic Constraint Rules Catalog",
+  "evidence_classifications": [
+    "HARD_CONSTRAINT",
+    "SOFT_CONSTRAINT",
+    "EXPERT_ASSUMPTION",
+    "UNKNOWN"
+  ],
+  "evaluation_statuses": [
+    "PASS",
+    "WARNING",
+    "FAIL",
+    "UNKNOWN"
+  ],
+  "quarantined_inputs": [
+    {
+      "field_path": "section_b_extracted_geospatial.extracted_datasets.soilgrids_v6.nitrogen_0_30cm",
+      "reason": "UNVALIDATED_EXCLUDED per Phase D QA audit (SoilGrids N > SOC subsoil anomaly); never used in pass/fail logic."
+    },
+    {
+      "field_path": "crop_frequency_2017_2020_attribution",
+      "reason": "ESA Crop Frequency 10 m validity spans 2021-2025 only; blocked from 2017-2020 historical attribution."
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "RULE_PERENNIAL_EXCLUSION",
+      "domain": "Lifecycle Scope",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "docs/phaseE/crop_system_inventory.csv; CON_09_VEG_BEHAVIOR (DSA Guelma olive sector)",
+      "field_profile_inputs": ["crop.annual_or_perennial", "crop.in_annual_rotation_scope"],
+      "missing_data_behavior": "FAIL if in_annual_rotation_scope is false (OLIVE); UNKNOWN if lifecycle missing.",
+      "description": "Permanent perennial tree crops (OLIVE) cannot be rotated inside an annual crop sequence slot."
+    },
+    {
+      "rule_id": "RULE_PLANTING_SEASON_COMPATIBILITY",
+      "domain": "Crop Phenology Calendar",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "docs/phaseE/crop_system_inventory.csv; ITGC Algeria; FAO-56",
+      "field_profile_inputs": ["planning.start_season / slot_season", "crop.suitable_planting_seasons"],
+      "missing_data_behavior": "UNKNOWN if target season or suitable_planting_seasons missing.",
+      "description": "Candidate crop must match its biologically valid Guelma planting season (no winter sowing for Processing Tomato; no summer sowing for cereals)."
+    },
+    {
+      "rule_id": "RULE_WATER_IRRIGATION_GATE",
+      "domain": "Irrigation Access Gate",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_13_IRRIGATION (DSA Guelma / Bouhamdane)",
+      "field_profile_inputs": ["section_a.water.availability", "section_a.water.source", "section_a.water.irrigation_system"],
+      "missing_data_behavior": "UNKNOWN (never auto-passed) if water availability or system is unknown for strictly irrigated crops; FAIL if rainfed/none.",
+      "description": "Strict binary gate forbidding strictly irrigated summer/tuber crops (Processing Tomato, Potato) on rainfed/unirrigated fields; requires confirmed water when availability is unknown."
+    },
+    {
+      "rule_id": "RULE_PRECIPITATION_REGIME",
+      "domain": "Regional Rainfall Envelope (GPM vs NASA POWER)",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_06_PRECIP (GPM 11 km; NASA POWER ~55-69 km)",
+      "field_profile_inputs": [
+        "gpm_and_smap.gpm_annual_precip_2016_2025_mean_mm",
+        "gpm_and_smap.gpm_precip_spring_2016_2025_mean_mm",
+        "nasa_power.nasa_power_annual_precip_2016_2025_mean_mm",
+        "section_a.water"
+      ],
+      "missing_data_behavior": "UNKNOWN if both GPM and NASA POWER precipitation values are unavailable/null.",
+      "description": "Checks dual rainfall bounds (GPM conservative vs POWER upper, preserving +132 mm/yr bias spread) against crop rainfed moisture thresholds; flags cross-product straddles and summer rainfall deficits (e.g. rainfed Sunflower)."
+    },
+    {
+      "rule_id": "RULE_THERMAL_HEAT_FROST",
+      "domain": "Regional Thermal Envelope",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_07_TEMP (NASA POWER AG ~55-69 km)",
+      "field_profile_inputs": [
+        "nasa_power.nasa_power_t2m_max_2016_2025_mean_c",
+        "nasa_power.nasa_power_t2m_min_2016_2025_mean_c",
+        "nasa_power.nasa_power_t2m_2016_2025_mean_c"
+      ],
+      "missing_data_behavior": "UNKNOWN if NASA POWER temperature stats are unavailable/null.",
+      "description": "Flags summer heat >35 C risk on flowering/summer crops and winter/spring frost caution for cold-sensitive winter pulses (Ascochyta/cold-tolerant seed requirement) with coarse macro-cell caveat."
+    },
+    {
+      "rule_id": "RULE_ROOTZONE_SOIL_MOISTURE_CONTEXT",
+      "domain": "Coarse Soil Moisture Context",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_08_ROOT_SM (SMAP L4 11 km)",
+      "field_profile_inputs": [
+        "gpm_and_smap.smap_rootzone_sm_winter_2016_2025_mean",
+        "gpm_and_smap.smap_rootzone_sm_spring_2016_2025_mean"
+      ],
+      "missing_data_behavior": "UNKNOWN if SMAP root-zone moisture metrics are missing.",
+      "description": "Monitors regional 11 km Winter/Spring root-zone wetness; warns when dry rainfed Spring pulses (<0.20 m3/m3) face moisture deficit."
+    },
+    {
+      "rule_id": "RULE_SOIL_TEXTURE_WORKABILITY",
+      "domain": "Modeled Soil Texture & Clay Workability",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_01_TEXTURE (Sys et al. 1993; SoilGrids 250 m)",
+      "field_profile_inputs": [
+        "soilgrids_v6.clay_0_30cm",
+        "soilgrids_v6.usda_texture_0_5cm"
+      ],
+      "missing_data_behavior": "UNKNOWN if clay_0_30cm is null (e.g. urban/water masked pixels or missing archive).",
+      "description": "Uses SoilGrids 250 m modeled clay % (NOT lab measurement) to warn on heavy clay (>35%) tuber deformation/waterlogging hazard for Potato and Lentil, and narrow tillage windows on >=32% clay."
+    },
+    {
+      "rule_id": "RULE_DEM_DRAINAGE_UNCERTAINTY",
+      "domain": "Missing DEM / Waterlogging Drainage Hazard",
+      "evidence_classification": "EXPERT_ASSUMPTION",
+      "source": "Phase F Audit; CON_01_TEXTURE (Sys et al. 1993); DEM unavailability",
+      "field_profile_inputs": [
+        "terrain_dem.dem_slope_pct",
+        "soilgrids_v6.clay_0_30cm"
+      ],
+      "missing_data_behavior": "Returns UNKNOWN when DEM is UNAVAILABLE_NOT_INTEGRATED for drainage-sensitive crops (Lentil, Chickpea, Potato, Olive) or WARNING for moderate sensitivity on flat clayey plains.",
+      "description": "Prevents silently passing drainage requirements while SRTM 30 m DEM is absent locally; preserves visual winter puddling check necessity."
+    },
+    {
+      "rule_id": "RULE_SOIL_PH_SUITABILITY",
+      "domain": "Modeled Soil Reaction (pH)",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_02_PH (FAO EcoCrop; Sys et al. 1993)",
+      "field_profile_inputs": ["soilgrids_v6.ph_0_30cm"],
+      "missing_data_behavior": "UNKNOWN if ph_0_30cm is null.",
+      "description": "Checks SoilGrids modeled 0-30 cm pH against crop tolerances; flags Potato common scab risk >=6.5 pH (WARNING) and biological extremes (FAIL)."
+    },
+    {
+      "rule_id": "RULE_SOIL_SOC_PRIORITY",
+      "domain": "Soil Organic Carbon & Conservation Priority",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_03_SOC (ITGC Algeria; FAO SOC)",
+      "field_profile_inputs": ["soilgrids_v6.soc_0_30cm"],
+      "missing_data_behavior": "UNKNOWN if soc_0_30cm is null (preserving the 100 SoilGrids SOC-NaN pixels explicitly).",
+      "description": "Flags Bare Fallow and low-residue disturbance on SOC-depleted (<18 g/kg) Guelma soils while recognizing N-fixing/forage conservation fit."
+    },
+    {
+      "rule_id": "RULE_SALINITY_UNMEASURED_IRRIGATION",
+      "domain": "Unmeasured Irrigation Salinity Risk",
+      "evidence_classification": "UNKNOWN",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_02_PH & CON_13_IRRIGATION (Seybouse salinization)",
+      "field_profile_inputs": ["section_a.water.source", "section_a.water.irrigation_system"],
+      "missing_data_behavior": "Returns UNKNOWN on irrigated parcels (reservoir/river/well/groundwater) because parcel ECe/ECw salinity is unmeasured locally; notes Barley higher tolerance.",
+      "description": "Explicitly avoids passing salinity-sensitive crops without an ECe layer on Seybouse irrigated lands."
+    },
+    {
+      "rule_id": "RULE_CROPLAND_VEG_CONTEXT",
+      "domain": "ESA 10 m Cropland & Multi-Scale Vegetation Guard",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/agronomic_constraints_framework.csv::CON_09_VEG_BEHAVIOR (ESA CropFreq 10 m; S2 2024-03; MODIS 250 m)",
+      "field_profile_inputs": [
+        "crop_frequency.crop_frequency_2021_2025",
+        "sentinel2.s2_2024_03_ndvi_10m",
+        "sentinel2.s2_wilaya_spring_ndvi_climatology_2017_2025",
+        "modis.modis_ndvi_spring_2016_2025_mean"
+      ],
+      "missing_data_behavior": "UNKNOWN if CropFreq and vegetation snapshots are all missing.",
+      "description": "Warns if mapped polygon has low cropland detection share (crop_freq < 0.2, possible tree/urban/fallow/water polygon) while never equating coarse Wilaya S2 fallback or CropFreq with crop identity."
+    },
+    {
+      "rule_id": "RULE_HYPOTHESIS_LOCAL_EVIDENCE_STATUS",
+      "domain": "Local Guelma Validation Status",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "docs/phaseE/crop_system_inventory.csv (guelma_evidence_status)",
+      "field_profile_inputs": ["crop.guelma_evidence_status"],
+      "missing_data_behavior": "WARNING for HYPOTHESIS_NEEDS_DSA_CHECK crops (Potato, Sunflower).",
+      "description": "Prevents unvalidated diversification hypotheses from silently reading as fully local DSA-verified guidance."
+    },
+    {
+      "rule_id": "RULE_EQUIPMENT_CONSTRAINT_CHECK",
+      "domain": "Optional Farmer Machinery Constraints",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "CON_14_FARMER_OPS; Phase G Section 8 (null vs [] preservation)",
+      "field_profile_inputs": [
+        "section_a.preferences.equipment_constraints",
+        "section_a.input_completeness_flags.equipment_constraints"
+      ],
+      "missing_data_behavior": "Returns UNKNOWN when equipment_constraints is null ('NOT_PROVIDED') for machinery-specialized crops; PASS when explicitly [] ('EXPLICITLY_CONFIRMED_EMPTY'); WARNING if matching restriction present.",
+      "description": "Preserves strict separation between omitted/null machinery info and explicitly confirmed empty equipment constraints."
+    },
+    {
+      "rule_id": "RULE_FORAGE_REQUIREMENT_ALIGNMENT",
+      "domain": "Optional Livestock Forage Alignment",
+      "evidence_classification": "EXPERT_ASSUMPTION",
+      "source": "CON_14_FARMER_OPS; Phase G Section 8 (null vs [] preservation)",
+      "field_profile_inputs": [
+        "section_a.preferences.forage_value_weight",
+        "section_a.input_completeness_flags.forage_value_weight"
+      ],
+      "missing_data_behavior": "Returns UNKNOWN when forage_value_weight is null ('NOT_PROVIDED'); checks alignment only when explicitly provided (including 0.0).",
+      "description": "Ensures optional forage requirements are never assumed zero or mandatory silently."
+    }
+  ]
+}

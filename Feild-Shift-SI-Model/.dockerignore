@@ -1,0 +1,34 @@
+# Git & Python environment artifacts
+.git/
+.gitignore
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.log
+*.tmp
+
+# Local SQLite database state (container initializes clean state in /app/state)
+data/app_state/*.db
+data/app_state/*.db-*
+
+# Unrelated / leftover audit docs or previous export bundles
+docs/phaseR0_3_1/
+*.tar
+*.tar.gz
+
+# Non-runtime API error logs, superseded pre-pipeline dirs & raw uncleaned/duplicate archives
+data/NASA_POWER_REGIONAL/errors/
+data/NASA_POWER_REGIONAL/spatial_analysis/
+data/NASA_POWER_REGIONAL/quality_check/
+data/SoilGrids/drive-download-20261114T174721Z-1-001/
+data/SoilGrids/drive-download-20261114T174721Z-1-001.zip
+data/SoilGrids/guelma_soil_constraints_screening_package.zip
+data/MODIS/guelma_modis_vegetation_2016_2025_package.zip
+data/SMAP/guelma_smap_soil_moisture_2016_2025_package.zip
+data/land_cover/guelma_gpm_annual_rainfall_2016_2025_utm32n_files.zip
+data/seasonal/guelma_modis_seasonal_2016_2025_analysis.zip
+data/seasonal/guelma_environmental_seasonal_aligned_2016_2025_package.zip
+data/tables/dataset/guelma_integrated_agricultural_database_v1.zip
