@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CalendarBlank, SunHorizon, Warning } from "@phosphor-icons/react";
-import { localizePlainText, MONTH_SHORT, STRESS_LABELS, UI_DICT } from "@/lib/i18n";
+import { localizePlainText, MONTH_SHORT, RISK_SEVERITY_LABELS, STRESS_LABELS, UI_DICT } from "@/lib/i18n";
 import type { FieldInsights, Language } from "@/lib/schemas";
 
 export function AgronomicRiskCalendar({
@@ -19,6 +19,7 @@ export function AgronomicRiskCalendar({
   plainMode: boolean;
 }) {
   const t = UI_DICT[lang].comparison;
+  const c = UI_DICT[lang].common;
   const months = MONTH_SHORT[lang];
 
   const isBareMonth = (monthNum: number) =>
@@ -41,7 +42,7 @@ export function AgronomicRiskCalendar({
         {baselineBareDays !== undefined && recommendedBareDays !== undefined && (
           <span className="tabular-nums rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-1 text-xs font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
             {plainMode ? t.bareDaysPlain : t.bareDaysLabel}: {baselineBareDays} &rarr;{" "}
-            {recommendedBareDays} d/yr
+            {recommendedBareDays} {c.daysPerYearShort}
           </span>
         )}
       </div>
@@ -71,7 +72,7 @@ export function AgronomicRiskCalendar({
               <div className="mt-1.5 flex min-h-[22px] flex-col items-center justify-center gap-1">
                 {bare && (
                   <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-[#FCD34D]">
-                    BARE
+                    {c.bareShort}
                   </span>
                 )}
                 {stresses.map((s, sIdx) => (
@@ -79,11 +80,13 @@ export function AgronomicRiskCalendar({
                     key={sIdx}
                     className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-bold text-red-700 dark:bg-red-500/25 dark:text-red-200"
                   >
-                    {s.type.toUpperCase()}
+                    {STRESS_LABELS[lang][s.type]}
                   </span>
                 ))}
                 {!bare && stresses.length === 0 && (
-                  <span className="text-[10px] text-[#6B7A6F] dark:text-[#6E7B71]">OK</span>
+                  <span className="text-[10px] text-[#6B7A6F] dark:text-[#6E7B71]">
+                    {c.okShort}
+                  </span>
                 )}
               </div>
             </div>
@@ -99,7 +102,7 @@ export function AgronomicRiskCalendar({
             {plainMode ? t.bareWindowPlain : t.bareWindowTitle}
           </p>
           {insights.bare_field_periods.length === 0 ? (
-            <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">No bare-soil gaps flagged.</p>
+            <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.noBareGaps}</p>
           ) : (
             <ul className="mt-2 space-y-1.5 text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
               {insights.bare_field_periods.map((bp, i) => (
@@ -121,14 +124,14 @@ export function AgronomicRiskCalendar({
           </p>
           {insights.stress_periods.length === 0 ? (
             <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-              No major stress windows detected.
+              {t.noStressWindows}
             </p>
           ) : (
             <ul className="mt-2 space-y-1.5 text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
               {insights.stress_periods.map((sp, i) => (
                 <li key={i}>
                   <strong className="text-[#111813] dark:text-[#F5F7F5]">
-                    {STRESS_LABELS[lang][sp.type]} ({sp.severity}):
+                    {STRESS_LABELS[lang][sp.type]} ({RISK_SEVERITY_LABELS[lang][sp.severity] ?? sp.severity}):
                   </strong>{" "}
                   {localizePlainText(sp.evidence, lang, plainMode)}
                 </li>

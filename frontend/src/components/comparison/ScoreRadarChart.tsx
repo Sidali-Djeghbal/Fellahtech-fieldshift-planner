@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SCORE_LABELS } from "@/lib/i18n";
+import { SCORE_LABELS, UI_DICT } from "@/lib/i18n";
 import type { Language, Strategy } from "@/lib/schemas";
 
 const AXES: Array<
@@ -69,7 +69,7 @@ export function ScoreRadarChart({
         viewBox={`0 0 ${size} ${size}`}
         className="h-64 w-full max-w-[340px]"
         role="img"
-        aria-label="7-axis agronomic strategy score comparison"
+        aria-label={UI_DICT[lang].common.radarAria}
       >
         {[25, 50, 75, 100].map((ring) => (
           <polygon

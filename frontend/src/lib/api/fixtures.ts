@@ -678,6 +678,7 @@ interface FixtureAnalysisRecord {
 
 class FixtureBackendState {
   guestToken: string | null = null;
+  guestRevoked = false;
   guestCreatedAt: string | null = null;
   guestExpiresAt: string | null = null;
   user: UserProfile | null = null;
@@ -695,6 +696,7 @@ class FixtureBackendState {
 
   reset() {
     this.guestToken = null;
+    this.guestRevoked = false;
     this.guestCreatedAt = null;
     this.guestExpiresAt = null;
     this.user = null;
@@ -1013,6 +1015,19 @@ export async function handleFixtureRequest(
   const authHeader = headers["Authorization"] || "";
   const guestHeader = headers["X-Guest-Token"] || "";
   const isAuthenticated = authHeader.startsWith("Bearer ") && Boolean(fixtureState.accessToken);
+  if (
+    !isAuthenticated &&
+    !fixtureState.guestToken &&
+    !fixtureState.guestRevoked &&
+    guestHeader === "gst_9b44f7c10a8e2130d5c89e4b"
+  ) {
+    fixtureState.guestToken = guestHeader;
+    fixtureState.guestCreatedAt = "2026-11-14T10:00:00Z";
+    fixtureState.guestExpiresAt = "2026-11-21T10:00:00Z";
+    if (fixtureState.farms.size === 0) {
+      fixtureState.seedDemoWorkspace();
+    }
+  }
   const isGuest = !isAuthenticated && Boolean(guestHeader) && Boolean(fixtureState.guestToken);
 
   const requireCaller = () => {
@@ -1124,6 +1139,7 @@ export async function handleFixtureRequest(
     }
     if (method === "DELETE") {
       fixtureState.reset();
+      fixtureState.guestRevoked = true;
       return { status: 204, data: null, headers: { "X-Request-Id": reqId } };
     }
   }
@@ -1212,6 +1228,7 @@ export async function handleFixtureRequest(
     }
     if (method === "DELETE") {
       fixtureState.reset();
+      fixtureState.guestRevoked = true;
       return { status: 204, data: null, headers: { "X-Request-Id": reqId } };
     }
   }
@@ -1264,6 +1281,7 @@ export async function handleFixtureRequest(
     }
     const count = fixtureState.farms.size;
     fixtureState.guestToken = null;
+    fixtureState.guestRevoked = true;
     return { status: 200, data: { claimed_farms_count: count }, headers: { "X-Request-Id": reqId } };
   }
 

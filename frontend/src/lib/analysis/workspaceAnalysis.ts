@@ -155,18 +155,36 @@ export function getStrategySelectionStatus(strategy: Strategy): SelectionStatus 
   return "suggested";
 }
 
-/** Resolve localized crop label from catalog without inventing names when absent. */
+const BUILTIN_CROP_NAMES: Record<string, Record<Language, string>> = {
+  durum_wheat: { en: "Durum Wheat", fr: "Blé dur", ar: "قمح صلب" },
+  barley: { en: "Barley", fr: "Orge", ar: "شعير" },
+  chickpea: { en: "Chickpea", fr: "Pois chiche", ar: "حمص" },
+  vetch_forage: { en: "Vetch Forage", fr: "Vesce fourragère", ar: "بيقية علفية" },
+  sunflower: { en: "Sunflower", fr: "Tournesol", ar: "دوار الشمس" },
+  fallow: { en: "Bare Fallow", fr: "Jachère", ar: "أرض بور" },
+  fava_bean: { en: "Fava Bean", fr: "Fève", ar: "فول" },
+  lentil: { en: "Lentil", fr: "Lentille", ar: "عدس" },
+  oats_forage: { en: "Oats Forage", fr: "Avoine fourragère", ar: "شوفان علفي" },
+  berseem_clover: { en: "Berseem Clover", fr: "Trèfle d'Alexandrie", ar: "برسيم" },
+};
+
+/** Resolve localized crop label from catalog (with built-in Guelma crop fallback). */
 export function resolveCropDisplayName(
-  cropId: string,
+  cropId: string | null | undefined,
   fallbackName: string | null | undefined,
-  catalogMap: Map<string, CropItem>,
+  catalogMap: Map<string, CropItem> | undefined,
   lang: Language
 ): string {
-  const item = catalogMap.get(cropId);
+  const key = (cropId ?? "").trim();
+  const item = key && catalogMap ? catalogMap.get(key) : undefined;
   if (item) {
-    return item.names[lang] || item.display_name || item.names.en || fallbackName || cropId;
+    return item.names[lang] || item.display_name || item.names.en || fallbackName || key;
   }
-  return fallbackName || cropId;
+  const builtin = key ? BUILTIN_CROP_NAMES[key] : undefined;
+  if (builtin) {
+    return builtin[lang] || builtin.en || fallbackName || key;
+  }
+  return (fallbackName ?? "").trim() || key || "—";
 }
 
 /** Match an active workspace field_id cleanly inside an AnalysisEnvelope's field_plans. */

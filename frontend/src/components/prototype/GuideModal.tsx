@@ -53,7 +53,7 @@ export function GuideModal({
             className="icon-pill tap"
             id="guide-close"
             type="button"
-            aria-label="Close guide"
+            aria-label={loc.ui.ariaCloseGuide}
             onClick={onClose}
           >
             ✕

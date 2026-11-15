@@ -14,6 +14,7 @@ import {
   Trash,
   X,
 } from "@phosphor-icons/react";
+import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
 import { findNearestGuelmaCommune } from "@/lib/geo/guelma";
 import {
   IRRIGATION_SYSTEM_LABELS,
@@ -22,7 +23,7 @@ import {
 } from "@/lib/i18n";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
-import type { FarmPublic, FieldDetailPublic, FieldPlan, Language } from "@/lib/schemas";
+import type { CropItem, FarmPublic, FieldDetailPublic, FieldPlan, Language } from "@/lib/schemas";
 
 interface ParcelInspectorPanelProps {
   lang: Language;
@@ -38,6 +39,7 @@ interface ParcelInspectorPanelProps {
   onEditInfo: (field: FieldDetailPublic) => void;
   onDeleteField?: (field: FieldDetailPublic) => void;
   onCloseInspector?: () => void;
+  catalogMap?: Map<string, CropItem>;
 }
 
 export function ParcelInspectorPanel({
@@ -54,6 +56,7 @@ export function ParcelInspectorPanel({
   onEditInfo,
   onDeleteField,
   onCloseInspector,
+  catalogMap,
 }: ParcelInspectorPanelProps) {
   const dict = GUELMA_WORKSPACE_I18N[lang];
   const intel = INTELLIGENCE_I18N[lang];
@@ -155,7 +158,7 @@ export function ParcelInspectorPanel({
   );
   const latestCrop = selectedField.crop_history[0];
   const latestCropLabel = latestCrop
-    ? `${latestCrop.crop_name_raw || latestCrop.crop_id || "—"} (${latestCrop.year})`
+    ? `${resolveCropDisplayName(latestCrop.crop_id, latestCrop.crop_name_raw, catalogMap, lang)} (${latestCrop.year})`
     : "—";
 
   const readinessScore = (() => {

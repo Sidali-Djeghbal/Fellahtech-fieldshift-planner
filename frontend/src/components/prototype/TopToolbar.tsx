@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { UI_DICT } from "@/lib/i18n";
 import { pLoc, type LocaleDict } from "@/lib/prototype/i18n";
 import type { Lang, LayerKey, Preset, PresetId } from "@/lib/prototype/types";
 
@@ -93,10 +94,10 @@ export function TopToolbar({
               flexShrink: 0,
             }}
           >
-            <span>{backLabel || "Dashboard"}</span>
+            <span>{backLabel || UI_DICT[lang].common.backToCommandCenter}</span>
           </button>
         ) : null}
-        <div className="brand-dock lg-capsule" aria-label="Guelma field presets">
+        <div className="brand-dock lg-capsule" aria-label={loc.ui.ariaPresetsRegion}>
           <div className="brand-id">
             <svg
               className="brand-glyph"
@@ -120,7 +121,7 @@ export function TopToolbar({
             className="preset-pills"
             id="preset-pills"
             role="group"
-            aria-label="Guelma parcel presets"
+            aria-label={loc.ui.ariaPresetsSelect}
           >
             {presets.map((raw) => {
               const p = pLoc(raw, loc);
@@ -145,7 +146,7 @@ export function TopToolbar({
             <select
               className="preset-select"
               id="preset-select"
-              aria-label="Select Guelma parcel"
+              aria-label={loc.ui.ariaSelectParcel}
               value={activePreset.id}
               onChange={(e) => onSelectPreset(e.target.value as PresetId)}
             >
@@ -161,7 +162,7 @@ export function TopToolbar({
           </div>
         </div>
 
-        <div className="lang-dock lg-capsule" id="lang-dock" role="group" aria-label="Language">
+        <div className="lang-dock lg-capsule" id="lang-dock" role="group" aria-label={loc.ui.ariaLanguage}>
           <button
             className="lang-btn tap"
             type="button"
@@ -196,7 +197,7 @@ export function TopToolbar({
       </div>
 
       <div className="topbar-group">
-        <nav className="layer-dock lg-capsule" aria-label="Earth observation layers">
+        <nav className="layer-dock lg-capsule" aria-label={loc.ui.ariaLayers}>
           {LAYER_ORDER.map((key) => (
             <button
               key={key}
@@ -213,7 +214,7 @@ export function TopToolbar({
           ))}
         </nav>
 
-        <div className="tools-dock lg-capsule" aria-label="Map view controls">
+        <div className="tools-dock lg-capsule" aria-label={loc.ui.ariaControls}>
           <button
             className="tool-btn primary tap"
             id="focus"
@@ -288,7 +289,7 @@ export function TopToolbar({
               data-testid="proto-edit-borders"
               onClick={onEditBorders}
             >
-              <span>{editBordersLabel || "Borders"}</span>
+              <span>{editBordersLabel || loc.ui.bordersBtn}</span>
             </button>
           ) : null}
 

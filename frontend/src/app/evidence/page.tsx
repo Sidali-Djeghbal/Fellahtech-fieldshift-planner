@@ -25,7 +25,13 @@ import {
   listFields,
 } from "@/lib/api/endpoints";
 import { GUELMA_FALLBACK_BOUNDARY } from "@/lib/geo/guelma";
-import { EVIDENCE_PARAM_LABELS, UI_DICT, localizePlainText } from "@/lib/i18n";
+import {
+  DATA_SOURCE_LABELS,
+  EVIDENCE_GROUP_LABELS,
+  EVIDENCE_PARAM_LABELS,
+  UI_DICT,
+  localizePlainText,
+} from "@/lib/i18n";
 import type { DataSource, EvidenceItem, EvidenceParameter } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -72,6 +78,8 @@ export default function EvidencePage() {
   } = useAppStore();
 
   const t = UI_DICT[lang].evidence;
+  const c = UI_DICT[lang].common;
+  const compDict = UI_DICT[lang].comparison;
   const hasSession = authMode !== "none";
 
   const farmsQuery = useQuery({
@@ -173,24 +181,28 @@ export default function EvidencePage() {
         <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
       </div>
 
-      {analysisQuery.error && (
-        <ApiErrorCard error={analysisQuery.error} lang={lang} theme={resolvedTheme} />
+      {(analysisQuery.error || farmsQuery.error || fieldsQuery.error || analysesQuery.error) && (
+        <ApiErrorCard
+          error={analysisQuery.error ?? farmsQuery.error ?? fieldsQuery.error ?? analysesQuery.error}
+          lang={lang}
+          theme={resolvedTheme}
+        />
       )}
 
       {!envelope && !analysisQuery.error && (
         <section className="fs-liquid-panel rounded-3xl p-6 text-[#111813] dark:text-[#F5F7F5]">
           {hasSession && resolvedAnalysisId && analysisQuery.isLoading ? (
             <p className="text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-              Loading evidence ledger...
+              {t.loadingText}
             </p>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
-                  No analysis evidence loaded yet
+                  {t.emptyTitle}
                 </h2>
                 <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-                  Run an AI rotation analysis in Farm Profile or launch the demo sandbox from the header to inspect dataset provenance.
+                  {t.emptyBody}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -198,13 +210,13 @@ export default function EvidencePage() {
                   href="/farm-profile"
                   className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold"
                 >
-                  Open Farm Profile
+                  {compDict.openProfileBtn}
                 </Link>
                 <Link
                   href="/"
                   className="fs-liquid-pill rounded-full px-4 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
                 >
-                  Command Center
+                  {c.backToCommandCenter}
                 </Link>
               </div>
             </div>
@@ -234,13 +246,13 @@ export default function EvidencePage() {
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
                   <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-1 text-[#0B3D2E] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
-                    dataset_version_used:{" "}
+                    {c.datasetLabel}:{" "}
                     <strong dir="ltr" className="font-mono">
                       {envelope.result.dataset_version_used}
                     </strong>
                   </span>
                   <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-1 text-[#0B3D2E] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
-                    ml_engine_version:{" "}
+                    {c.engineLabel}:{" "}
                     <strong dir="ltr" className="font-mono">
                       {envelope.result.ml_engine_version}
                     </strong>
@@ -298,13 +310,13 @@ export default function EvidencePage() {
                       key={grp}
                       type="button"
                       onClick={() => setGroupFilter(grp)}
-                      className={`rounded-full px-3 py-1 text-[11px] font-semibold capitalize transition ${
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
                         groupFilter === grp
                           ? "bg-[#15803D] text-white shadow-xs dark:bg-[#22C55E] dark:text-[#081A0E]"
                           : "fs-liquid-pill text-[#4A5A4E] dark:text-[#9CA89E]"
                       }`}
                     >
-                      {grp.replace("_", " & ")}
+                      {EVIDENCE_GROUP_LABELS[lang][grp]}
                     </button>
                   )
                 )}
@@ -314,7 +326,7 @@ export default function EvidencePage() {
             {missions.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#111813]/10 pt-3 dark:border-white/10">
                 <span className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                  Agronomic tag:
+                  {t.tagFilterLabel}
                 </span>
                 <button
                   type="button"
@@ -325,7 +337,7 @@ export default function EvidencePage() {
                       : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
-                  All
+                  {t.tagAll}
                 </button>
                 {missions.map((m) => (
                   <button
@@ -376,7 +388,7 @@ export default function EvidencePage() {
                             : "bg-[#15803D]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
                         }`}
                       >
-                        {ev.data_source}
+                        {DATA_SOURCE_LABELS[lang][ev.data_source] ?? ev.data_source}
                       </span>
                       {ev.source_mission && (
                         <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2 py-0.5 text-[10px] font-semibold text-[#3E4C42] dark:border-white/15 dark:bg-white/[0.08] dark:text-[#D1DDD3]">
@@ -464,7 +476,7 @@ export default function EvidencePage() {
                 className="fs-cta-primary mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold active:not-disabled:scale-[0.96]"
               >
                 {t.fixInProfileBtn}
-                <ArrowRight size={14} weight="bold" />
+                <ArrowRight size={14} weight="bold" className="rtl:-scale-x-100" />
               </Link>
             </div>
 

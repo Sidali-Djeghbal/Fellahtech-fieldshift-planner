@@ -1,4 +1,5 @@
-import type { PriorityWeights, Season, SoilType } from "@/lib/schemas";
+import { SEASON_LABELS } from "@/lib/i18n";
+import type { Language, PriorityWeights, Season, SoilType } from "@/lib/schemas";
 
 export type WeightKey = keyof PriorityWeights;
 
@@ -28,7 +29,10 @@ export interface WeightsValidationResult {
   error?: string;
 }
 
-export function validateWeightsSum(weights: PriorityWeights): WeightsValidationResult {
+export function validateWeightsSum(
+  weights: PriorityWeights,
+  lang: Language = "en"
+): WeightsValidationResult {
   const values = WEIGHT_KEYS.map((k) => weights[k]);
   const allIntegers = values.every(
     (v) => Number.isInteger(v) && v >= 0 && v <= 100
@@ -41,7 +45,12 @@ export function validateWeightsSum(weights: PriorityWeights): WeightsValidationR
       valid: false,
       sum,
       remaining,
-      error: "All priority weights must be integers between 0 and 100.",
+      error:
+        lang === "fr"
+          ? "Tous les poids de priorité doivent être des entiers entre 0 et 100."
+          : lang === "ar"
+            ? "يجب أن تكون جميع أوزان الأولوية أعداداً صحيحة بين 0 و100."
+            : "All priority weights must be integers between 0 and 100.",
     };
   }
   if (sum !== 100) {
@@ -49,7 +58,12 @@ export function validateWeightsSum(weights: PriorityWeights): WeightsValidationR
       valid: false,
       sum,
       remaining,
-      error: `Priority weights must sum strictly to 100 (currently ${sum}).`,
+      error:
+        lang === "fr"
+          ? `La somme des poids doit être exactement égale à 100 (actuellement ${sum}).`
+          : lang === "ar"
+            ? `يجب أن يكون مجموع أوزان الأولوية مساوياً لـ 100 تماماً (المجموع الحالي ${sum}).`
+            : `Priority weights must sum strictly to 100 (currently ${sum}).`,
     };
   }
   return { valid: true, sum: 100, remaining: 0 };
@@ -129,7 +143,8 @@ export interface DisjointCropsValidationResult {
 
 export function validateDisjointCrops(
   targetCropIds: string[],
-  excludedCropIds: string[]
+  excludedCropIds: string[],
+  lang: Language = "en"
 ): DisjointCropsValidationResult {
   const excludedSet = new Set(excludedCropIds.map((id) => id.trim()).filter(Boolean));
   const overlappingIds = Array.from(
@@ -137,10 +152,16 @@ export function validateDisjointCrops(
   );
 
   if (overlappingIds.length > 0) {
+    const joined = overlappingIds.join(", ");
     return {
       valid: false,
       overlappingIds,
-      error: `Target and excluded crops cannot overlap: ${overlappingIds.join(", ")}.`,
+      error:
+        lang === "fr"
+          ? `Les cultures cibles et exclues ne peuvent pas se chevaucher : ${joined}.`
+          : lang === "ar"
+            ? `لا يمكن أن تتداخل المحاصيل المستهدفة والمستبعدة: ${joined}.`
+            : `Target and excluded crops cannot overlap: ${joined}.`,
     };
   }
   return { valid: true, overlappingIds: [] };
@@ -159,7 +180,8 @@ export interface SeasonMonthValidationResult {
 export function validateSeasonMonthConsistency(
   season: Season,
   plantingMonth: number | null | undefined,
-  latitude: number = 36.52
+  latitude: number = 36.52,
+  lang: Language = "en"
 ): SeasonMonthValidationResult {
   const allowedMonths = NORTHERN_HEMISPHERE_SEASON_MONTHS[season];
   if (plantingMonth === null || plantingMonth === undefined) {
@@ -169,14 +191,26 @@ export function validateSeasonMonthConsistency(
     return {
       valid: false,
       allowedMonths,
-      error: `Planting month must be between 1 and 12 (received ${plantingMonth}).`,
+      error:
+        lang === "fr"
+          ? `Le mois de semis doit être compris entre 1 et 12 (reçu ${plantingMonth}).`
+          : lang === "ar"
+            ? `يجب أن يكون شهر البذر بين 1 و12 (تم إدخال ${plantingMonth}).`
+            : `Planting month must be between 1 and 12 (received ${plantingMonth}).`,
     };
   }
   if (latitude >= 0 && !allowedMonths.includes(plantingMonth)) {
+    const sLabel = SEASON_LABELS[lang]?.[season] ?? season;
+    const monthsText = allowedMonths.join(", ");
     return {
       valid: false,
       allowedMonths,
-      error: `Month ${plantingMonth} does not match ${season} in Northern Hemisphere (expected: ${allowedMonths.join(", ")}).`,
+      error:
+        lang === "fr"
+          ? `Le mois ${plantingMonth} ne correspond pas à la saison ${sLabel} dans l'hémisphère Nord (attendu : ${monthsText}).`
+          : lang === "ar"
+            ? `الشهر ${plantingMonth} لا يطابق فصل ${sLabel} في نصف الكرة الشمالي (الأشهر المتوقعة: ${monthsText}).`
+            : `Month ${plantingMonth} does not match ${sLabel} in Northern Hemisphere (expected: ${monthsText}).`,
     };
   }
   return { valid: true, allowedMonths };
@@ -228,30 +262,44 @@ export function validateAnalysisPreSubmit(params: {
   plantingMonth: number | null | undefined;
   latitude: number;
   cropHistory: Array<{ season: Season; planting_month?: number | null }>;
+  lang?: Language;
 }): { valid: boolean; errors: string[] } {
+  const lang = params.lang ?? "en";
   const errors: string[] = [];
 
-  const wCheck = validateWeightsSum(params.weights);
+  const wCheck = validateWeightsSum(params.weights, lang);
   if (!wCheck.valid && wCheck.error) errors.push(wCheck.error);
 
-  const cCheck = validateDisjointCrops(params.targetCropIds, params.excludedCropIds);
+  const cCheck = validateDisjointCrops(params.targetCropIds, params.excludedCropIds, lang);
   if (!cCheck.valid && cCheck.error) errors.push(cCheck.error);
 
   const pCheck = validateSeasonMonthConsistency(
     params.startSeason,
     params.plantingMonth,
-    params.latitude
+    params.latitude,
+    lang
   );
-  if (!pCheck.valid && pCheck.error) errors.push(`Planning: ${pCheck.error}`);
+  if (!pCheck.valid && pCheck.error) {
+    const planningPrefix =
+      lang === "fr" ? "Planification :" : lang === "ar" ? "التخطيط:" : "Planning:";
+    errors.push(`${planningPrefix} ${pCheck.error}`);
+  }
 
   params.cropHistory.forEach((row, index) => {
     const hCheck = validateSeasonMonthConsistency(
       row.season,
       row.planting_month,
-      params.latitude
+      params.latitude,
+      lang
     );
     if (!hCheck.valid && hCheck.error) {
-      errors.push(`Crop history row #${index + 1}: ${hCheck.error}`);
+      const rowPrefix =
+        lang === "fr"
+          ? `Historique cultural ligne n°${index + 1} :`
+          : lang === "ar"
+            ? `سجل المحاصيل صف رقم ${index + 1}:`
+            : `Crop history row #${index + 1}:`;
+      errors.push(`${rowPrefix} ${hCheck.error}`);
     }
   });
 

@@ -18,6 +18,7 @@ import { UsdaTextureModal } from "@/components/profile/UsdaTextureModal";
 import { FieldPolygonThumbnail } from "@/components/guelma/FieldPolygonThumbnail";
 import type { BorderDraftResult } from "@/components/guelma/GuelmaBorderEditorMap";
 import { fetchAllCatalogItems } from "@/lib/api/endpoints";
+import { presentApiError } from "@/lib/api/errors";
 import { FIXTURE_CATALOG_ITEMS } from "@/lib/api/fixtures";
 import { GUELMA_COMMUNES } from "@/lib/geo/guelma";
 import {
@@ -291,7 +292,7 @@ export function FarmFieldInfoModal({
     setFieldId(nextFieldCode(existingFields));
     setFieldName(
       borderDraft
-        ? `${borderDraft.nearestCommune.name[lang] || borderDraft.nearestCommune.name.en} Parcel`
+        ? `${borderDraft.nearestCommune.name[lang] || borderDraft.nearestCommune.name.en} ${dict.parcelDefaultSuffix}`
         : ""
     );
     setAreaHectares(borderDraft ? borderDraft.areaHectares.toFixed(2) : "2.0");
@@ -317,7 +318,16 @@ export function FarmFieldInfoModal({
         notes: "",
       },
     ]);
-  }, [open, editingField, borderDraft, defaultFarmId, existingFarms, existingFields, lang]);
+  }, [
+    open,
+    editingField,
+    borderDraft,
+    defaultFarmId,
+    existingFarms,
+    existingFields,
+    lang,
+    dict.parcelDefaultSuffix,
+  ]);
 
   if (!open) return null;
 
@@ -362,9 +372,9 @@ export function FarmFieldInfoModal({
         return;
       }
       const pMonth = r.planting_month.trim() === "" ? null : Number(r.planting_month);
-      const check = validateSeasonMonthConsistency(r.season, pMonth, activeLat);
+      const check = validateSeasonMonthConsistency(r.season, pMonth, activeLat, lang);
       if (!check.valid) {
-        setFormError(check.error || "Invalid season / planting month combination.");
+        setFormError(check.error ?? "");
         return;
       }
       sanitizedHistory.push({
@@ -439,7 +449,8 @@ export function FarmFieldInfoModal({
         fieldDraft,
       });
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Failed to save field record.");
+      const p = presentApiError(err, lang);
+      setFormError(`${p.title}: ${p.guidance}`);
     } finally {
       setSubmitting(false);
     }
@@ -1054,7 +1065,7 @@ export function FarmFieldInfoModal({
                           }}
                           className={compactInputClassName}
                         >
-                          <option value="">— Custom Crop Name —</option>
+                          <option value="">{dict.customCropOption}</option>
                           {catalogItems.map((c) => (
                             <option key={c.crop_id} value={c.crop_id}>
                               {c.names?.[lang] || c.display_name}

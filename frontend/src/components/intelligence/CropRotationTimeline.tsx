@@ -121,10 +121,7 @@ export function CropRotationTimeline({
                   activeSeason.crop_name,
                   catalogMap,
                   lang
-                )}{" "}
-                <span dir="ltr" className="font-mono text-[11px] font-normal text-[#4A5A4E] dark:text-[#9CA89E]">
-                  ({activeSeason.crop_id})
-                </span>
+                )}
               </p>
               <p className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
                 {SEASON_LABELS[lang][activeSeason.season]} {activeSeason.year} ·{" "}

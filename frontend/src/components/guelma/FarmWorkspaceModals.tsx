@@ -2,6 +2,7 @@
 
 import React, { useEffect, useId, useRef, useState } from "react";
 import { Check, Trash, Warning, X } from "@phosphor-icons/react";
+import { presentApiError } from "@/lib/api/errors";
 import { GUELMA_COMMUNES } from "@/lib/geo/guelma";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import type { FarmPatchRequest, FarmPublic, Language } from "@/lib/schemas";
@@ -25,6 +26,7 @@ export function EditFarmModal({
   const [name, setName] = useState("");
   const [commune, setCommune] = useState("Guelma");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const titleId = useId();
   const nameInputId = useId();
   const communeSelectId = useId();
@@ -34,6 +36,7 @@ export function EditFarmModal({
     if (farm && open) {
       setName(farm.farm_name);
       setCommune(farm.commune || "Guelma");
+      setSaveError(null);
     }
   }, [farm, open]);
 
@@ -56,12 +59,16 @@ export function EditFarmModal({
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
+    setSaveError(null);
     try {
       await onSave(farm.farm_id, {
         farm_name: name.trim(),
         commune: commune || null,
       });
       onClose();
+    } catch (err) {
+      const p = presentApiError(err, lang);
+      setSaveError(`${p.title}: ${p.guidance}`);
     } finally {
       setSaving(false);
     }
@@ -133,6 +140,11 @@ export function EditFarmModal({
             </select>
           </div>
           <div className="flex justify-end gap-2.5 pt-2">
+            {saveError && (
+              <p role="alert" className="me-auto self-center text-xs font-medium text-red-600 dark:text-red-300">
+                {saveError}
+              </p>
+            )}
             <button
               type="button"
               onClick={onClose}
@@ -175,11 +187,13 @@ export function ConfirmDeleteModal({
 }: ConfirmDeleteModalProps) {
   const dict = GUELMA_WORKSPACE_I18N[lang].confirmDelete;
   const [busy, setBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const titleId = useId();
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    setDeleteError(null);
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) onCancel();
@@ -219,6 +233,11 @@ export function ConfirmDeleteModal({
             <p className="mt-1 max-w-[65ch] text-xs leading-relaxed text-[#4A5A4E] dark:text-[#9CA89E]">{body}</p>
           </div>
         </div>
+        {deleteError && (
+          <p role="alert" className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-500/15 dark:text-red-200">
+            {deleteError}
+          </p>
+        )}
         <div className="mt-5 flex justify-end gap-2.5">
           <button
             type="button"
@@ -233,8 +252,12 @@ export function ConfirmDeleteModal({
             data-testid="confirm-delete-btn"
             onClick={async () => {
               setBusy(true);
+              setDeleteError(null);
               try {
                 await onConfirm();
+              } catch (err) {
+                const p = presentApiError(err, lang);
+                setDeleteError(`${p.title}: ${p.guidance}`);
               } finally {
                 setBusy(false);
               }

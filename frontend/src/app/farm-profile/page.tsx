@@ -20,6 +20,8 @@ import { useResolvedTheme } from "@/app/providers";
 import { useWorkspaceShell } from "@/components/guelma/WorkspaceShellContext";
 import { UsdaTextureModal } from "@/components/profile/UsdaTextureModal";
 import { ApiErrorCard, WarningsBanner } from "@/components/shared/ProvenanceBanners";
+import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
+import { ApiClientError } from "@/lib/api/errors";
 import {
   cancelAnalysisRequest,
   fetchAllCatalogItems,
@@ -31,18 +33,23 @@ import {
   submitAnalysis,
 } from "@/lib/api/endpoints";
 import {
+  ANALYSIS_JOB_STATUS_LABELS,
   CROP_CATEGORY_LABELS,
   IRRIGATION_SYSTEM_LABELS,
   MARKET_PREFERENCE_LABELS,
+  PRIORITY_WEIGHT_LABELS,
   SEASON_LABELS,
   SOIL_TYPE_LABELS,
   UI_DICT,
   WATER_AVAILABILITY_LABELS,
   WATER_SOURCE_LABELS,
+  WEIGHT_PRESET_LABELS,
+  formatEquipmentLabel,
 } from "@/lib/i18n";
 import type {
   AnalysisSubmitRequest,
   CycleMode,
+  ErrorCode,
   FieldWriteDraft,
   IrrigationSystem,
   MarketPreference,
@@ -73,10 +80,12 @@ interface CropHistoryRowState {
   notes: string;
 }
 
-const WEIGHT_PRESETS: Array<{ id: string; label: string; weights: PriorityWeights }> = [
+const WEIGHT_PRESETS: Array<{
+  id: "water_resilient" | "soil_restorer" | "cash_market" | "balanced_livestock";
+  weights: PriorityWeights;
+}> = [
   {
     id: "water_resilient",
-    label: "Water Resilient",
     weights: {
       water_saving: 35,
       soil_improvement: 25,
@@ -87,7 +96,6 @@ const WEIGHT_PRESETS: Array<{ id: string; label: string; weights: PriorityWeight
   },
   {
     id: "soil_restorer",
-    label: "Soil Restorer",
     weights: {
       water_saving: 20,
       soil_improvement: 40,
@@ -98,7 +106,6 @@ const WEIGHT_PRESETS: Array<{ id: string; label: string; weights: PriorityWeight
   },
   {
     id: "cash_market",
-    label: "Cash Market",
     weights: {
       water_saving: 15,
       soil_improvement: 15,
@@ -109,7 +116,6 @@ const WEIGHT_PRESETS: Array<{ id: string; label: string; weights: PriorityWeight
   },
   {
     id: "balanced_livestock",
-    label: "Balanced Livestock",
     weights: {
       water_saving: 25,
       soil_improvement: 20,
@@ -149,6 +155,7 @@ export default function FarmProfilePage() {
   const glassSelectClass = `${glassInputClass} [&_option]:bg-white [&_option]:text-[#111813] dark:[&_option]:bg-[#141A15] dark:[&_option]:text-[#F5F7F5]`;
 
   const t = UI_DICT[lang].farmProfile;
+  const common = UI_DICT[lang].common;
   const hasSession = authMode !== "none";
 
   const farmsQuery = useQuery({
@@ -273,12 +280,13 @@ export default function FarmProfilePage() {
   }, []);
 
   const fieldLat = fieldDetailQuery.data?.location.latitude ?? 36.52;
-  const weightsCheck = validateWeightsSum(weights);
-  const cropsCheck = validateDisjointCrops(targetCropIds, excludedCropIds);
+  const weightsCheck = validateWeightsSum(weights, lang);
+  const cropsCheck = validateDisjointCrops(targetCropIds, excludedCropIds, lang);
   const planningMonthCheck = validateSeasonMonthConsistency(
     startSeason,
     plantingMonth === "" ? null : Number(plantingMonth),
-    fieldLat
+    fieldLat,
+    lang
   );
 
   function toggleTargetCrop(cropId: string) {
@@ -314,7 +322,15 @@ export default function FarmProfilePage() {
       if (env.status === "failed" || env.status === "cancelled") {
         setPollingRequestId(null);
         if (env.error) {
-          setSubmitError(new Error(env.error.message));
+          setSubmitError(
+            new ApiClientError({
+              status: 422,
+              code: (env.error.code as ErrorCode) ?? "INTERNAL_ERROR",
+              message: env.error.message,
+              details: [],
+              requestId: null,
+            })
+          );
         }
         return;
       }
@@ -344,6 +360,7 @@ export default function FarmProfilePage() {
         season: r.season,
         planting_month: r.planting_month === "" ? null : Number(r.planting_month),
       })),
+      lang,
     });
 
     if (!preValidation.valid) {
@@ -383,9 +400,9 @@ export default function FarmProfilePage() {
           crop_id: row.useCustomCrop ? null : row.crop_id || null,
           crop_name_raw: row.useCustomCrop
             ? row.crop_name_raw || null
-            : catalogQuery.data?.items.find((c) => c.crop_id === row.crop_id)?.names.en ??
-              row.crop_name_raw ??
-              null,
+            : catalogMap.get(row.crop_id)?.names[lang] ??
+              catalogMap.get(row.crop_id)?.names.en ??
+              (row.crop_name_raw || null),
           yield_tons_per_hectare:
             row.yield_tons_per_hectare === "" ? null : Number(row.yield_tons_per_hectare),
           notes: row.notes || null,
@@ -450,6 +467,9 @@ export default function FarmProfilePage() {
   }
 
   const catalogItems = catalogQuery.data?.items ?? [];
+  const catalogMap = new Map(catalogItems.map((c) => [c.crop_id, c]));
+  const loadError =
+    farmsQuery.error ?? fieldsQuery.error ?? fieldDetailQuery.error ?? catalogQuery.error ?? null;
 
   return (
     <div className="fs-view-enter space-y-5 pb-8">
@@ -468,9 +488,9 @@ export default function FarmProfilePage() {
         />
       )}
 
-      {submitError !== null && (
+      {(submitError !== null || loadError !== null) && (
         <ApiErrorCard
-          error={submitError}
+          error={submitError ?? loadError}
           lang={lang}
           theme={resolvedTheme}
           onOpenClaimAccount={openAuthModal}
@@ -529,14 +549,15 @@ export default function FarmProfilePage() {
               const rowMonthCheck = validateSeasonMonthConsistency(
                 row.season,
                 row.planting_month === "" ? null : Number(row.planting_month),
-                fieldLat
+                fieldLat,
+                lang
               );
               return (
                 <div key={idx} className="fs-liquid-well rounded-2xl p-3.5">
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     <div>
                       <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                        Season
+                        {t.seasonLabel}
                       </label>
                       <select
                         value={row.season}
@@ -557,7 +578,7 @@ export default function FarmProfilePage() {
                     </div>
                     <div>
                       <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                        Year
+                        {t.yearLabel}
                       </label>
                       <input
                         type="number"
@@ -575,7 +596,7 @@ export default function FarmProfilePage() {
                     </div>
                     <div>
                       <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                        Planting Month
+                        {t.plantingMonth}
                       </label>
                       <input
                         type="number"
@@ -594,7 +615,9 @@ export default function FarmProfilePage() {
                     </div>
                     <div className="lg:col-span-2">
                       <div className="mb-1 flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">Crop</span>
+                        <span className="font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                          {t.cropLabel}
+                        </span>
                         <label className="inline-flex cursor-pointer items-center gap-1 text-[#15803D] dark:text-[#86EFAC]">
                           <input
                             type="checkbox"
@@ -616,14 +639,14 @@ export default function FarmProfilePage() {
                           value={row.crop_id}
                           onChange={(e) => {
                             const cid = e.target.value;
-                            const found = catalogItems.find((c) => c.crop_id === cid);
+                            const found = catalogMap.get(cid);
                             setCropHistory((prev) =>
                               prev.map((r, i) =>
                                 i === idx
                                   ? {
                                       ...r,
                                       crop_id: cid,
-                                      crop_name_raw: found?.names.en ?? cid,
+                                      crop_name_raw: found?.names[lang] ?? found?.names.en ?? cid,
                                     }
                                   : r
                               )
@@ -633,7 +656,9 @@ export default function FarmProfilePage() {
                         >
                           {catalogItems.length === 0 && (
                             <option value={row.crop_id}>
-                              {row.crop_name_raw || row.crop_id || "Select crop"}
+                              {row.crop_id
+                                ? resolveCropDisplayName(row.crop_id, row.crop_name_raw, catalogMap, lang)
+                                : t.selectCropPlaceholder}
                             </option>
                           )}
                           {catalogItems.map((item) => (
@@ -655,7 +680,7 @@ export default function FarmProfilePage() {
                               )
                             );
                           }}
-                          placeholder="e.g. Blé dur local"
+                          placeholder={t.customCropExample}
                           className={glassInputClass}
                         />
                       )}
@@ -664,11 +689,11 @@ export default function FarmProfilePage() {
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     {!rowMonthCheck.valid ? (
                       <span className="text-[11px] font-semibold text-red-600 dark:text-red-300">
-                        INPUT-03: {rowMonthCheck.error}
+                        {rowMonthCheck.error}
                       </span>
                     ) : (
                       <span className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                        Northern Hemisphere season check OK
+                        {t.seasonCheckOk}
                       </span>
                     )}
                     {cropHistory.length > 1 && (
@@ -680,7 +705,7 @@ export default function FarmProfilePage() {
                         className="inline-flex items-center gap-1 text-[11px] text-red-600 hover:underline dark:text-red-300"
                       >
                         <Trash size={13} />
-                        Remove
+                        {common.removeBtn}
                       </button>
                     )}
                   </div>
@@ -727,8 +752,8 @@ export default function FarmProfilePage() {
                 <span className="text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
                   {t.soilUnknownTitle}
                 </span>
-                <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#4A5A4E] dark:border-white/15 dark:bg-white/10 dark:text-[#D1DDD3]">
-                  soil_source: unknown
+                <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2.5 py-0.5 text-[10px] font-semibold text-[#4A5A4E] dark:border-white/15 dark:bg-white/10 dark:text-[#D1DDD3]">
+                  {t.soilBadgeUnknown}
                 </span>
               </div>
               <p className="mt-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
@@ -751,8 +776,8 @@ export default function FarmProfilePage() {
                 <span className="text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
                   {t.soilKnownTitle}
                 </span>
-                <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
-                  soil_source: farmer
+                <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
+                  {t.soilBadgeFarmer}
                 </span>
               </div>
               <p className="mt-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
@@ -765,7 +790,7 @@ export default function FarmProfilePage() {
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Soil Texture
+                  {t.soilTextureLabel}
                 </label>
                 <select
                   value={soilType}
@@ -781,7 +806,7 @@ export default function FarmProfilePage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Soil pH (3.0–11.0)
+                  {t.soilPhLabel}
                 </label>
                 <input
                   type="number"
@@ -796,7 +821,7 @@ export default function FarmProfilePage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Organic Matter %
+                  {t.organicMatterLabel}
                 </label>
                 <input
                   type="number"
@@ -811,7 +836,7 @@ export default function FarmProfilePage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Lab Test Date
+                  {t.labTestDateLabel}
                 </label>
                 <input
                   type="date"
@@ -969,8 +994,8 @@ export default function FarmProfilePage() {
                 onChange={(e) => setCycleMode(e.target.value as CycleMode)}
                 className={glassSelectClass}
               >
-                <option value="annual_rotation">Annual Rotation</option>
-                <option value="consecutive_seasons">Consecutive Seasons</option>
+                <option value="annual_rotation">{t.annualRotationLabel}</option>
+                <option value="consecutive_seasons">{t.consecutiveSeasonsLabel}</option>
               </select>
             </div>
           </div>
@@ -978,7 +1003,7 @@ export default function FarmProfilePage() {
           {!planningMonthCheck.valid && (
             <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-300">
               <Warning size={15} weight="fill" />
-              INPUT-03: {planningMonthCheck.error}
+              {planningMonthCheck.error}
             </p>
           )}
 
@@ -1064,7 +1089,7 @@ export default function FarmProfilePage() {
                 onClick={() => setWeights(p.weights)}
                 className="fs-liquid-pill rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]"
               >
-                {p.label}
+                {WEIGHT_PRESET_LABELS[lang][p.id]}
               </button>
             ))}
           </div>
@@ -1072,8 +1097,8 @@ export default function FarmProfilePage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {WEIGHT_KEYS.map((key) => (
               <div key={key} className="fs-liquid-well rounded-2xl p-3">
-                <label className="block text-[11px] font-semibold capitalize text-[#3E4C42] dark:text-[#D1DDD3]">
-                  {key.replace("_", " ")}
+                <label className="block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  {PRIORITY_WEIGHT_LABELS[lang][key]}
                 </label>
                 <input
                   type="number"
@@ -1202,7 +1227,7 @@ export default function FarmProfilePage() {
                           : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                       }`}
                     >
-                      {eq.replace(/_/g, " ")}
+                      {formatEquipmentLabel(eq, lang)}
                     </button>
                   );
                 })}
@@ -1218,7 +1243,7 @@ export default function FarmProfilePage() {
               <>
                 <CheckCircle size={18} weight="fill" className="text-[#15803D] dark:text-[#22C55E]" />
                 <span className="text-[#111813] dark:text-[#F5F7F5]">
-                  Ready to analyze parcel{" "}
+                  {t.readyToAnalyze}{" "}
                   <strong dir="ltr" className="text-[#15803D] dark:text-[#86EFAC]">
                     {resolvedFieldId ?? "—"}
                   </strong>
@@ -1228,7 +1253,7 @@ export default function FarmProfilePage() {
               <>
                 <Warning size={18} weight="fill" className="text-red-600 dark:text-red-400" />
                 <span className="font-semibold text-red-700 dark:text-red-300">
-                  Fix validation guards before running.
+                  {t.fixValidationGuards}
                 </span>
               </>
             )}
@@ -1267,9 +1292,9 @@ export default function FarmProfilePage() {
               {t.pollingTitle}
             </h3>
             <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-              Status:{" "}
-              <span className="font-bold uppercase text-[#15803D] dark:text-[#86EFAC]">
-                {pollStatus}
+              {t.statusPrefix}{" "}
+              <span className="font-bold text-[#15803D] dark:text-[#86EFAC]">
+                {ANALYSIS_JOB_STATUS_LABELS[lang][pollStatus] ?? pollStatus}
               </span>
             </p>
             <p dir="ltr" className="mt-1 font-mono text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">

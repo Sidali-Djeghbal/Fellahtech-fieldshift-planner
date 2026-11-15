@@ -145,6 +145,13 @@ export interface GuelmaWorkspaceDictionary {
     confirmRemoveBtn: string;
     cancelBtn: string;
   };
+  descendingToParcel: string;
+  closedTag: string;
+  clearSearchAria: string;
+  closeCommuneAria: string;
+  verticesSummaryTitle: (count: number, perimM: number) => string;
+  customCropOption: string;
+  parcelDefaultSuffix: string;
 }
 
 export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> = {
@@ -299,6 +306,13 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       confirmRemoveBtn: "Yes, Remove",
       cancelBtn: "Keep It",
     },
+    descendingToParcel: " · Descending to parcel...",
+    closedTag: "(closed)",
+    clearSearchAria: "Clear search",
+    closeCommuneAria: "Close commune menu",
+    verticesSummaryTitle: (count, perimM) => `${count} vertices · ${perimM} m perimeter`,
+    customCropOption: "— Custom Crop Name —",
+    parcelDefaultSuffix: "Parcel",
   },
 
   fr: {
@@ -452,6 +466,13 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       confirmRemoveBtn: "Oui, Supprimer",
       cancelBtn: "Conserver",
     },
+    descendingToParcel: " · Descente sur la parcelle...",
+    closedTag: "(fermé)",
+    clearSearchAria: "Effacer la recherche",
+    closeCommuneAria: "Fermer le menu des communes",
+    verticesSummaryTitle: (count, perimM) => `${count} sommets · périmètre de ${perimM} m`,
+    customCropOption: "— Nom de culture personnalisé —",
+    parcelDefaultSuffix: "Parcelle",
   },
 
   ar: {
@@ -494,7 +515,7 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       newFieldTitle: "رسم حدود المزرعة · ولاية قالمة",
       editBordersTitle: "تعديل حدود القطعة بدقة",
       subtitle:
-        "",
+        "انقر على خريطة القمر الصناعي لوضع رؤوس الحدود، واسحب النقاط لتعديل الشكل بدقة وحساب المساحة تلقائياً.",
       searchCommune: "انتقل إلى بلدية (مثل: بوشقوف، وادي الزناتي، قالمة)…",
       allCommunesLabel: (n) => `${n} بلدية في قالمة`,
       quickPresetLabel: "نماذج سريعة",
@@ -605,6 +626,13 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       confirmRemoveBtn: "نعم، احذف",
       cancelBtn: "إبقاء",
     },
+    descendingToParcel: " · جاري الانتقال إلى القطعة...",
+    closedTag: "(مغلق)",
+    clearSearchAria: "مسح البحث",
+    closeCommuneAria: "إغلاق قائمة البلديات",
+    verticesSummaryTitle: (count, perimM) => `${count} رؤوس · محيط ${perimM} م`,
+    customCropOption: "— اسم محصول مخصص —",
+    parcelDefaultSuffix: "قطعة",
   },
 };
 

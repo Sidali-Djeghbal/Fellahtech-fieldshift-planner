@@ -89,7 +89,7 @@ export function RotationLabWindow({
         zenMode ? " hidden-mode" : ""
       }${mobOpen ? " mob-open" : ""}`}
       id="lab"
-      aria-label="Rotation lab"
+      aria-label={loc.ui.ariaLab}
     >
       <div className="win-head">
         <div className="win-title-wrap">
@@ -105,7 +105,7 @@ export function RotationLabWindow({
           className="icon-pill tap"
           id="collapse"
           type="button"
-          aria-label="Collapse rotation lab"
+          aria-label={loc.ui.ariaCollapseLab}
           aria-expanded={!collapsed}
           onClick={onToggleCollapse}
         >
@@ -114,7 +114,7 @@ export function RotationLabWindow({
       </div>
 
       <div className="lab-scroll" id="lab-body">
-        <div className="seg-track" role="group" aria-label="Farmer priority">
+        <div className="seg-track" role="group" aria-label={loc.ui.ariaPriority}>
           {PRIORITIES.map((p) => (
             <button
               key={p.id}
@@ -129,7 +129,7 @@ export function RotationLabWindow({
           ))}
         </div>
 
-        <div className="constraint-row" role="group" aria-label="Farm constraints">
+        <div className="constraint-row" role="group" aria-label={loc.ui.ariaConstraints}>
           <button
             className="const-btn is-irrig tap"
             id="c-irrig"

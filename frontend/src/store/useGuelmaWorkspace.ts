@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { isFixtureMode } from "@/lib/api/client";
 import {
   createFarm as apiCreateFarm,
   createField as apiCreateField,
@@ -151,7 +152,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
               ...pub,
               crop_history: buildLocalFieldRecord(createdFarm.farm_id, fieldDraft).crop_history,
             };
-          } catch {
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
             const farmId = nextNumericFarmId(get().farms);
             createdFarm = {
               farm_id: farmId,
@@ -208,7 +213,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
               ...pub,
               crop_history: buildLocalFieldRecord(farmId, fieldDraft).crop_history,
             };
-          } catch {
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
             createdField = buildLocalFieldRecord(farmId, fieldDraft);
           }
         } else {
@@ -245,8 +254,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
         if (hasSession) {
           try {
             await apiPatchFarm(farmId, patch);
-          } catch {
-            /* keep local update */
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
           }
         }
         set((state) => ({
@@ -259,6 +271,7 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
                 }
               : f
           ),
+          lastError: null,
         }));
       },
 
@@ -267,8 +280,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
         if (hasSession) {
           try {
             await apiDeleteFarm(farmId);
-          } catch {
-            /* keep local removal */
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
           }
         }
         set((state) => {
@@ -284,6 +300,7 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
                   ? fieldKey(firstField.farm_id, firstField.field_id)
                   : null
                 : state.selectedFieldKey,
+            lastError: null,
           };
         });
       },
@@ -296,7 +313,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
         if (hasSession) {
           try {
             updatedField = await apiReplaceField(farmId, fieldId, nextDraft);
-          } catch {
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
             updatedField = buildLocalFieldRecord(farmId, nextDraft);
           }
         } else {
@@ -308,6 +329,7 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
             f.farm_id === farmId && f.field_id === fieldId ? updatedField : f
           ),
           selectedFieldKey: fieldKey(farmId, fieldId),
+          lastError: null,
         }));
 
         return updatedField;
@@ -318,8 +340,11 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
         if (hasSession) {
           try {
             await apiDeleteField(farmId, fieldId);
-          } catch {
-            /* keep local removal */
+          } catch (err) {
+            if (!isFixtureMode()) {
+              set({ lastError: err instanceof Error ? err.message : String(err) });
+              throw err;
+            }
           }
         }
         set((state) => {
@@ -344,6 +369,7 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
                 ? fieldKey(fallback.farm_id, fallback.field_id)
                 : null
               : state.selectedFieldKey,
+            lastError: null,
           };
         });
       },

@@ -35,6 +35,7 @@ import {
   ringToGeoJsonPolygon,
 } from "@/lib/geo/guelma";
 import { UI_DICT } from "@/lib/i18n";
+import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import type { FieldWriteDraft } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -56,6 +57,7 @@ export default function SelectFieldPage() {
     "w-full rounded-xl border border-[#111813]/15 bg-[#111813]/[0.03] px-3 py-2 text-xs text-[#111813] placeholder:text-[#6B7A6F] focus:border-[#15803D] focus:outline-none focus:ring-1 focus:ring-[#15803D] dark:border-white/15 dark:bg-white/[0.06] dark:text-[#F5F7F5] dark:placeholder:text-[#6E7B71] dark:focus:border-[#22C55E] dark:focus:ring-[#22C55E]";
 
   const t = UI_DICT[lang].selectField;
+  const wsDict = GUELMA_WORKSPACE_I18N[lang];
   const hasSession = authMode !== "none";
 
   const farmsQuery = useQuery({
@@ -312,9 +314,9 @@ export default function SelectFieldPage() {
         />
       )}
 
-      {saveError !== null && (
+      {(saveError !== null || farmsQuery.error || fieldsQuery.error) && (
         <ApiErrorCard
-          error={saveError}
+          error={saveError ?? farmsQuery.error ?? fieldsQuery.error}
           lang={lang}
           theme={resolvedTheme}
           onOpenClaimAccount={openAuthModal}
@@ -385,7 +387,7 @@ export default function SelectFieldPage() {
                     {preset.zoneName[lang]}
                   </span>
                   <span className="mt-1 font-mono text-[11px] font-medium tabular-nums text-[#15803D] dark:text-[#86EFAC]">
-                    {preset.areaHectares} ha · {preset.ring.length - 1} vertices
+                    {preset.areaHectares} ha · {preset.ring.length - 1} {t.verticesUnit}
                   </span>
                 </button>
               ))}
@@ -446,7 +448,7 @@ export default function SelectFieldPage() {
           >
             <div>
               <p className="text-xs font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
-                Farm Parcels
+                {t.parcelsPanelTitle}
               </p>
               <div className="mt-2.5 flex flex-wrap gap-2">
                 {(fieldsQuery.data?.items ?? []).map((f) => (
@@ -476,14 +478,14 @@ export default function SelectFieldPage() {
                     setActiveFieldId(null);
                     setEditingExisting(false);
                     setFieldId(`F${nextNum}`);
-                    setFieldName(`Guelma Parcel F${nextNum}`);
+                    setFieldName(`${wsDict.parcelDefaultSuffix} F${nextNum}`);
                     setIsUnverifiedDemo(false);
                     setParcelRing([]);
                   }}
                   className="inline-flex items-center gap-1 rounded-full border border-dashed border-[#15803D]/50 px-3 py-1.5 text-xs font-semibold text-[#15803D] transition hover:bg-[#15803D]/10 dark:border-[#22C55E]/40 dark:text-[#86EFAC] dark:hover:bg-[#22C55E]/15"
                 >
                   <Plus size={13} />
-                  New Parcel
+                  {t.newParcelBadge}
                 </button>
               </div>
             </div>
@@ -536,7 +538,7 @@ export default function SelectFieldPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Latitude
+                  {t.latLabel}
                 </label>
                 <input
                   type="number"
@@ -549,7 +551,7 @@ export default function SelectFieldPage() {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
-                  Longitude
+                  {t.lngLabel}
                 </label>
                 <input
                   type="number"
@@ -574,7 +576,7 @@ export default function SelectFieldPage() {
                 dir="ltr"
                 value={elevationInput}
                 onChange={(e) => setElevationInput(e.target.value)}
-                placeholder="null"
+                placeholder={t.nullPlaceholder}
                 className={`tabular-nums ${glassInputClass}`}
               />
               <p className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
@@ -589,7 +591,7 @@ export default function SelectFieldPage() {
               className="fs-cta-primary flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-semibold active:not-disabled:scale-[0.98] disabled:opacity-50"
             >
               <FloppyDisk size={16} weight="bold" />
-              {saving ? "Saving..." : t.saveContinueBtn}
+              {saving ? t.savingBtn : t.saveContinueBtn}
             </button>
           </form>
         </div>

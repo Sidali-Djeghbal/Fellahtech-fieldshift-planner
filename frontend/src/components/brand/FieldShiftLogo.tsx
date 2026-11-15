@@ -3,9 +3,14 @@ import React from "react";
 interface LogoProps {
   className?: string;
   size?: number;
+  ariaLabel?: string;
 }
 
-export const FieldShiftLogo: React.FC<LogoProps> = ({ className = "w-6 h-8", size }) => (
+export const FieldShiftLogo: React.FC<LogoProps> = ({
+  className = "w-6 h-8",
+  size,
+  ariaLabel = "FieldShift",
+}) => (
   <svg
     width={size || 24}
     height={size ? (size * 32) / 24 : 32}
@@ -13,7 +18,7 @@ export const FieldShiftLogo: React.FC<LogoProps> = ({ className = "w-6 h-8", siz
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
-    aria-label="FieldShift Logo"
+    aria-label={ariaLabel}
   >
     {/* Upper Wing: Slanted Rhombus Facet */}
     <path d="M15 1.5L20 9.5H12L7 1.5H15Z" fill="#5FA87D" />

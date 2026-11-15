@@ -60,7 +60,7 @@ export function TimelineCapsule({
       <div
         className="timeline-dock lg-capsule"
         role="region"
-        aria-label="Satellite and seasonal rainfall timeline"
+        aria-label={loc.ui.ariaTimeline}
       >
         <div className="time-header">
           <div className="time-purpose">
@@ -84,7 +84,7 @@ export function TimelineCapsule({
             className="play-btn tap"
             id="play"
             type="button"
-            aria-label="Play monthly timeline"
+            aria-label={loc.ui.ariaPlay}
             onClick={onTogglePlay}
           >
             <svg viewBox="0 0 10 10">
@@ -121,7 +121,7 @@ export function TimelineCapsule({
               max={MONTHS.length - 1}
               value={monthIndex}
               step={1}
-              aria-label="Timeline month"
+              aria-label={loc.ui.ariaTimelineMonth}
               onChange={(e) => onScrub(Number(e.target.value))}
               onMouseUp={(e) =>
                 onScrubCommit(Number((e.target as HTMLInputElement).value))
@@ -145,7 +145,7 @@ export function TimelineCapsule({
               className="spark"
               id="spark"
               dir="ltr"
-              aria-label="Monthly rainfall normal"
+              aria-label={loc.ui.ariaRainfallNormal}
             >
               {clim.rain.map((rVal, i) => (
                 <button

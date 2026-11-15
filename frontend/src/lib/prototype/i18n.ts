@@ -233,6 +233,33 @@ export interface LocaleDict {
   probeLoading: string;
   climates: Record<ClimateKey, string>;
   legends: Record<LegendKey, LegendDef>;
+  ui: {
+    ariaPresetsRegion: string;
+    ariaPresetsSelect: string;
+    ariaSelectParcel: string;
+    ariaLanguage: string;
+    ariaLayers: string;
+    ariaControls: string;
+    ariaInspector: string;
+    ariaInspectorView: string;
+    ariaCollapseInspector: string;
+    ariaComparisonMatrix: string;
+    ariaLab: string;
+    ariaCollapseLab: string;
+    ariaPriority: string;
+    ariaConstraints: string;
+    ariaTimeline: string;
+    ariaPlay: string;
+    ariaTimelineMonth: string;
+    ariaRainfallNormal: string;
+    ariaCloseGuide: string;
+    ariaMobileViews: string;
+    ariaLegendScale: string;
+    bordersBtn: string;
+    legendFallbackTitle: string;
+    legendFallbackLo: string;
+    legendFallbackHi: string;
+  };
   presets?: Record<PresetId, PresetLoc>;
   strats?: Record<StratId, StratLoc>;
 }
@@ -557,6 +584,33 @@ export const I18N: Record<Lang, LocaleDict> = {
       tamlouka_plains: "470 mm/yr · CV 0.26 · 15.8 frost d/yr",
     },
     legends: LEGENDS,
+    ui: {
+      ariaPresetsRegion: "Guelma field presets",
+      ariaPresetsSelect: "Guelma parcel presets",
+      ariaSelectParcel: "Select Guelma parcel",
+      ariaLanguage: "Language",
+      ariaLayers: "Earth observation layers",
+      ariaControls: "Map view controls",
+      ariaInspector: "Field and strategy inspector",
+      ariaInspectorView: "Inspector view",
+      ariaCollapseInspector: "Collapse inspector",
+      ariaComparisonMatrix: "Rotation comparison matrix",
+      ariaLab: "Rotation lab",
+      ariaCollapseLab: "Collapse rotation lab",
+      ariaPriority: "Farmer priority",
+      ariaConstraints: "Farm constraints",
+      ariaTimeline: "Satellite and seasonal rainfall timeline",
+      ariaPlay: "Play monthly timeline",
+      ariaTimelineMonth: "Timeline month",
+      ariaRainfallNormal: "Monthly rainfall normal",
+      ariaCloseGuide: "Close guide",
+      ariaMobileViews: "Mobile views",
+      ariaLegendScale: "Active layer scale",
+      bordersBtn: "Borders",
+      legendFallbackTitle: "Canopy greenness",
+      legendFallbackLo: "bare",
+      legendFallbackHi: "dense",
+    },
   },
   fr: {
     pageTitle: "FieldShift — Wilaya de Guelma",
@@ -881,6 +935,33 @@ export const I18N: Record<Lang, LocaleDict> = {
       sm: { ...LEGENDS.sm, title: "Eau racinaire", lo: "sec", hi: "saturé" },
       rain: { ...LEGENDS.rain, title: "Précipitations", lo: "0 mm/h", hi: "30+ mm/h" },
       lst: { ...LEGENDS.lst, title: "Temp. de surface", lo: "frais", hi: "chaud" },
+    },
+    ui: {
+      ariaPresetsRegion: "Parcelles de référence Guelma",
+      ariaPresetsSelect: "Sélectionner une parcelle de référence",
+      ariaSelectParcel: "Choisir une parcelle de Guelma",
+      ariaLanguage: "Langue",
+      ariaLayers: "Couches d'observation terrestre",
+      ariaControls: "Contrôles de la vue carte",
+      ariaInspector: "Inspecteur de parcelle et stratégie",
+      ariaInspectorView: "Vue de l'inspecteur",
+      ariaCollapseInspector: "Réduire l'inspecteur",
+      ariaComparisonMatrix: "Matrice de comparaison des rotations",
+      ariaLab: "Laboratoire de rotation",
+      ariaCollapseLab: "Réduire le laboratoire",
+      ariaPriority: "Priorité de l'agriculteur",
+      ariaConstraints: "Contraintes de la ferme",
+      ariaTimeline: "Chronologie satellite et pluviométrie",
+      ariaPlay: "Lire l'animation mensuelle",
+      ariaTimelineMonth: "Mois du calendrier",
+      ariaRainfallNormal: "Pluviométrie mensuelle normale",
+      ariaCloseGuide: "Fermer le guide",
+      ariaMobileViews: "Vues mobiles",
+      ariaLegendScale: "Échelle de la couche active",
+      bordersBtn: "Contours",
+      legendFallbackTitle: "Couvert végétal",
+      legendFallbackLo: "nu",
+      legendFallbackHi: "dense",
     },
     presets: {
       seybouse: {
@@ -1304,6 +1385,33 @@ export const I18N: Record<Lang, LocaleDict> = {
       sm: { ...LEGENDS.sm, title: "رطوبة الجذور", lo: "جافة", hi: "مشبعة" },
       rain: { ...LEGENDS.rain, title: "شدة الأمطار", lo: "0 مم/س", hi: "30+ مم/س" },
       lst: { ...LEGENDS.lst, title: "حرارة السطح", lo: "معتدل", hi: "حار" },
+    },
+    ui: {
+      ariaPresetsRegion: "مواقع قالمة المرجعية",
+      ariaPresetsSelect: "اختيار موقع مرجعي في قالمة",
+      ariaSelectParcel: "تحديد قطعة في قالمة",
+      ariaLanguage: "اللغة",
+      ariaLayers: "طبقات الرصد الفضائي",
+      ariaControls: "أدوات عرض الخريطة",
+      ariaInspector: "لوحة فحص القطعة والاستراتيجية",
+      ariaInspectorView: "تبويب الفحص",
+      ariaCollapseInspector: "طي لوحة الفحص",
+      ariaComparisonMatrix: "مصفوفة مقارنة التناوب الزراعي",
+      ariaLab: "مختبر التناوب الزراعي",
+      ariaCollapseLab: "طي مختبر التناوب",
+      ariaPriority: "أولوية الفلاح",
+      ariaConstraints: "قيود المزرعة",
+      ariaTimeline: "الجدول الزمني للأقمار الصناعية والأمطار",
+      ariaPlay: "تشغيل الجدول الشهري",
+      ariaTimelineMonth: "شهر الجدول الزمني",
+      ariaRainfallNormal: "معدل الأمطار الشهري",
+      ariaCloseGuide: "إغلاق الدليل",
+      ariaMobileViews: "تبويبات الهاتف",
+      ariaLegendScale: "مقياس الطبقة النشطة",
+      bordersBtn: "الحدود",
+      legendFallbackTitle: "اخضرار الغطاء النباتي",
+      legendFallbackLo: "عارية",
+      legendFallbackHi: "كثيف",
     },
     presets: {
       seybouse: {

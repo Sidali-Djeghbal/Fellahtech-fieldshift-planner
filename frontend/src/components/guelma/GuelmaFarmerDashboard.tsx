@@ -29,6 +29,7 @@ import {
   FieldShiftAiIntelligenceSection,
   type AnalysisRunLifecycle,
 } from "@/components/intelligence/FieldShiftAiIntelligenceSection";
+import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
 import {
   extractRingFromBoundary,
   findNearestGuelmaCommune,
@@ -272,6 +273,10 @@ export function GuelmaFarmerDashboard({
 }: GuelmaFarmerDashboardProps) {
   const [activeView, setActiveView] = useState<WorkspaceView>("overview");
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const catalogMap = useMemo(
+    () => new Map(catalogItems.map((c) => [c.crop_id, c])),
+    [catalogItems]
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -410,10 +415,16 @@ export function GuelmaFarmerDashboard({
       computeZoneSlices(fields, envelope?.result.field_plans ?? [], {
         optimal: ws.analyticsZone.zoneOptimal,
         moderate: ws.analyticsZone.zoneModerate,
-        stress: ws.analyticsZone.zoneStress,
+        stress: plainMode
+          ? lang === "ar"
+            ? "حذر مناخي ومائي"
+            : lang === "fr"
+              ? "Alerte météo / sol"
+              : "Weather & soil caution"
+          : ws.analyticsZone.zoneStress,
         bare: ws.analyticsZone.zoneBare,
       }),
-    [fields, envelope, ws.analyticsZone]
+    [fields, envelope, ws.analyticsZone, plainMode, lang]
   );
 
   const avgNdviValue = envelope ? "0.68" : fields.length > 0 ? "0.52" : "--";
@@ -680,15 +691,12 @@ export function GuelmaFarmerDashboard({
                                 {field.field_id}
                               </span>
                             </div>
-                            <div
-                              className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]"
-                              dir="ltr"
-                            >
+                            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
                               <span className="inline-flex items-center gap-1 font-medium text-[#15803D] dark:text-[#86EFAC]">
                                 <MapPin size={11} weight="fill" aria-hidden="true" />
                                 {communeObj.name[lang] || communeObj.name.en}
                               </span>
-                              <span className="font-mono tabular-nums">
+                              <span dir="ltr" className="font-mono tabular-nums">
                                 {field.area_hectares.toFixed(2)} ha
                               </span>
                             </div>
@@ -729,8 +737,13 @@ export function GuelmaFarmerDashboard({
                           </div>
                           {latestHist ? (
                             <div className="mt-0.5 truncate text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                              {latestHist.crop_name_raw || latestHist.crop_id || ""} ·{" "}
-                              <span className="font-mono tabular-nums">{latestHist.year}</span>
+                              {resolveCropDisplayName(
+                                latestHist.crop_id,
+                                latestHist.crop_name_raw,
+                                catalogMap,
+                                lang
+                              )}{" "}
+                              · <span dir="ltr" className="font-mono tabular-nums">{latestHist.year}</span>
                             </div>
                           ) : null}
                         </div>
@@ -1152,6 +1165,7 @@ export function GuelmaFarmerDashboard({
                         farms={farms}
                         selectedField={activeField}
                         fieldPlan={activeFieldPlan}
+                        catalogMap={catalogMap}
                         onStartAddFarm={onStartAddFarm}
                         onLoadSamples={onLoadSamples}
                         onOpenAnalysis={onOpenAnalysisRunner}
@@ -1187,7 +1201,12 @@ export function GuelmaFarmerDashboard({
                               type="button"
                               onClick={onTogglePlainMode}
                               data-testid="toggle-plain-mode-btn"
-                              className="fs-liquid-pill inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full ps-3 pe-3.5 text-xs font-medium text-[#111813] dark:text-[#F5F7F5] active:not-disabled:scale-[0.96]"
+                              aria-pressed={plainMode}
+                              className={`inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full ps-3 pe-3.5 text-xs font-medium transition-[transform,background-color,box-shadow,color] active:not-disabled:scale-[0.96] ${
+                                plainMode
+                                  ? "bg-[#22C55E]/20 text-[#15803D] ring-1 ring-[#15803D]/35 dark:text-[#86EFAC] dark:ring-[#4ADE80]/35"
+                                  : "fs-liquid-pill text-[#111813] dark:text-[#F5F7F5]"
+                              }`}
                             >
                               <Translate size={14} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
                               <span>
@@ -1318,7 +1337,13 @@ export function GuelmaFarmerDashboard({
                         <div className="grid grid-cols-2 gap-2.5 md:col-span-4">
                           <div className="fs-liquid-well rounded-2xl p-3">
                             <div className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                              {ws.analyticsZone.avgNdvi}
+                              {plainMode
+                                ? lang === "ar"
+                                  ? "حيوية الغطاء النباتي"
+                                  : lang === "fr"
+                                    ? "Vigueur végétale"
+                                    : "Vegetation vigor"
+                                : ws.analyticsZone.avgNdvi}
                             </div>
                             <div
                               dir="ltr"
@@ -1346,7 +1371,13 @@ export function GuelmaFarmerDashboard({
 
                           <div className="fs-liquid-well rounded-2xl p-3">
                             <div className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                              {ws.analyticsZone.problemZones}
+                              {plainMode
+                                ? lang === "ar"
+                                  ? "أشهر الإجهاد"
+                                  : lang === "fr"
+                                    ? "Mois à risque"
+                                    : "Stress months"
+                                : ws.analyticsZone.problemZones}
                             </div>
                             <div
                               dir="ltr"
@@ -1441,6 +1472,7 @@ export function GuelmaFarmerDashboard({
                         farms={farms}
                         selectedField={activeField}
                         fieldPlan={activeFieldPlan}
+                        catalogMap={catalogMap}
                         onStartAddFarm={onStartAddFarm}
                         onLoadSamples={onLoadSamples}
                         onOpenAnalysis={onOpenAnalysisRunner}

@@ -55,14 +55,21 @@ const defaultTokenAdapter: TokenAdapter = {
   },
 };
 
+export function resolveApiBaseRoot(envBaseUrl?: string | null): string {
+  const trimmed = (envBaseUrl ?? "").trim().replace(/\/+$/, "");
+  if (!trimmed) return "/api/v1";
+  const withoutPrefix = trimmed.endsWith("/api/v1")
+    ? trimmed.slice(0, -"/api/v1".length).replace(/\/+$/, "")
+    : trimmed;
+  return `${withoutPrefix}/api/v1`;
+}
+
 export function createApiClient(config: ApiClientConfig = {}) {
   const fetchFn = config.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
   const tokens = config.tokenAdapter ?? defaultTokenAdapter;
-  const baseRoot =
-    config.baseUrl ??
-    (process.env.NEXT_PUBLIC_API_BASE_URL
-      ? `${process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "")}/api/v1`
-      : "/api/v1");
+  const baseRoot = config.baseUrl
+    ? config.baseUrl.replace(/\/+$/, "")
+    : resolveApiBaseRoot(process.env.NEXT_PUBLIC_API_BASE_URL);
 
   let inflightRefresh: Promise<string | null> | null = null;
 
@@ -168,12 +175,25 @@ export function createApiClient(config: ApiClientConfig = {}) {
     }
 
     const executeFetch = async (overrideBearer?: string): Promise<Response> => {
-      return fetchFn(`${baseRoot}${path}`, {
-        method,
-        headers: buildHeaders(overrideBearer),
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-        signal: options.signal,
-      });
+      try {
+        return await fetchFn(`${baseRoot}${path}`, {
+          method,
+          headers: buildHeaders(overrideBearer),
+          body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+          signal: options.signal,
+        });
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw err;
+        }
+        throw new ApiClientError({
+          status: 503,
+          code: "SERVICE_UNAVAILABLE",
+          message: err instanceof Error ? err.message : "Network request failed",
+          details: [],
+          requestId: null,
+        });
+      }
     };
 
     let response = await executeFetch();

@@ -1024,7 +1024,7 @@ export function GuelmaBorderEditorMap({
             {communeQuery ? (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={dict.clearSearchAria}
                 onClick={() => {
                   setCommuneQuery("");
                   setCommuneDropdownOpen(true);
@@ -1046,7 +1046,7 @@ export function GuelmaBorderEditorMap({
                 <button
                   type="button"
                   onClick={() => setCommuneDropdownOpen(false)}
-                  aria-label="Close commune menu"
+                  aria-label={dict.closeCommuneAria}
                   className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--lg-fg-subtle)] transition-colors hover:text-[var(--lg-fg)]"
                 >
                   <X size={12} aria-hidden="true" />
@@ -1345,7 +1345,7 @@ export function GuelmaBorderEditorMap({
             <div className="lg-tile rounded-xl px-2.5 py-2">
               <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.verticesLbl}</div>
               <div className="mt-0.5 text-xs font-bold text-[var(--lg-fg)]" data-testid="cad-vertices-count">
-                {vertices.length} {isClosed ? "(closed)" : ""}
+                {vertices.length} {isClosed ? dict.closedTag : ""}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">

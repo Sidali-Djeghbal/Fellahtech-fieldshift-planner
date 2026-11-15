@@ -48,6 +48,7 @@ import {
   type UserDataExport,
   type UserProfile,
   type WaterAvailability,
+  serializeFieldPatchRequest,
   serializeFieldWriteRequest,
 } from "@/lib/schemas";
 import { apiClient } from "./client";
@@ -286,20 +287,8 @@ export async function patchField(
   fieldId: string,
   patch: Partial<FieldWriteDraft>
 ): Promise<FieldDetailPublic> {
-  // Strip forbidden write keys even on partial patches (ADR-5)
-  const sanitized: Record<string, unknown> = { ...patch };
-  if (patch.soil) {
-    const { source: _ignored, ...cleanSoil } = patch.soil;
-    void _ignored;
-    sanitized.soil = cleanSoil;
-  }
-  if (patch.crop_history) {
-    sanitized.crop_history = patch.crop_history.map((row) => {
-      const { catalog_version: _ignored, ...cleanRow } = row;
-      void _ignored;
-      return cleanRow;
-    });
-  }
+  // Enforce OpenAPI FieldPatchRequest additionalProperties:false & ADR-5 sanitization
+  const sanitized = serializeFieldPatchRequest(patch);
   const data = await apiClient.request<unknown>(
     `/farms/${farmId}/fields/${encodeURIComponent(fieldId)}`,
     {

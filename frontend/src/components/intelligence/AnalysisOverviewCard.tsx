@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { useResolvedTheme } from "@/app/providers";
 import { DegradedReplayBanner, WarningsBanner } from "@/components/shared/ProvenanceBanners";
+import { localizePlainText } from "@/lib/i18n";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type {
   AnalysisEnvelope,
@@ -22,6 +23,7 @@ import type {
 
 interface AnalysisOverviewCardProps {
   lang: Language;
+  plainMode?: boolean;
   envelope: AnalysisEnvelope;
   farmAnalyses: FarmAnalysisSummary[];
   activeFieldPlan: FieldPlan | null;
@@ -32,6 +34,7 @@ interface AnalysisOverviewCardProps {
 
 export function AnalysisOverviewCard({
   lang,
+  plainMode = false,
   envelope,
   farmAnalyses,
   activeFieldPlan,
@@ -129,7 +132,7 @@ export function AnalysisOverviewCard({
               {ov.summaryHeading}
             </h3>
             <p className="mt-2 max-w-[68ch] text-sm leading-relaxed text-[#111813] dark:text-[#F5F7F5]">
-              {res.overall_summary}
+              {localizePlainText(res.overall_summary, lang, plainMode)}
             </p>
           </div>
 

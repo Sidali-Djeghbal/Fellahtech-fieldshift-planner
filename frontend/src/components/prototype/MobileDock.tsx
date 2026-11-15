@@ -24,7 +24,7 @@ export function MobileDock({
   ];
 
   return (
-    <nav className="mobile-dock lg-capsule" aria-label="Mobile views">
+    <nav className="mobile-dock lg-capsule" aria-label={loc.ui.ariaMobileViews}>
       {buttons.map((b) => (
         <button
           key={b.pane}

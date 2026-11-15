@@ -74,10 +74,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const isWorkspaceRoute = pathname === "/" || pathname === "/dashboard";
 
   useEffect(() => {
-    if (isWorkspaceRoute) return;
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  }, [lang, isWorkspaceRoute]);
+  }, [lang]);
 
   return (
     <ResolvedThemeContext.Provider value={resolvedTheme}>

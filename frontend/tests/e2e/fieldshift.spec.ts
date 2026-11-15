@@ -557,4 +557,130 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     expect(pageErrors, "Uncaught page errors during theme test").toEqual([]);
     expect(consoleErrors, "Console errors during theme test").toEqual([]);
   });
+
+  test("verifies EN / FR / AR translations, RTL layout, 3D prototype, AuthModal, and all studio routes without overflow", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        const text = msg.text();
+        if (
+          !/webgl|Failed to initialize WebGL|maplibre|ERR_NAME_NOT_RESOLVED|Failed to fetch|terrarium|arcgisonline|gibs|demotiles/i.test(
+            text
+          )
+        ) {
+          const srcUrl = msg.location()?.url || "";
+          const isExternalTileAbort =
+            /ERR_FAILED/i.test(text) && srcUrl !== "" && !srcUrl.startsWith("http://127.0.0.1:3100");
+          if (!isExternalTileAbort) {
+            consoleErrors.push(`${text}${srcUrl ? ` [${srcUrl}]` : ""}`);
+          }
+        }
+      }
+    });
+
+    await page.addInitScript(() => {
+      try {
+        if (!sessionStorage.getItem("__e2e_i18n_reset")) {
+          localStorage.removeItem("fieldshift.guelma.workspace.v1");
+          localStorage.removeItem("fieldshift-app-storage");
+          sessionStorage.setItem("__e2e_i18n_reset", "1");
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+
+    // 1. Dashboard / FR -> AR RTL + 3D Prototype
+    await page.goto("/");
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+    await page.getByTestId("load-samples-btn").click();
+    await expect(page.getByTestId("kpi-fields")).toHaveText("4");
+
+    await page.getByTestId("dash-lang-fr").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await assertNoHorizontalOverflow(page, "/ (FR)");
+
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await assertNoHorizontalOverflow(page, "/ (AR RTL)");
+
+    await page.getByTestId("inspect-field-G-1").click();
+    await expect(page.getByTestId("fieldshift-prototype-root")).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await page.getByTestId("proto-back-dashboard").click();
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+
+    // 2. /select-field + quick launch in FR & AR RTL
+    await page.goto("/select-field");
+    const quickLaunch = page.getByTestId("quick-launch-demo");
+    if (await quickLaunch.isVisible()) {
+      await quickLaunch.click();
+    }
+    await expect(page.getByTestId("warning-DEMO_PARCEL_UNVERIFIED")).toBeVisible();
+    await expect(page.getByTestId("boundary-status-pill")).toBeVisible();
+    await page.getByTestId("dash-lang-fr").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await assertNoHorizontalOverflow(page, "/select-field (FR)");
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await assertNoHorizontalOverflow(page, "/select-field (AR RTL)");
+
+    // 3. /farm-profile FR & AR localized weights + presets + submit to /comparison
+    await page.locator('a[href="/farm-profile"]:visible').first().click();
+    await expect(page).toHaveURL(/\/farm-profile/);
+    await expect(page.getByTestId("weights-sum-badge")).toBeVisible();
+    await page.getByTestId("dash-lang-fr").click();
+    await expect(page.getByRole("button", { name: "Résilience Hydrique" })).toBeVisible();
+    await expect(page.locator("body")).toContainText("Économie d'eau");
+    await assertNoHorizontalOverflow(page, "/farm-profile (FR)");
+
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("button", { name: "مقاومة الجفاف والمياه" })).toBeVisible();
+    await expect(page.locator("body")).toContainText("توفير المياه");
+    await assertNoHorizontalOverflow(page, "/farm-profile (AR RTL)");
+
+    await page.getByTestId("run-analysis-submit-btn").click();
+    await expect(page).toHaveURL(/\/comparison\?analysisId=analysis_[0-9a-f]{12}/, {
+      timeout: 20_000,
+    });
+
+    // 4. /comparison in AR RTL & FR
+    await expect(page.getByTestId("strategy-card-S2_water_resilient")).toBeVisible();
+    await assertNoHorizontalOverflow(page, "/comparison (AR RTL)");
+    await page.getByTestId("dash-lang-fr").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await assertNoHorizontalOverflow(page, "/comparison (FR)");
+
+    // 5. /evidence + AuthModal in FR/AR + cleanup back to EN
+    await page.locator('a[href="/evidence"]:visible').first().click();
+    await expect(page).toHaveURL(/\/evidence/);
+    await expect(page.getByTestId("evidence-card-farmer_input").first()).toBeVisible();
+    await assertNoHorizontalOverflow(page, "/evidence (FR)");
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await assertNoHorizontalOverflow(page, "/evidence (AR RTL)");
+
+    const headerAuthBtn = page.getByTestId("header-auth-btn");
+    if (await headerAuthBtn.isVisible()) {
+      await headerAuthBtn.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    }
+
+    await page.getByTestId("dash-lang-en").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+
+    expect(pageErrors, "Uncaught page errors during trilingual E2E flow").toEqual([]);
+    expect(consoleErrors, "Console errors during trilingual E2E flow").toEqual([]);
+  });
 });

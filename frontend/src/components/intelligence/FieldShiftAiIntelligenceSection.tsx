@@ -318,6 +318,7 @@ export function FieldShiftAiIntelligenceSection({
         <div className="space-y-4 no-print">
           <AnalysisOverviewCard
             lang={lang}
+            plainMode={plainMode}
             envelope={envelope}
             farmAnalyses={farmAnalyses}
             activeFieldPlan={activeFieldPlan}

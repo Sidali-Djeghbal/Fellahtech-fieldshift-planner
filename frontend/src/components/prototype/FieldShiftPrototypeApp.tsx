@@ -836,11 +836,13 @@ export function FieldShiftPrototypeApp({
         // Pulsing pin marker
         const pinEl = document.createElement("div");
         pinEl.className = "pin";
+        pinEl.dir = "ltr";
         const dotEl = document.createElement("span");
         dotEl.className = "pin-dot";
         const lblEl = document.createElement("span");
         lblEl.className = "pin-lbl";
         lblEl.id = "pin-lbl";
+        lblEl.dir = "auto";
         const curLoc = latestRef.current.loc;
         const curP = pLoc(latestRef.current.activePreset, curLoc);
         const curHa = ringAreaHa(latestRef.current.activePreset.ring).toFixed(
@@ -1201,7 +1203,7 @@ export function FieldShiftPrototypeApp({
         onOpenGuide={() => setGuideOpen(true)}
       />
 
-      <LegendCapsule visible={Boolean(activeLegend)} legend={activeLegend} />
+      <LegendCapsule visible={Boolean(activeLegend)} legend={activeLegend} loc={loc} />
 
       <RotationLabWindow
         loc={loc}
@@ -1236,6 +1238,7 @@ export function FieldShiftPrototypeApp({
 
       <FieldInspectorWindow
         loc={loc}
+        lang={protoState.lang}
         rawPreset={activePreset}
         liveElev={liveElev}
         liveSlope={liveSlope}

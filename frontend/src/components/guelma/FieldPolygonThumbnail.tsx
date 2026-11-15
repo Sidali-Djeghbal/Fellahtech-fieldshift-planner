@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useResolvedTheme } from "@/app/providers";
+import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
+import { useAppStore } from "@/store/useAppStore";
 import {
   computePerimeterMeters,
   extractRingFromBoundary,
@@ -30,6 +32,8 @@ export function FieldPolygonThumbnail({
   className = "",
 }: FieldPolygonThumbnailProps) {
   const resolvedTheme = useResolvedTheme();
+  const lang = useAppStore((s) => s.lang);
+  const wsDict = GUELMA_WORKSPACE_I18N[lang];
   const rawPts = ring?.length
     ? stripClosingPoint(ring)
     : extractRingFromBoundary(boundary);
@@ -105,7 +109,7 @@ export function FieldPolygonThumbnail({
           ? "ring-1 ring-[#15803D]/55 dark:ring-[#86EFAC]/65"
           : "ring-1 ring-[#111813]/10 dark:ring-white/10"
       } ${className}`}
-      title={`${pts.length} vertices · ${perimM} m perimeter`}
+      title={wsDict.verticesSummaryTitle(pts.length, perimM)}
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}

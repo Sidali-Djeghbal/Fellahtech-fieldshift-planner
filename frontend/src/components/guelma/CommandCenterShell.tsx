@@ -260,7 +260,7 @@ export function CommandCenterShell({
                   <div
                     className="fs-liquid-well inline-flex shrink-0 items-center rounded-full p-1 text-[10px] font-semibold sm:text-[11px]"
                     role="radiogroup"
-                    aria-label="Language switcher"
+                    aria-label={uiDict.common.ariaLanguageSwitcher}
                     onKeyDown={(e) => {
                       const order: readonly Language[] = ["en", "fr", "ar"];
                       const idx = order.indexOf(lang);
@@ -378,7 +378,7 @@ export function CommandCenterShell({
 
               {/* Mobile View Switcher Pill Strip (<md) */}
               <nav
-                aria-label="Mobile workspace navigation"
+                aria-label={uiDict.common.ariaMobileNav}
                 className="fs-liquid-well no-scrollbar mt-2.5 flex items-center gap-1.5 overflow-x-auto rounded-full p-1 md:hidden"
               >
                 {viewTabs.map((tab) => {
@@ -445,7 +445,7 @@ export function CommandCenterShell({
           >
             {/* Floating Vertical Tool Rail (Desktop md+) */}
             <aside
-              aria-label="Spatial tool rail"
+              aria-label={uiDict.common.ariaToolRail}
               className="no-print fs-glass-rail no-scrollbar sticky top-20 hidden max-h-[calc(100vh-110px)] min-h-[540px] w-14 shrink-0 flex-col items-center justify-between self-start overflow-y-auto rounded-3xl px-2 py-3 md:flex"
             >
               <div className="flex flex-col items-center gap-2">
@@ -625,13 +625,13 @@ export function CommandCenterShell({
             </aside>
 
             {/* Main Spatial Viewport */}
-            <main className="min-w-0 flex-1 max-w-[1440px] ml-auto mr-auto">
+            <main className="min-w-0 flex-1 max-w-[1440px] mx-auto">
               {!isWorkspaceHome && (
                 <div className="no-print mb-5 space-y-2.5">
                   <div className="fs-liquid-panel flex flex-wrap items-center justify-between gap-3 rounded-3xl px-4 py-3">
                     {/* 4-Step Studio Route Switcher */}
                     <nav
-                      aria-label="Analysis studio workflow"
+                      aria-label={uiDict.common.ariaWorkflowNav}
                       className="fs-liquid-well no-scrollbar flex items-center gap-1 overflow-x-auto rounded-full p-1"
                     >
                       {studioSteps.map(({ href, label, Icon }, idx) => {
@@ -683,8 +683,8 @@ export function CommandCenterShell({
                       <div
                         title={
                           healthQuery.data
-                            ? `Dataset: ${healthQuery.data.dataset.active_version} | Breaker: ${healthQuery.data.ml_service.circuit_breaker}`
-                            : "Checking dependencies"
+                            ? `${uiDict.common.datasetLabel}: ${healthQuery.data.dataset.active_version} | ${healthQuery.data.ml_service.circuit_breaker}`
+                            : uiDict.common.checkingDeps
                         }
                         className="fs-liquid-well hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] xl:inline-flex"
                       >
@@ -719,7 +719,7 @@ export function CommandCenterShell({
                             className="text-[#84E875] dark:text-[#15803D]"
                             aria-hidden="true"
                           />
-                          <span>{launchingGuest ? "Starting..." : uiDict.chrome.launchDemo}</span>
+                          <span>{launchingGuest ? uiDict.common.startingLabel : uiDict.chrome.launchDemo}</span>
                         </button>
                       )}
                     </div>
@@ -736,7 +736,7 @@ export function CommandCenterShell({
                           dir="ltr"
                           className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#86EFAC]"
                         >
-                          {usedQuarters} / {maxQuarters} qtrs
+                          {usedQuarters} / {maxQuarters} {uiDict.common.quartersShort}
                         </span>
                         <div className="hidden h-1.5 w-28 overflow-hidden rounded-full bg-[#111813]/10 dark:bg-white/10 sm:block">
                           <div

@@ -44,6 +44,7 @@ export function UsdaTextureModal({
 
   const isDark = theme === "dark";
   const t = UI_DICT[lang].farmProfile;
+  const u = UI_DICT[lang].usda;
   const derived = classifyUsdaSoilTexture({ clay, silt, sand, unit });
 
   return (
@@ -56,7 +57,7 @@ export function UsdaTextureModal({
       <button
         type="button"
         tabIndex={-1}
-        aria-label="Close USDA texture converter"
+        aria-label={u.closeAria}
         onClick={onClose}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
       />
@@ -70,7 +71,7 @@ export function UsdaTextureModal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close USDA texture converter"
+          aria-label={u.closeAria}
           className={`absolute end-4 top-4 flex h-9 w-9 items-center justify-center rounded-full ${
             isDark
               ? "fs-liquid-pill text-[#9CA89E] hover:text-[#FFFFFF]"
@@ -95,7 +96,7 @@ export function UsdaTextureModal({
           </h3>
         </div>
         <p className={`mt-1 text-xs ${isDark ? "text-[#9CA89E]" : "text-[#6B7280]"}`}>
-          ADR-5 exact rule: clay &ge; 40% &rarr; clay; else silt &ge; 50% &rarr; silty; else sand &ge; 70% &rarr; sandy; else loamy.
+          {u.adrRuleText}
         </p>
 
         <div className="mt-4 flex gap-2">
@@ -119,7 +120,7 @@ export function UsdaTextureModal({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            Percent (%)
+            {u.percentLabel}
           </button>
           <button
             type="button"
@@ -152,7 +153,7 @@ export function UsdaTextureModal({
                 isDark ? "text-[#E4EBE5]" : "text-[#374151]"
               }`}
             >
-              Clay
+              {u.clayLabel}
             </label>
             <input
               type="number"
@@ -173,7 +174,7 @@ export function UsdaTextureModal({
                 isDark ? "text-[#E4EBE5]" : "text-[#374151]"
               }`}
             >
-              Silt
+              {u.siltLabel}
             </label>
             <input
               type="number"
@@ -194,7 +195,7 @@ export function UsdaTextureModal({
                 isDark ? "text-[#E4EBE5]" : "text-[#374151]"
               }`}
             >
-              Sand
+              {u.sandLabel}
             </label>
             <input
               type="number"
@@ -221,7 +222,7 @@ export function UsdaTextureModal({
           <span
             className={`text-xs font-medium ${isDark ? "text-[#E4EBE5]" : "text-[#111827]"}`}
           >
-            Derived SoilType:
+            {u.derivedSoilTypeLabel}
           </span>
           <span
             className={`rounded-full border px-3 py-0.5 text-xs font-bold ${
@@ -230,7 +231,7 @@ export function UsdaTextureModal({
                 : "border-emerald-300 bg-[#DCFCE7] text-[#15803D]"
             }`}
           >
-            {SOIL_TYPE_LABELS[lang][derived]} ({derived})
+            {SOIL_TYPE_LABELS[lang][derived]}
           </span>
         </div>
 

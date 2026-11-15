@@ -383,6 +383,14 @@ export const FieldWriteRequestSchema = z
   .strict();
 export type FieldWriteRequest = z.infer<typeof FieldWriteRequestSchema>;
 
+export const FieldPatchRequestSchema = FieldWriteRequestSchema.omit({
+  field_id: true,
+  is_unverified_demo_parcel: true,
+})
+  .partial()
+  .strict();
+export type FieldPatchRequest = z.infer<typeof FieldPatchRequestSchema>;
+
 export const FieldPublicSchema = z.object({
   farm_id: z.string().regex(/^farm_[0-9]+$/),
   field_id: z.string(),
@@ -485,8 +493,42 @@ function toNullableNumber(val: number | string | null | undefined): number | nul
   return Number.isFinite(num) ? num : null;
 }
 
+function serializeSoilInput(soil: FieldWriteDraft["soil"]): z.infer<typeof FieldSoilWriteSchema> {
+  const isUnknownSoil = soil.soil_type === "unknown";
+  return {
+    soil_type: soil.soil_type,
+    soil_ph: isUnknownSoil ? null : toNullableNumber(soil.soil_ph),
+    organic_matter_percent: isUnknownSoil ? null : toNullableNumber(soil.organic_matter_percent),
+    soil_test_date:
+      isUnknownSoil || !soil.soil_test_date?.trim() ? null : soil.soil_test_date.trim(),
+  };
+}
+
+function serializeWaterInput(water: FieldWriteDraft["water"]): z.infer<typeof FieldWaterSchema> {
+  return {
+    availability: water.availability,
+    source: water.source,
+    source_other:
+      water.source === "other" && water.source_other?.trim() ? water.source_other.trim() : null,
+    irrigation_system: water.irrigation_system,
+  };
+}
+
+function serializeCropHistoryRow(
+  row: FieldWriteDraft["crop_history"][number]
+): CropHistoryWriteItem {
+  return {
+    season: row.season,
+    year: Number(row.year),
+    planting_month: toNullableNumber(row.planting_month),
+    crop_id: row.crop_id?.trim() || null,
+    crop_name_raw: row.crop_name_raw?.trim() || null,
+    yield_tons_per_hectare: toNullableNumber(row.yield_tons_per_hectare),
+    notes: row.notes?.trim() || null,
+  };
+}
+
 export function serializeFieldWriteRequest(draft: FieldWriteDraft): FieldWriteRequest {
-  const isUnknownSoil = draft.soil.soil_type === "unknown";
   const payload: FieldWriteRequest = {
     field_id: draft.field_id.trim(),
     field_name: draft.field_name.trim(),
@@ -498,48 +540,50 @@ export function serializeFieldWriteRequest(draft: FieldWriteDraft): FieldWriteRe
     },
     area_hectares: Number(draft.area_hectares),
     elevation_m: toNullableNumber(draft.elevation_m),
-    soil: {
-      soil_type: draft.soil.soil_type,
-      soil_ph: isUnknownSoil ? null : toNullableNumber(draft.soil.soil_ph),
-      organic_matter_percent: isUnknownSoil
-        ? null
-        : toNullableNumber(draft.soil.organic_matter_percent),
-      soil_test_date:
-        isUnknownSoil || !draft.soil.soil_test_date?.trim()
-          ? null
-          : draft.soil.soil_test_date.trim(),
-    },
-    water: {
-      availability: draft.water.availability,
-      source: draft.water.source,
-      source_other:
-        draft.water.source === "other" && draft.water.source_other?.trim()
-          ? draft.water.source_other.trim()
-          : null,
-      irrigation_system: draft.water.irrigation_system,
-    },
-    crop_history: draft.crop_history.map((row) => {
-      const cleanCropId = row.crop_id?.trim() ? row.crop_id.trim() : null;
-      const cleanRaw = row.crop_name_raw?.trim() ? row.crop_name_raw.trim() : null;
-      return {
-        season: row.season,
-        year: Number(row.year),
-        planting_month:
-          row.planting_month === null || row.planting_month === undefined
-            ? null
-            : Number(row.planting_month),
-        crop_id: cleanCropId,
-        crop_name_raw: cleanRaw,
-        yield_tons_per_hectare:
-          row.yield_tons_per_hectare === null || row.yield_tons_per_hectare === undefined
-            ? null
-            : Number(row.yield_tons_per_hectare),
-        notes: row.notes?.trim() ? row.notes.trim() : null,
-      };
-    }),
+    soil: serializeSoilInput(draft.soil),
+    water: serializeWaterInput(draft.water),
+    crop_history: draft.crop_history.map(serializeCropHistoryRow),
   };
 
   return FieldWriteRequestSchema.parse(payload);
+}
+
+/**
+ * Enforce OpenAPI `FieldPatchRequest` (`additionalProperties: false`) by emitting
+ * only patchable properties and stripping read-only / server-derived fields.
+ */
+export function serializeFieldPatchRequest(patch: Partial<FieldWriteDraft>): FieldPatchRequest {
+  const sanitized: Record<string, unknown> = {};
+
+  if (patch.field_name !== undefined) {
+    sanitized.field_name = patch.field_name.trim();
+  }
+  if (patch.location !== undefined) {
+    sanitized.location = {
+      latitude: Number(patch.location.latitude),
+      longitude: Number(patch.location.longitude),
+      ...(patch.location.boundary !== undefined
+        ? { boundary: patch.location.boundary ?? null }
+        : {}),
+    };
+  }
+  if (patch.area_hectares !== undefined) {
+    sanitized.area_hectares = Number(patch.area_hectares);
+  }
+  if (patch.elevation_m !== undefined) {
+    sanitized.elevation_m = toNullableNumber(patch.elevation_m);
+  }
+  if (patch.soil !== undefined) {
+    sanitized.soil = serializeSoilInput(patch.soil);
+  }
+  if (patch.water !== undefined) {
+    sanitized.water = serializeWaterInput(patch.water);
+  }
+  if (patch.crop_history !== undefined) {
+    sanitized.crop_history = patch.crop_history.map(serializeCropHistoryRow);
+  }
+
+  return FieldPatchRequestSchema.parse(sanitized);
 }
 
 // ---------------------------------------------------------------------------

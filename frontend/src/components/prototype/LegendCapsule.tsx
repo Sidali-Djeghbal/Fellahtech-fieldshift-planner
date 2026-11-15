@@ -1,23 +1,25 @@
 "use client";
 
 import React from "react";
+import type { LocaleDict } from "@/lib/prototype/i18n";
 import type { LegendDef } from "@/lib/prototype/types";
 
 interface LegendCapsuleProps {
   visible: boolean;
   legend: LegendDef | null;
+  loc?: LocaleDict;
 }
 
-export function LegendCapsule({ visible, legend }: LegendCapsuleProps) {
+export function LegendCapsule({ visible, legend, loc }: LegendCapsuleProps) {
   return (
     <aside
       className={`legend-pill lg-capsule${visible && legend ? " on" : ""}`}
       id="legend"
-      aria-label="Active layer scale"
+      aria-label={loc?.ui.ariaLegendScale ?? "Active layer scale"}
     >
       <div className="legend-meta">
         <span className="legend-title" id="legend-title">
-          {legend?.title ?? "Canopy greenness"}
+          {legend?.title ?? loc?.ui.legendFallbackTitle ?? "Canopy greenness"}
         </span>
         <span className="legend-src" id="legend-src">
           {legend?.src ?? "MODIS"}
@@ -25,7 +27,7 @@ export function LegendCapsule({ visible, legend }: LegendCapsuleProps) {
       </div>
       <div className="legend-scale" dir="ltr">
         <span className="legend-lo" id="legend-lo">
-          {legend?.lo ?? "bare"}
+          {legend?.lo ?? loc?.ui.legendFallbackLo ?? "bare"}
         </span>
         <div
           className="legend-bar"
@@ -33,7 +35,7 @@ export function LegendCapsule({ visible, legend }: LegendCapsuleProps) {
           style={legend ? { background: legend.bar } : undefined}
         />
         <span className="legend-hi" id="legend-hi">
-          {legend?.hi ?? "dense"}
+          {legend?.hi ?? loc?.ui.legendFallbackHi ?? "dense"}
         </span>
       </div>
     </aside>

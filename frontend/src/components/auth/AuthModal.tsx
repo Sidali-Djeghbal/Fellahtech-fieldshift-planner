@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/endpoints";
 import { presentApiError } from "@/lib/api/errors";
 import { UI_DICT } from "@/lib/i18n";
+import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { useAppStore } from "@/store/useAppStore";
 
 interface AuthModalProps {
@@ -132,7 +133,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
         const res = await registerUser({
           email,
           password,
-          full_name: fullName || "Guelma Farmer",
+          full_name: fullName || UI_DICT[lang].chrome.guestWorkspace,
           preferred_lang: lang,
         });
         setAuthenticatedSession({
@@ -152,7 +153,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
         useAppStore.getState().setUser(profile);
       }
       await hydrateWorkspaceAfterAuth();
-      setStatusMsg("Signed in successfully.");
+      setStatusMsg(t.signedInSuccess);
       if (!guestToken) {
         onClose();
       }
@@ -170,7 +171,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
       const res = await claimGuestSession();
       clearGuestToken();
       await hydrateWorkspaceAfterAuth();
-      setStatusMsg(`Claimed ${res.claimed_farms_count} guest farm(s) into your account.`);
+      setStatusMsg(t.claimedGuestMsg(res.claimed_farms_count));
     } catch (err) {
       setErrorMsg(presentApiError(err, lang).message);
     } finally {
@@ -192,7 +193,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
       a.download = `fieldshift-export-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setStatusMsg("JSON export downloaded.");
+      setStatusMsg(t.jsonDownloaded);
     } catch (err) {
       setErrorMsg(presentApiError(err, lang).message);
     } finally {
@@ -258,7 +259,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close authentication modal"
+        aria-label={t.closeModalAria}
         className={isDark ? "fixed inset-0 bg-black/65 backdrop-blur-sm" : "fixed inset-0 bg-black/50 backdrop-blur-sm"}
       />
       <div
@@ -271,7 +272,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close authentication modal"
+          aria-label={t.closeModalAria}
           className={
             isDark
               ? "fs-liquid-pill absolute end-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-[#9CA89E] hover:text-white active:not-disabled:scale-[0.96]"
@@ -422,7 +423,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
                     onClick={handleDeleteAccount}
                     className="min-h-8 rounded-lg bg-red-600 px-2.5 py-1 font-bold text-white transition-colors hover:bg-red-700"
                   >
-                    Confirm
+                    {GUELMA_WORKSPACE_I18N[lang].confirmDelete.confirmRemoveBtn}
                   </button>
                   <button
                     type="button"
@@ -433,7 +434,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
                         : "min-h-8 rounded-lg border border-gray-300 px-2.5 py-1 text-gray-700 hover:bg-gray-100"
                     }
                   >
-                    Cancel
+                    {GUELMA_WORKSPACE_I18N[lang].confirmDelete.cancelBtn}
                   </button>
                 </div>
               )}
@@ -472,7 +473,7 @@ export function AuthModal({ open, onClose, theme = "light" }: AuthModalProps) {
                 }
               >
                 <span className={isDark ? "text-[#D1DBD3]" : "text-gray-700"}>
-                  Active Guest Token
+                  {UI_DICT[lang].chrome.guestWorkspace}
                 </span>
                 <button
                   type="button"

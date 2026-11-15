@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
+import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
+import { useAppStore } from "@/store/useAppStore";
 import type { BoundaryFeature } from "@/lib/schemas";
 import {
   ALGERIA_ORBITAL_CENTER,
@@ -28,6 +30,8 @@ export function OrbitalFieldMap({
   attributionText,
   instantJumpLabel,
 }: OrbitalFieldMapProps) {
+  const lang = useAppStore((s) => s.lang);
+  const descendingLabel = GUELMA_WORKSPACE_I18N[lang].descendingToParcel;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -159,10 +163,12 @@ export function OrbitalFieldMap({
 
         const pinEl = document.createElement("div");
         pinEl.className = "lg-pin";
+        pinEl.dir = "ltr";
         const dotEl = document.createElement("span");
         dotEl.className = "lg-pin-dot";
         const lblEl = document.createElement("span");
         lblEl.className = "lg-pin-lbl";
+        lblEl.dir = "auto";
         lblEl.textContent = `${targetCenter[1].toFixed(4)}°N, ${targetCenter[0].toFixed(4)}°E`;
         pinLabelRef.current = lblEl;
         pinEl.append(dotEl, lblEl);
@@ -428,7 +434,7 @@ export function OrbitalFieldMap({
           <span dir="ltr" className="font-mono tabular-nums">
             {targetCenter[1].toFixed(5)}°N, {targetCenter[0].toFixed(5)}°E
           </span>
-          {!flightSettled && " · Descending to parcel..."}
+          {!flightSettled && descendingLabel}
         </div>
         <button
           type="button"

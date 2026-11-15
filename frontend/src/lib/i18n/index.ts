@@ -58,6 +58,10 @@ export interface UiDictionary {
     deleteAccountBtn: string;
     deleteConfirmText: string;
     logoutBtn: string;
+    signedInSuccess: string;
+    claimedGuestMsg: (count: number) => string;
+    jsonDownloaded: string;
+    closeModalAria: string;
   };
   dashboard: {
     heroEyebrow: string;
@@ -96,6 +100,13 @@ export interface UiDictionary {
     elevationUnknownHint: string;
     saveContinueBtn: string;
     mapAttribution: string;
+    verticesUnit: string;
+    parcelsPanelTitle: string;
+    newParcelBadge: string;
+    latLabel: string;
+    lngLabel: string;
+    nullPlaceholder: string;
+    savingBtn: string;
   };
   farmProfile: {
     title: string;
@@ -135,6 +146,27 @@ export interface UiDictionary {
     submitBtn: string;
     pollingTitle: string;
     cancelJobBtn: string;
+    seasonLabel: string;
+    yearLabel: string;
+    cropLabel: string;
+    selectCropPlaceholder: string;
+    customCropExample: string;
+    seasonCheckOk: string;
+    soilTextureLabel: string;
+    soilPhLabel: string;
+    organicMatterLabel: string;
+    labTestDateLabel: string;
+    annualRotationLabel: string;
+    consecutiveSeasonsLabel: string;
+    presetBalanced: string;
+    presetYield: string;
+    presetDrought: string;
+    presetLowRisk: string;
+    readyToAnalyze: string;
+    fixValidationGuards: string;
+    statusPrefix: string;
+    soilBadgeUnknown: string;
+    soilBadgeFarmer: string;
   };
   comparison: {
     title: string;
@@ -160,6 +192,27 @@ export interface UiDictionary {
     whatIfTitle: string;
     whatIfRunBtn: string;
     printBriefBtn: string;
+    loadingText: string;
+    emptyTitle: string;
+    emptyBody: string;
+    openProfileBtn: string;
+    partialFieldBanner: string;
+    radarHeading: string;
+    replacedByLabel: string;
+    inspectDetailsBtn: string;
+    hideDetailsBtn: string;
+    mitigationLabel: string;
+    whatIfHint: string;
+    runningBtn: string;
+    tempShiftLabel: string;
+    precipChangeLabel: string;
+    noBareGaps: string;
+    noStressWindows: string;
+    seasonsUnitAria: string;
+    tableSource: string;
+    tableValue: string;
+    tablePeriod: string;
+    tableInterpretation: string;
   };
   evidence: {
     title: string;
@@ -176,6 +229,69 @@ export interface UiDictionary {
     spatialNote: string;
     directBadge: string;
     derivedBadge: string;
+    loadingText: string;
+    emptyTitle: string;
+    emptyBody: string;
+    tagFilterLabel: string;
+    tagAll: string;
+  };
+  common: {
+    backToCommandCenter: string;
+    checkingDeps: string;
+    datasetLabel: string;
+    engineLabel: string;
+    completenessLabel: string;
+    startingLabel: string;
+    savingLabel: string;
+    runningLabel: string;
+    quartersShort: string;
+    daysPerYearShort: string;
+    removeBtn: string;
+    okShort: string;
+    bareShort: string;
+    ariaLanguageSwitcher: string;
+    ariaMobileNav: string;
+    ariaToolRail: string;
+    ariaWorkflowNav: string;
+    ariaCloseModal: string;
+    radarAria: string;
+    logoTagline: string;
+    notFoundTitle: string;
+    notFoundDesc: string;
+    notFoundBackBtn: string;
+  };
+  usda: {
+    closeAria: string;
+    adrRuleText: string;
+    percentLabel: string;
+    clayLabel: string;
+    siltLabel: string;
+    sandLabel: string;
+    derivedSoilTypeLabel: string;
+  };
+  brief: {
+    docHeading: string;
+    strategyPrefix: string;
+    metaField: string;
+    metaDataset: string;
+    metaEngine: string;
+    metaGenerated: string;
+    seasonSeqHeading: string;
+    colNumber: string;
+    colSeasonYear: string;
+    colCrop: string;
+    colCategoryRole: string;
+    colIrrigation: string;
+    colReason: string;
+    risksHeading: string;
+    severityPrefix: string;
+    mitigationPrefix: string;
+    citationsHeading: string;
+    colParameter: string;
+    colSource: string;
+    colValue: string;
+    colDatePeriod: string;
+    disclaimerPrefix: string;
   };
 }
 
@@ -227,6 +343,10 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       deleteAccountBtn: "Delete Account Permanently",
       deleteConfirmText: "Permanently delete account and all farm records?",
       logoutBtn: "Log Out",
+      signedInSuccess: "Signed in successfully.",
+      claimedGuestMsg: (count) => `Claimed ${count} guest farm(s) into your account.`,
+      jsonDownloaded: "JSON export downloaded.",
+      closeModalAria: "Close authentication modal",
     },
     dashboard: {
       heroEyebrow: "WILAYA OF GUELMA · AGRICULTURAL INTELLIGENCE",
@@ -268,6 +388,13 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       saveContinueBtn: "Save Parcel & Continue to Farm Profile",
       mapAttribution:
         "Visual Satellite Basemap · Agronomic scoring uses pinned Backend Schema: dataset",
+      verticesUnit: "vertices",
+      parcelsPanelTitle: "Farm Parcels",
+      newParcelBadge: "New Parcel",
+      latLabel: "Latitude",
+      lngLabel: "Longitude",
+      nullPlaceholder: "Not set (null)",
+      savingBtn: "Saving...",
     },
     farmProfile: {
       title: "Farm Profile & Rotation Priorities",
@@ -308,6 +435,27 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       submitBtn: "Save Profile & Run Rotation Analysis",
       pollingTitle: "Running Agronomic Rotation Optimization",
       cancelJobBtn: "Cancel Analysis Request",
+      seasonLabel: "Season",
+      yearLabel: "Year",
+      cropLabel: "Crop",
+      selectCropPlaceholder: "Select crop",
+      customCropExample: "e.g. Blé dur local",
+      seasonCheckOk: "Northern Hemisphere season check OK",
+      soilTextureLabel: "Soil Texture",
+      soilPhLabel: "Soil pH (3.0–11.0)",
+      organicMatterLabel: "Organic Matter %",
+      labTestDateLabel: "Lab Test Date",
+      annualRotationLabel: "Annual Rotation",
+      consecutiveSeasonsLabel: "Consecutive Seasons",
+      presetBalanced: "Balanced Soil",
+      presetYield: "Income & Yield",
+      presetDrought: "Water Resilience",
+      presetLowRisk: "Low Risk",
+      readyToAnalyze: "Ready to analyze parcel",
+      fixValidationGuards: "Fix validation guards before running.",
+      statusPrefix: "Status:",
+      soilBadgeUnknown: "Source: unknown",
+      soilBadgeFarmer: "Source: farmer",
     },
     comparison: {
       title: "Rotation Strategy Comparison",
@@ -334,6 +482,28 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       whatIfTitle: "Quick Climate What-If Comparison",
       whatIfRunBtn: "Run Climate Tweak (1 Quarter)",
       printBriefBtn: "Print / Save 1-Page Brief",
+      loadingText: "Loading rotation comparison...",
+      emptyTitle: "No rotation analysis selected yet",
+      emptyBody:
+        "Configure crop history, soil, water, and priorities in Farm Profile to compute ranked multi-season rotation strategies.",
+      openProfileBtn: "Open Farm Profile",
+      partialFieldBanner: "Partial field result:",
+      radarHeading: "Multi-Axis Agronomic Balance",
+      replacedByLabel: "Replaced by:",
+      inspectDetailsBtn: "Inspect Benefits, Risks & Gaps",
+      hideDetailsBtn: "Hide Agronomic Breakdown",
+      mitigationLabel: "Mitigation:",
+      whatIfHint: "Test hotter/drier seasons against this field profile.",
+      runningBtn: "Running...",
+      tempShiftLabel: "Temperature Shift",
+      precipChangeLabel: "Precipitation Change",
+      noBareGaps: "No bare-soil gaps flagged.",
+      noStressWindows: "No major stress windows detected.",
+      seasonsUnitAria: "seasons",
+      tableSource: "Source",
+      tableValue: "Value",
+      tablePeriod: "Mission / Period",
+      tableInterpretation: "Interpretation",
     },
     evidence: {
       title: "Environmental Evidence & Data Transparency",
@@ -353,6 +523,71 @@ export const UI_DICT: Record<Language, UiDictionary> = {
         "Satellite imagery provides visual orientation; agronomic inference reads exclusively from pinned dataset_version.",
       directBadge: "Direct Observation",
       derivedBadge: "Derived Dataset Signal",
+      loadingText: "Loading evidence ledger...",
+      emptyTitle: "No analysis evidence loaded yet",
+      emptyBody:
+        "Run or open a field rotation analysis first to inspect full provenance, satellite telemetry, and data completeness.",
+      tagFilterLabel: "Agronomic tag:",
+      tagAll: "All",
+    },
+    common: {
+      backToCommandCenter: "Command Center",
+      checkingDeps: "Checking dependencies",
+      datasetLabel: "Dataset",
+      engineLabel: "Engine",
+      completenessLabel: "Completeness",
+      startingLabel: "Starting...",
+      savingLabel: "Saving...",
+      runningLabel: "Running...",
+      quartersShort: "qtrs",
+      daysPerYearShort: "d/yr",
+      removeBtn: "Remove",
+      okShort: "OK",
+      bareShort: "BARE",
+      ariaLanguageSwitcher: "Language switcher",
+      ariaMobileNav: "Mobile workspace navigation",
+      ariaToolRail: "Spatial tool rail",
+      ariaWorkflowNav: "Analysis studio workflow",
+      ariaCloseModal: "Close modal",
+      radarAria: "7-axis agronomic strategy score comparison",
+      logoTagline: "Precision Farm Rotations",
+      notFoundTitle: "Page Not Found",
+      notFoundDesc: "The requested workspace route does not exist.",
+      notFoundBackBtn: "Return to Command Center",
+    },
+    usda: {
+      closeAria: "Close USDA texture converter",
+      adrRuleText:
+        "ADR-5 exact rule: Farmer clay + silt + sand percentages must sum to 100% and map deterministically to USDA SoilType.",
+      percentLabel: "Percent (%)",
+      clayLabel: "Clay",
+      siltLabel: "Silt",
+      sandLabel: "Sand",
+      derivedSoilTypeLabel: "Derived SoilType:",
+    },
+    brief: {
+      docHeading: "FIELD SHIFT — 1-Page Field Rotation Brief",
+      strategyPrefix: "Strategy:",
+      metaField: "Field:",
+      metaDataset: "Dataset:",
+      metaEngine: "Engine:",
+      metaGenerated: "Generated:",
+      seasonSeqHeading: "Season Sequence",
+      colNumber: "#",
+      colSeasonYear: "Season / Year",
+      colCrop: "Crop",
+      colCategoryRole: "Category / Role",
+      colIrrigation: "Irrigation",
+      colReason: "Reason",
+      risksHeading: "Key Risks & Mitigations",
+      severityPrefix: "Severity:",
+      mitigationPrefix: "Mitigation:",
+      citationsHeading: "Evidence Citations",
+      colParameter: "Parameter",
+      colSource: "Source",
+      colValue: "Value",
+      colDatePeriod: "Date / Period",
+      disclaimerPrefix: "Disclaimer:",
     },
   },
   fr: {
@@ -402,6 +637,11 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       deleteAccountBtn: "Supprimer le compte",
       deleteConfirmText: "Supprimer définitivement le compte et toutes les données ?",
       logoutBtn: "Déconnexion",
+      signedInSuccess: "Connexion réussie.",
+      claimedGuestMsg: (count) =>
+        `${count} ferme(s) invitée(s) rattachée(s) à votre compte.`,
+      jsonDownloaded: "Export JSON téléchargé.",
+      closeModalAria: "Fermer la fenêtre de connexion",
     },
     dashboard: {
       heroEyebrow: "WILAYA DE GUELMA · INTELLIGENCE AGRICOLE",
@@ -443,6 +683,13 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       saveContinueBtn: "Enregistrer et passer au profil agricole",
       mapAttribution:
         "Fond satellite visuel · Le calcul utilise uniquement Schema: dataset côté serveur",
+      verticesUnit: "sommets",
+      parcelsPanelTitle: "Parcelles de la ferme",
+      newParcelBadge: "Nouvelle parcelle",
+      latLabel: "Latitude",
+      lngLabel: "Longitude",
+      nullPlaceholder: "Non renseigné (null)",
+      savingBtn: "Enregistrement...",
     },
     farmProfile: {
       title: "Profil agricole & priorités de rotation",
@@ -483,6 +730,27 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       submitBtn: "Enregistrer et lancer l'analyse",
       pollingTitle: "Optimisation agronomique en cours",
       cancelJobBtn: "Annuler la requête",
+      seasonLabel: "Saison",
+      yearLabel: "Année",
+      cropLabel: "Culture",
+      selectCropPlaceholder: "Choisir une culture",
+      customCropExample: "ex. Blé dur local",
+      seasonCheckOk: "Cohérence saisonnière hémisphère Nord OK",
+      soilTextureLabel: "Texture du sol",
+      soilPhLabel: "pH du sol (3,0–11,0)",
+      organicMatterLabel: "Matière organique %",
+      labTestDateLabel: "Date d'analyse laboratoire",
+      annualRotationLabel: "Rotation annuelle",
+      consecutiveSeasonsLabel: "Saisons consécutives",
+      presetBalanced: "Équilibre du sol",
+      presetYield: "Revenu & Rendement",
+      presetDrought: "Résilience hydrique",
+      presetLowRisk: "Risque minimal",
+      readyToAnalyze: "Prêt pour l'analyse de la parcelle",
+      fixValidationGuards: "Corrigez les alertes de validation avant de lancer.",
+      statusPrefix: "Statut :",
+      soilBadgeUnknown: "Source : inconnue",
+      soilBadgeFarmer: "Source : exploitant",
     },
     comparison: {
       title: "Comparaison des stratégies de rotation",
@@ -509,6 +777,28 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       whatIfTitle: "Test rapide de scénario climatique",
       whatIfRunBtn: "Tester le scénario (1 trimestre)",
       printBriefBtn: "Imprimer fiche 1 page",
+      loadingText: "Chargement de la comparaison des rotations...",
+      emptyTitle: "Aucune analyse de rotation sélectionnée",
+      emptyBody:
+        "Configurez l'historique cultural, le sol, l'eau et vos priorités dans le profil agricole pour générer des stratégies classées.",
+      openProfileBtn: "Ouvrir le profil agricole",
+      partialFieldBanner: "Résultat partiel de la parcelle :",
+      radarHeading: "Équilibre agronomique multi-axes",
+      replacedByLabel: "Remplacé par :",
+      inspectDetailsBtn: "Voir bénéfices, risques & lacunes",
+      hideDetailsBtn: "Masquer le détail agronomique",
+      mitigationLabel: "Atténuation :",
+      whatIfHint: "Testez des saisons plus chaudes ou plus sèches sur cette parcelle.",
+      runningBtn: "Exécution...",
+      tempShiftLabel: "Variation de température",
+      precipChangeLabel: "Variation des précipitations",
+      noBareGaps: "Aucune période de sol nu signalée.",
+      noStressWindows: "Aucune fenêtre de stress majeur détectée.",
+      seasonsUnitAria: "saisons",
+      tableSource: "Source",
+      tableValue: "Valeur",
+      tablePeriod: "Mission / Période",
+      tableInterpretation: "Interprétation",
     },
     evidence: {
       title: "Preuves environnementales et transparence",
@@ -528,6 +818,71 @@ export const UI_DICT: Record<Language, UiDictionary> = {
         "L'imagerie satellite sert uniquement d'orientation visuelle ; le calcul lit Schema: dataset.",
       directBadge: "Observation directe",
       derivedBadge: "Signal dérivé du jeu",
+      loadingText: "Chargement du registre des preuves...",
+      emptyTitle: "Aucune preuve d'analyse chargée",
+      emptyBody:
+        "Lancez ou ouvrez une analyse de parcelle pour consulter la traçabilité complète, les mesures satellite et la complétude des données.",
+      tagFilterLabel: "Étiquette agronomique :",
+      tagAll: "Toutes",
+    },
+    common: {
+      backToCommandCenter: "Centre de commande",
+      checkingDeps: "Vérification des dépendances",
+      datasetLabel: "Jeu de données",
+      engineLabel: "Moteur",
+      completenessLabel: "Complétude",
+      startingLabel: "Démarrage...",
+      savingLabel: "Enregistrement...",
+      runningLabel: "Exécution...",
+      quartersShort: "trim.",
+      daysPerYearShort: "j/an",
+      removeBtn: "Supprimer",
+      okShort: "OK",
+      bareShort: "SOL NU",
+      ariaLanguageSwitcher: "Sélecteur de langue",
+      ariaMobileNav: "Navigation mobile",
+      ariaToolRail: "Barre d'outils spatiale",
+      ariaWorkflowNav: "Navigation du studio d'analyse",
+      ariaCloseModal: "Fermer la fenêtre",
+      radarAria: "Comparaison agronomique sur 7 axes",
+      logoTagline: "Rotations agricoles de précision",
+      notFoundTitle: "Page introuvable",
+      notFoundDesc: "La page demandée n'existe pas dans cet espace.",
+      notFoundBackBtn: "Retour au centre de commande",
+    },
+    usda: {
+      closeAria: "Fermer le convertisseur USDA",
+      adrRuleText:
+        "Règle ADR-5 : les pourcentages Argile + Limon + Sable doivent totaliser 100 % et correspondent au type de sol USDA.",
+      percentLabel: "Pourcentage (%)",
+      clayLabel: "Argile",
+      siltLabel: "Limon",
+      sandLabel: "Sable",
+      derivedSoilTypeLabel: "Type de sol déduit :",
+    },
+    brief: {
+      docHeading: "FIELD SHIFT — Fiche Rotation 1 Page",
+      strategyPrefix: "Stratégie :",
+      metaField: "Parcelle :",
+      metaDataset: "Jeu de données :",
+      metaEngine: "Moteur :",
+      metaGenerated: "Généré le :",
+      seasonSeqHeading: "Séquence des saisons",
+      colNumber: "#",
+      colSeasonYear: "Saison / Année",
+      colCrop: "Culture",
+      colCategoryRole: "Catégorie / Rôle",
+      colIrrigation: "Irrigation",
+      colReason: "Justification",
+      risksHeading: "Principaux risques & mesures",
+      severityPrefix: "Gravité :",
+      mitigationPrefix: "Atténuation :",
+      citationsHeading: "Références & preuves",
+      colParameter: "Paramètre",
+      colSource: "Source",
+      colValue: "Valeur",
+      colDatePeriod: "Date / Période",
+      disclaimerPrefix: "Avertissement :",
     },
   },
   ar: {
@@ -577,6 +932,10 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       deleteAccountBtn: "حذف الحساب نهائياً",
       deleteConfirmText: "هل تريد حذف الحساب وجميع المزارع نهائياً؟",
       logoutBtn: "تسجيل الخروج",
+      signedInSuccess: "تم تسجيل الدخول بنجاح.",
+      claimedGuestMsg: (count) => `تم ضم ${count} مزرعة تجريبية إلى حسابك.`,
+      jsonDownloaded: "تم تنزيل ملف JSON بنجاح.",
+      closeModalAria: "إغلاق نافذة الحساب",
     },
     dashboard: {
       heroEyebrow: "ولاية قالمة · مركز المتابعة",
@@ -618,6 +977,13 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       saveContinueBtn: "حفظ القطعة والمتابعة لملف المزرعة",
       mapAttribution:
         "خريطة أقمار صناعية للعرض البصري · التقييم يعتمد حصرياً على Schema: dataset",
+      verticesUnit: "نقاط",
+      parcelsPanelTitle: "قطع المزرعة",
+      newParcelBadge: "قطعة جديدة",
+      latLabel: "خط العرض",
+      lngLabel: "خط الطول",
+      nullPlaceholder: "غير محدد",
+      savingBtn: "جارٍ الحفظ...",
     },
     farmProfile: {
       title: "ملف المزرعة وأولويات الدورة الزراعية",
@@ -658,6 +1024,27 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       submitBtn: "حفظ الملف وتشغيل التحليل",
       pollingTitle: "جارٍ حساب أفضل الدورات الزراعية",
       cancelJobBtn: "إلغاء الطلب",
+      seasonLabel: "الموسم",
+      yearLabel: "السنة",
+      cropLabel: "المحصول",
+      selectCropPlaceholder: "اختر محصولاً",
+      customCropExample: "مثال: قمح صلب محلي",
+      seasonCheckOk: "تطابق الموسم لنصف الكرة الشمالي سليم",
+      soilTextureLabel: "قوام التربة",
+      soilPhLabel: "حموضة التربة (3.0–11.0)",
+      organicMatterLabel: "نسبة المادة العضوية %",
+      labTestDateLabel: "تاريخ التحليل المخبري",
+      annualRotationLabel: "تناوب سنوي",
+      consecutiveSeasonsLabel: "مواسم متتالية",
+      presetBalanced: "توازن التربة",
+      presetYield: "الدخل والمردود",
+      presetDrought: "مقاومة الجفاف",
+      presetLowRisk: "أقل مخاطرة",
+      readyToAnalyze: "جاهز لتحليل القطعة",
+      fixValidationGuards: "يرجى تصحيح تنبيهات التحقق قبل التشغيل.",
+      statusPrefix: "الحالة:",
+      soilBadgeUnknown: "المصدر: غير محدد",
+      soilBadgeFarmer: "المصدر: الفلاح",
     },
     comparison: {
       title: "مقارنة استراتيجيات الدورة الزراعية",
@@ -684,6 +1071,28 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       whatIfTitle: "مقارنة مناخية سريعة",
       whatIfRunBtn: "تشغيل السيناريو (1 وحدة)",
       printBriefBtn: "طباعة ملخص من صفحة واحدة",
+      loadingText: "جارٍ تحميل مقارنة الدورات الزراعية...",
+      emptyTitle: "لم يتم اختيار تحليل تناوب زراعي بعد",
+      emptyBody:
+        "اضبط سجل المحاصيل والتربة والمياه والأولويات في ملف المزرعة لحساب استراتيجيات التناوب المصنفة.",
+      openProfileBtn: "فتح ملف المزرعة",
+      partialFieldBanner: "نتيجة جزئية للقطعة:",
+      radarHeading: "التوازن الزراعي متعدد المحاور",
+      replacedByLabel: "تم استبداله بـ:",
+      inspectDetailsBtn: "عرض الفوائد والمخاطر والفجوات",
+      hideDetailsBtn: "إخفاء التفصيل الزراعي",
+      mitigationLabel: "التخفيف:",
+      whatIfHint: "اختبر مواسم أكثر حرارة أو جفافاً على خصائص هذه القطعة.",
+      runningBtn: "جارٍ التشغيل...",
+      tempShiftLabel: "تغير درجة الحرارة",
+      precipChangeLabel: "تغير الهطول المطري",
+      noBareGaps: "لا توجد فترات تعرٍ للتربة مسجلة.",
+      noStressWindows: "لم يتم رصد نوافذ إجهاد رئيسية.",
+      seasonsUnitAria: "مواسم",
+      tableSource: "المصدر",
+      tableValue: "القيمة",
+      tablePeriod: "المصدر / الفترة",
+      tableInterpretation: "التفسير",
     },
     evidence: {
       title: "الأدلة البيئية وشفافية البيانات",
@@ -703,6 +1112,71 @@ export const UI_DICT: Record<Language, UiDictionary> = {
         "صور الأقمار الصناعية للتوضيح البصري، بينما يعتمد التحليل على dataset_version المثبت.",
       directBadge: "ملاحظة مباشرة",
       derivedBadge: "مؤشر مشتق من قاعدة البيانات",
+      loadingText: "جارٍ تحميل سجل الأدلة...",
+      emptyTitle: "لم يتم تحميل أدلة تحليل بعد",
+      emptyBody:
+        "شغّل أو افتح تحليل قطعة أولاً للاطلاع على مصدر البيانات والقياسات الفضائية واكتمال المعلومات.",
+      tagFilterLabel: "الوسم الزراعي:",
+      tagAll: "الكل",
+    },
+    common: {
+      backToCommandCenter: "مركز التحكم",
+      checkingDeps: "جارٍ فحص التبعيات",
+      datasetLabel: "مجموعة البيانات",
+      engineLabel: "المحرك",
+      completenessLabel: "اكتمال البيانات",
+      startingLabel: "جارٍ البدء...",
+      savingLabel: "جارٍ الحفظ...",
+      runningLabel: "جارٍ التشغيل...",
+      quartersShort: "فصول",
+      daysPerYearShort: "يوم/سنة",
+      removeBtn: "إزالة",
+      okShort: "مستقر",
+      bareShort: "عارية",
+      ariaLanguageSwitcher: "مبدّل اللغة",
+      ariaMobileNav: "التنقل عبر الهاتف",
+      ariaToolRail: "شريط أدوات الخريطة",
+      ariaWorkflowNav: "تنقل استوديو التحليل",
+      ariaCloseModal: "إغلاق النافذة",
+      radarAria: "مقارنة التقييم الزراعي متعدد المحاور",
+      logoTagline: "تناوب المحاصيل الدقيق",
+      notFoundTitle: "الصفحة غير موجودة",
+      notFoundDesc: "المسار المطلوب غير موجود في مساحة العمل.",
+      notFoundBackBtn: "العودة إلى مركز التحكم",
+    },
+    usda: {
+      closeAria: "إغلاق حاسبة قوام التربة USDA",
+      adrRuleText:
+        "قاعدة ADR-5 الدقيقة: يجب أن يكون مجموع نسب الطين والطمي والرمل 100% للتحويل الدقيق إلى قوام التربة USDA.",
+      percentLabel: "النسبة المئوية (%)",
+      clayLabel: "طين",
+      siltLabel: "طمي",
+      sandLabel: "رمل",
+      derivedSoilTypeLabel: "قوام التربة المستنتج:",
+    },
+    brief: {
+      docHeading: "FIELD SHIFT — ملخص التناوب الزراعي من صفحة واحدة",
+      strategyPrefix: "الاستراتيجية:",
+      metaField: "القطعة:",
+      metaDataset: "قاعدة البيانات:",
+      metaEngine: "المحرك:",
+      metaGenerated: "تاريخ الإنشاء:",
+      seasonSeqHeading: "تسلسل المواسم",
+      colNumber: "#",
+      colSeasonYear: "الموسم / السنة",
+      colCrop: "المحصول",
+      colCategoryRole: "الفئة / الدور",
+      colIrrigation: "السقي",
+      colReason: "السبب العلمي",
+      risksHeading: "أبرز المخاطر وإجراءات التخفيف",
+      severityPrefix: "الشدة:",
+      mitigationPrefix: "التخفيف:",
+      citationsHeading: "مراجع الأدلة العلمية",
+      colParameter: "المتغير",
+      colSource: "المصدر",
+      colValue: "القيمة",
+      colDatePeriod: "التاريخ / الفترة",
+      disclaimerPrefix: "تنويه:",
     },
   },
 };
@@ -1036,12 +1510,229 @@ export function localizePlainText(
       .replace(/biological nitrogen fixation/gi, "natural soil nitrogen feeding")
       .replace(/cereal monoculture pathogen carryover/gi, "root disease build-up from planting cereals every year")
       .replace(/bare-field exposure/gi, "bare dry soil left uncovered")
+      .replace(/bare-soil loss/gi, "sun-dried bare soil loss")
+      .replace(/abiotic stress/gi, "weather and soil stress")
+      .replace(/evaporative deficit/gi, "sun-drying water loss")
       .replace(/evaporative/gi, "sun-drying");
   }
   if (lang === "fr") {
     return text
       .replace(/fixation biologique de l'azote/gi, "enrichissement naturel en azote")
-      .replace(/pathogènes/gi, "maladies des racines");
+      .replace(/pathogènes/gi, "maladies des racines")
+      .replace(/stress abiotique/gi, "stress climatique et du sol")
+      .replace(/déficit évaporatif/gi, "perte d'eau par évaporation")
+      .replace(/évaporatif/gi, "séchant au soleil");
+  }
+  if (lang === "ar") {
+    return text
+      .replace(/تثبيت النيتروجين البيولوجي/g, "تغذية التربة بالنيتروجين طبيعياً")
+      .replace(/الإجهاد اللاأحيائي/g, "إجهاد الطقس والتربة")
+      .replace(/مؤشر الإجهاد التبخري/g, "تجفيف الشمس للتربة المكشوفة")
+      .replace(/العجز التبخري/g, "فقدان الرطوبة بحرارة الشمس")
+      .replace(/انكشاف التربة العارية/g, "بقاء التربة مكشوفة بدون غطاء")
+      .replace(/biological nitrogen fixation/gi, "تغذية التربة بالنيتروجين طبيعياً")
+      .replace(/cereal monoculture pathogen carryover/gi, "تراكم أمراض الجذور من تكرار الحبوب")
+      .replace(/bare-field exposure|bare-soil loss/gi, "فقدان رطوبة التربة المكشوفة")
+      .replace(/evaporative deficit/gi, "فقدان الماء بحرارة الشمس")
+      .replace(/evaporative/gi, "تبخّري بالشمس")
+      .replace(/rotation analysis/gi, "تحليل التناوب الزراعي")
+      .replace(/legume-forage cover/gi, "غطاء البقوليات والأعلاف");
   }
   return text;
 }
+
+export const RISK_SEVERITY_LABELS: Record<Language, Record<"low" | "medium" | "high", string>> = {
+  en: { low: "Low", medium: "Medium", high: "High" },
+  fr: { low: "Faible", medium: "Modérée", high: "Élevée" },
+  ar: { low: "منخفضة", medium: "متوسطة", high: "مرتفعة" },
+};
+
+export const EQUIPMENT_LABELS: Record<Language, Record<string, string>> = {
+  en: {
+    tractor: "Tractor",
+    standard_tractor: "Standard Tractor",
+    seed_drill: "Seed Drill",
+    planter: "Planter",
+    sprayer: "Sprayer",
+    harvester: "Harvester",
+    combine_harvester: "Combine Harvester",
+    hay_baler: "Hay Baler",
+    subsoiler: "Subsoiler",
+    no_subsoiler: "No Subsoiler",
+  },
+  fr: {
+    tractor: "Tracteur",
+    standard_tractor: "Tracteur standard",
+    seed_drill: "Semoir en ligne",
+    planter: "Planteuse",
+    sprayer: "Pulvérisateur",
+    harvester: "Moissonneuse",
+    combine_harvester: "Moissonneuse-batteuse",
+    hay_baler: "Botteleuse à fourrage",
+    subsoiler: "Décompacteur",
+    no_subsoiler: "Sans sous-soleuse",
+  },
+  ar: {
+    tractor: "جرار",
+    standard_tractor: "جرار فلاحى عادي",
+    seed_drill: "بذارة",
+    planter: "غراسة",
+    sprayer: "رشاشة",
+    harvester: "حصادة",
+    combine_harvester: "حصادة دارسة",
+    hay_baler: "مكبس أعلاف وتبن",
+    subsoiler: "محراث تحت التربة",
+    no_subsoiler: "بدون محراث عميق",
+  },
+};
+
+export function formatEquipmentLabel(eq: string, lang: Language): string {
+  return EQUIPMENT_LABELS[lang]?.[eq] || EQUIPMENT_LABELS.en[eq] || eq.replace(/_/g, " ");
+}
+
+export const WEIGHT_PRESET_LABELS: Record<
+  Language,
+  Record<"water_resilient" | "soil_restorer" | "cash_market" | "balanced_livestock", string>
+> = {
+  en: {
+    water_resilient: "Water Resilient",
+    soil_restorer: "Soil Restorer",
+    cash_market: "Cash Market",
+    balanced_livestock: "Balanced Livestock",
+  },
+  fr: {
+    water_resilient: "Résilience Hydrique",
+    soil_restorer: "Régénération du Sol",
+    cash_market: "Rentabilité & Marché",
+    balanced_livestock: "Équilibre & Fourrage",
+  },
+  ar: {
+    water_resilient: "مقاومة الجفاف والمياه",
+    soil_restorer: "تجديد خصوبة التربة",
+    cash_market: "العائد والتسويق",
+    balanced_livestock: "توازن المزرعة والأعلاف",
+  },
+};
+
+export const PRIORITY_WEIGHT_LABELS: Record<
+  Language,
+  Record<"water_saving" | "soil_improvement" | "income" | "risk_reduction" | "forage_value", string>
+> = {
+  en: {
+    water_saving: "Water Saving",
+    soil_improvement: "Soil Improvement",
+    income: "Farm Income",
+    risk_reduction: "Risk Reduction",
+    forage_value: "Forage Value",
+  },
+  fr: {
+    water_saving: "Économie d'eau",
+    soil_improvement: "Amélioration du sol",
+    income: "Revenu agricole",
+    risk_reduction: "Réduction des risques",
+    forage_value: "Valeur fourragère",
+  },
+  ar: {
+    water_saving: "توفير المياه",
+    soil_improvement: "تحسين التربة",
+    income: "الدخل الفلاحي",
+    risk_reduction: "تقليل المخاطر",
+    forage_value: "قيمة الأعلاف",
+  },
+};
+
+export const ANALYSIS_JOB_STATUS_LABELS: Record<Language, Record<string, string>> = {
+  en: {
+    queued: "Queued",
+    pending: "Pending",
+    running: "Running",
+    processing: "Processing",
+    ok: "Completed",
+    partial: "Partial Result",
+    failed: "Failed",
+    cancelled: "Cancelled",
+  },
+  fr: {
+    queued: "En file",
+    pending: "En attente",
+    running: "En cours",
+    processing: "Traitement",
+    ok: "Terminé",
+    partial: "Résultat partiel",
+    failed: "Échec",
+    cancelled: "Annulé",
+  },
+  ar: {
+    queued: "في الانتظار",
+    pending: "قيد الانتظار",
+    running: "قيد التشغيل",
+    processing: "جاري المعالجة",
+    ok: "مكتمل",
+    partial: "نتيجة جزئية",
+    failed: "فشل",
+    cancelled: "ملغى",
+  },
+};
+
+export const REQUESTED_OUTCOME_LABELS: Record<Language, Record<string, string>> = {
+  en: {
+    included: "Included",
+    excluded: "Excluded",
+    replaced: "Replaced",
+  },
+  fr: {
+    included: "Inclus",
+    excluded: "Exclu",
+    replaced: "Remplacé",
+  },
+  ar: {
+    included: "مشمول",
+    excluded: "مستبعد",
+    replaced: "مُستبدل",
+  },
+};
+
+export const DATA_SOURCE_LABELS: Record<Language, Record<string, string>> = {
+  en: {
+    farmer_input: "Farmer Input",
+    dataset: "Regional Dataset / EO",
+    model_derived: "Model Derived",
+  },
+  fr: {
+    farmer_input: "Saisie agriculteur",
+    dataset: "Jeu régional / Satellite",
+    model_derived: "Calculé par modèle",
+  },
+  ar: {
+    farmer_input: "معطيات الفلاح",
+    dataset: "قاعدة بيانات المنطقة",
+    model_derived: "مشتق من النموذج",
+  },
+};
+
+export const EVIDENCE_GROUP_LABELS: Record<
+  Language,
+  Record<"all" | "climate" | "water" | "vegetation" | "soil_history", string>
+> = {
+  en: {
+    all: "All",
+    climate: "Climate",
+    water: "Water",
+    vegetation: "Vegetation",
+    soil_history: "Soil & History",
+  },
+  fr: {
+    all: "Tout",
+    climate: "Climat",
+    water: "Eau",
+    vegetation: "Végétation",
+    soil_history: "Sol & Historique",
+  },
+  ar: {
+    all: "الكل",
+    climate: "المناخ",
+    water: "المياه",
+    vegetation: "الغطاء النباتي",
+    soil_history: "التربة والسجل",
+  },
+};

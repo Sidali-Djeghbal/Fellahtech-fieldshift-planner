@@ -14,7 +14,7 @@ import {
   WarningOctagon,
 } from "@phosphor-icons/react";
 import { SEVERITY_STYLE_MAP } from "@/lib/analysis/workspaceAnalysis";
-import { EVIDENCE_PARAM_LABELS, localizePlainText } from "@/lib/i18n";
+import { EVIDENCE_PARAM_LABELS, localizePlainText, UI_DICT } from "@/lib/i18n";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { EvidenceParameter, Explanation, Language } from "@/lib/schemas";
 
@@ -180,10 +180,10 @@ export function StrategyExplanationTabs({
                 <thead>
                   <tr className="border-b border-[#111813]/10 text-[10px] font-semibold uppercase tracking-wider text-[#4A5A4E] dark:border-white/10 dark:text-[#9CA89E]">
                     <th className="px-3.5 py-2.5 text-start">{ex.tabs.evidence}</th>
-                    <th className="px-3.5 py-2.5 text-start">Source</th>
-                    <th className="px-3.5 py-2.5 text-start">Value</th>
-                    <th className="px-3.5 py-2.5 text-start">Mission / Period</th>
-                    <th className="px-3.5 py-2.5 text-start">Interpretation</th>
+                    <th className="px-3.5 py-2.5 text-start">{UI_DICT[lang].comparison.tableSource}</th>
+                    <th className="px-3.5 py-2.5 text-start">{UI_DICT[lang].comparison.tableValue}</th>
+                    <th className="px-3.5 py-2.5 text-start">{UI_DICT[lang].comparison.tablePeriod}</th>
+                    <th className="px-3.5 py-2.5 text-start">{UI_DICT[lang].comparison.tableInterpretation}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#111813]/10 dark:divide-white/10">

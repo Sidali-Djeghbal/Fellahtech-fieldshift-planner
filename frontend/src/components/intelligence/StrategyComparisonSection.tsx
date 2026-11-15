@@ -20,7 +20,7 @@ import {
   SEVERITY_STYLE_MAP,
   STRATEGY_SCORE_KEYS,
 } from "@/lib/analysis/workspaceAnalysis";
-import { SCORE_LABELS } from "@/lib/i18n";
+import { SCORE_LABELS, UI_DICT } from "@/lib/i18n";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { CropItem, FieldPlan, Language, Strategy } from "@/lib/schemas";
 
@@ -346,7 +346,7 @@ export function StrategyComparisonSection({
                   <button
                     type="button"
                     onClick={() => onFocusStrategy(strat.strategy_id)}
-                    aria-label={`${strat.name} (${strat.seasons.length} seasons)`}
+                    aria-label={`${strat.name} (${strat.seasons.length} ${UI_DICT[lang].comparison.seasonsUnitAria})`}
                     className={`inline-flex min-h-10 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium transition-[transform,background-color,color] duration-150 ease-out active:not-disabled:scale-[0.96] ${
                       isFocused
                         ? "bg-[#22C55E]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"

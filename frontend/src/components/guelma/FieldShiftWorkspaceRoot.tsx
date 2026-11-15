@@ -32,6 +32,8 @@ import {
   startGuestSession,
   updateAnalysisSelection,
 } from "@/lib/api/endpoints";
+import { isFixtureMode } from "@/lib/api/client";
+import { ApiClientError } from "@/lib/api/errors";
 import { extractRingFromBoundary, GUELMA_COMMUNES } from "@/lib/geo/guelma";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
@@ -41,6 +43,7 @@ import type {
   AnalysisEnvelope,
   AnalysisSubmitRequest,
   CropItem,
+  ErrorCode,
   FarmAnalysisSummary,
   FarmPublic,
   FieldDetailPublic,
@@ -259,49 +262,53 @@ export function FieldShiftWorkspaceRoot() {
   const handleConfirmBorders = async (result: BorderDraftResult) => {
     if (editorTarget.kind === "edit-field-borders") {
       const fld = editorTarget.field;
-      await updateField(fld.farm_id, fld.field_id, {
-        field_id: fld.field_id,
-        field_name: fld.field_name,
-        is_unverified_demo_parcel: fld.is_unverified_demo_parcel,
-        location: {
-          latitude: result.centroid.latitude,
-          longitude: result.centroid.longitude,
-          boundary: result.boundary,
-        },
-        area_hectares: result.areaHectares,
-        elevation_m: fld.elevation_m ?? "",
-        soil: {
-          soil_type: fld.soil.soil_type,
-          soil_ph: fld.soil.soil_ph ?? "",
-          organic_matter_percent: fld.soil.organic_matter_percent ?? "",
-          soil_test_date: fld.soil.soil_test_date ?? "",
-        },
-        water: {
-          availability: fld.water.availability,
-          source: fld.water.source,
-          source_other: fld.water.source_other ?? "",
-          irrigation_system: fld.water.irrigation_system,
-        },
-        crop_history:
-          fld.crop_history.length > 0
-            ? fld.crop_history.map((h) => ({
-                season: h.season,
-                year: h.year,
-                planting_month: h.planting_month ?? null,
-                crop_id: h.crop_id ?? null,
-                crop_name_raw: h.crop_name_raw ?? null,
-                yield_tons_per_hectare: h.yield_tons_per_hectare ?? null,
-                notes: h.notes ?? null,
-              }))
-            : [
-                {
-                  season: "autumn",
-                  year: 2024,
-                  planting_month: 11,
-                  crop_id: "durum_wheat",
-                },
-              ],
-      });
+      try {
+        await updateField(fld.farm_id, fld.field_id, {
+          field_id: fld.field_id,
+          field_name: fld.field_name,
+          is_unverified_demo_parcel: fld.is_unverified_demo_parcel,
+          location: {
+            latitude: result.centroid.latitude,
+            longitude: result.centroid.longitude,
+            boundary: result.boundary,
+          },
+          area_hectares: result.areaHectares,
+          elevation_m: fld.elevation_m ?? "",
+          soil: {
+            soil_type: fld.soil.soil_type,
+            soil_ph: fld.soil.soil_ph ?? "",
+            organic_matter_percent: fld.soil.organic_matter_percent ?? "",
+            soil_test_date: fld.soil.soil_test_date ?? "",
+          },
+          water: {
+            availability: fld.water.availability,
+            source: fld.water.source,
+            source_other: fld.water.source_other ?? "",
+            irrigation_system: fld.water.irrigation_system,
+          },
+          crop_history:
+            fld.crop_history.length > 0
+              ? fld.crop_history.map((h) => ({
+                  season: h.season,
+                  year: h.year,
+                  planting_month: h.planting_month ?? null,
+                  crop_id: h.crop_id ?? null,
+                  crop_name_raw: h.crop_name_raw ?? null,
+                  yield_tons_per_hectare: h.yield_tons_per_hectare ?? null,
+                  notes: h.notes ?? null,
+                }))
+              : [
+                  {
+                    season: "autumn",
+                    year: 2024,
+                    planting_month: 11,
+                    crop_id: "durum_wheat",
+                  },
+                ],
+        });
+      } catch (err) {
+        setAnalysisError(err);
+      }
       setBorderDraft(null);
       setEditingField(null);
       setView("dashboard");
@@ -434,7 +441,13 @@ export function FieldShiftWorkspaceRoot() {
       if (finalPoll.status === "failed") {
         setAnalysisLifecycle("failed");
         setAnalysisError(
-          new Error(finalPoll.error?.message || "Analysis job failed.")
+          new ApiClientError({
+            status: 422,
+            code: (finalPoll.error?.code as ErrorCode) ?? "INTERNAL_ERROR",
+            message: finalPoll.error?.message || "Analysis job failed.",
+            details: [],
+            requestId: null,
+          })
         );
         return;
       }
@@ -503,9 +516,29 @@ export function FieldShiftWorkspaceRoot() {
       }
 
       await syncFromBackend();
-      const runs = await listFarmAnalyses("farm_1");
+      const targetFarmId =
+        useGuelmaWorkspace.getState().farms[0]?.farm_id ??
+        useAppStore.getState().activeFarmId ??
+        (isFixtureMode() ? "farm_1" : null);
+
+      if (!targetFarmId) {
+        setAnalysisLifecycle("idle");
+        handleOpenAnalysisRunner();
+        return;
+      }
+
+      const runs = await listFarmAnalyses(targetFarmId);
       const targetAnalysisId =
-        runs.items.find((a) => a.analysis_id)?.analysis_id ?? "analysis_4f9a8c120e3b";
+        runs.items.find((a) => a.analysis_id)?.analysis_id ??
+        (isFixtureMode() ? "analysis_4f9a8c120e3b" : null);
+
+      if (!targetAnalysisId) {
+        setFarmAnalyses(runs.items);
+        setActiveFarmId(targetFarmId);
+        setAnalysisLifecycle("idle");
+        handleOpenAnalysisRunner(targetFarmId);
+        return;
+      }
 
       const [loadedEnvelope, catalog] = await Promise.all([
         getAnalysisResult(targetAnalysisId),
@@ -517,7 +550,7 @@ export function FieldShiftWorkspaceRoot() {
       if (catalog.length > 0) setCatalogItems(catalog);
       setFarmAnalyses(runs.items);
       setEnvelope(loadedEnvelope);
-      setActiveFarmId("farm_1");
+      setActiveFarmId(targetFarmId);
       setActiveAnalysisId(loadedEnvelope.analysis_id);
       setAnalysisLifecycle("completed");
 

@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { SOIL_TYPE_LABELS } from "@/lib/i18n";
+import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { CLIMATES, MONTHS, SOILS } from "@/lib/prototype/data";
 import { ringAreaHa } from "@/lib/prototype/engine";
 import { pLoc, sLoc, type LocaleDict } from "@/lib/prototype/i18n";
 import type {
   EvalResult,
   InspectorTab,
+  Lang,
   Preset,
   StratId,
   StrategyDef,
@@ -19,6 +22,7 @@ interface StrategyWithEval {
 
 interface FieldInspectorWindowProps {
   loc: LocaleDict;
+  lang?: Lang;
   rawPreset: Preset;
   liveElev: number;
   liveSlope: number;
@@ -43,6 +47,7 @@ interface FieldInspectorWindowProps {
 
 export function FieldInspectorWindow({
   loc,
+  lang = "en",
   rawPreset,
   liveElev,
   liveSlope,
@@ -88,14 +93,15 @@ export function FieldInspectorWindow({
   const soilLoc = farmerSoilKnown
     ? {
         texture:
-          (rawPreset.soilType || "loamy").charAt(0).toUpperCase() +
-          (rawPreset.soilType || "loamy").slice(1),
+          (rawPreset.soilType && rawPreset.soilType !== "unknown"
+            ? SOIL_TYPE_LABELS[lang]?.[rawPreset.soilType as keyof (typeof SOIL_TYPE_LABELS)["en"]]
+            : undefined) ?? SOIL_TYPE_LABELS[lang].loamy,
         omTrend: rawPreset.commune
-          ? `${rawPreset.commune} · Field record`
-          : "Field record",
+          ? `${rawPreset.commune} · ${GUELMA_WORKSPACE_I18N[lang].soilFarmerKnown}`
+          : GUELMA_WORKSPACE_I18N[lang].soilFarmerKnown,
       }
     : loc.soils[rawPreset.id] || {
-        texture: "Loam",
+        texture: SOIL_TYPE_LABELS[lang].loamy,
         omTrend: "—",
       };
 
@@ -162,10 +168,10 @@ export function FieldInspectorWindow({
         zenMode ? " hidden-mode" : ""
       }${mobOpen ? " mob-open" : ""}`}
       id="inspector"
-      aria-label="Field and strategy inspector"
+      aria-label={loc.ui.ariaInspector}
     >
       <div className="win-head">
-        <div className="insp-tabs" role="tablist" aria-label="Inspector view">
+        <div className="insp-tabs" role="tablist" aria-label={loc.ui.ariaInspectorView}>
           <button
             className="insp-tab tap"
             id="tab-field"
@@ -201,7 +207,7 @@ export function FieldInspectorWindow({
           className="icon-pill tap"
           id="collapse-insp"
           type="button"
-          aria-label="Collapse inspector"
+          aria-label={loc.ui.ariaCollapseInspector}
           aria-expanded={!collapsed}
           onClick={onToggleCollapse}
         >
@@ -394,7 +400,7 @@ export function FieldInspectorWindow({
             <table
               className="cmp-table"
               id="cmp-table"
-              aria-label="Rotation comparison matrix"
+              aria-label={loc.ui.ariaComparisonMatrix}
             >
               <thead>
                 <tr>

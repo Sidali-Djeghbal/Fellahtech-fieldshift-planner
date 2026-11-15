@@ -35,13 +35,17 @@ import {
   updateAnalysisSelection,
 } from "@/lib/api/endpoints";
 import {
+  ANALYSIS_JOB_STATUS_LABELS,
   CROP_CATEGORY_LABELS,
   CROP_ROLE_LABELS,
+  REQUESTED_OUTCOME_LABELS,
+  RISK_SEVERITY_LABELS,
   SCORE_LABELS,
   SEASON_LABELS,
   UI_DICT,
   localizePlainText,
 } from "@/lib/i18n";
+import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
 import type { Strategy } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -64,6 +68,7 @@ function ComparisonContent() {
   } = useAppStore();
 
   const t = UI_DICT[lang].comparison;
+  const c = UI_DICT[lang].common;
   const hasSession = authMode !== "none";
   const urlAnalysisId = searchParams.get("analysisId");
 
@@ -110,11 +115,10 @@ function ComparisonContent() {
   const fieldPlans = envelope?.result.field_plans ?? [];
   const activeFieldPlan = fieldPlans[selectedFieldIdx] ?? fieldPlans[0];
   const catalogItems = catalogQuery.data?.items ?? [];
+  const catalogMap = new Map(catalogItems.map((c) => [c.crop_id, c]));
 
-  const getLocalizedCropName = (cropId: string, fallback: string) => {
-    const found = catalogItems.find((c) => c.crop_id === cropId);
-    return found ? found.names[lang] : fallback;
-  };
+  const getLocalizedCropName = (cropId: string, fallback: string) =>
+    resolveCropDisplayName(cropId, fallback, catalogMap, lang);
 
   async function handleSelectAction(
     strategyId: string,
@@ -231,8 +235,8 @@ function ComparisonContent() {
             href="/"
             className="fs-liquid-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
           >
-            <ArrowLeft size={14} />
-            <span>Command Center</span>
+            <ArrowLeft size={14} className="rtl:-scale-x-100" />
+            <span>{c.backToCommandCenter}</span>
           </Link>
           <button
             type="button"
@@ -246,8 +250,13 @@ function ComparisonContent() {
         </div>
       </div>
 
-      {analysisQuery.error && (
-        <ApiErrorCard error={analysisQuery.error} lang={lang} theme={resolvedTheme} />
+      {(analysisQuery.error || analysesQuery.error || farmsQuery.error) && (
+        <ApiErrorCard
+          error={analysisQuery.error ?? analysesQuery.error ?? farmsQuery.error}
+          lang={lang}
+          theme={resolvedTheme}
+          onOpenClaimAccount={openAuthModal}
+        />
       )}
       {actionError !== null && (
         <ApiErrorCard
@@ -262,16 +271,16 @@ function ComparisonContent() {
         <section className="no-print fs-liquid-panel rounded-3xl p-6 text-[#111813] dark:text-[#F5F7F5]">
           {hasSession && resolvedAnalysisId && analysisQuery.isLoading ? (
             <p className="text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-              Loading rotation comparison...
+              {t.loadingText}
             </p>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
-                  No rotation analysis selected yet
+                  {t.emptyTitle}
                 </h2>
                 <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-                  Configure a farm parcel and submit an analysis in Farm Profile, or load a sample workspace from the Command Center.
+                  {t.emptyBody}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -279,13 +288,13 @@ function ComparisonContent() {
                   href="/farm-profile"
                   className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold"
                 >
-                  Open Farm Profile
+                  {t.openProfileBtn}
                 </Link>
                 <Link
                   href="/"
                   className="fs-liquid-pill rounded-full px-4 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
                 >
-                  Command Center
+                  {c.backToCommandCenter}
                 </Link>
               </div>
             </div>
@@ -313,14 +322,14 @@ function ComparisonContent() {
                   {envelope.analysis_id}
                 </code>
                 <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.04] px-2.5 py-0.5 text-[#3E4C42] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#D1DDD3]">
-                  Dataset: <strong dir="ltr">{envelope.result.dataset_version_used}</strong>
+                  {c.datasetLabel}: <strong dir="ltr">{envelope.result.dataset_version_used}</strong>
                 </span>
                 <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.04] px-2.5 py-0.5 text-[#3E4C42] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#D1DDD3]">
-                  Engine: <strong dir="ltr">{envelope.result.ml_engine_version}</strong>
+                  {c.engineLabel}: <strong dir="ltr">{envelope.result.ml_engine_version}</strong>
                 </span>
               </div>
               <span className="tabular-nums rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-0.5 font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
-                Completeness:{" "}
+                {c.completenessLabel}:{" "}
                 {Math.round((envelope.result.data_quality.completeness_score ?? 0) * 100)}%
               </span>
             </div>
@@ -347,7 +356,9 @@ function ComparisonContent() {
                       : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
-                  {fp.field_id} · {fp.field_name} ({fp.status})
+                  {fp.field_id} · {fp.field_name} (
+                  {ANALYSIS_JOB_STATUS_LABELS[lang][fp.status] ?? fp.status}
+                  )
                 </button>
               ))}
             </div>
@@ -355,7 +366,7 @@ function ComparisonContent() {
 
           {activeFieldPlan.status === "partial" && activeFieldPlan.partial_reason && (
             <div className="no-print rounded-2xl border border-red-300/80 bg-red-50/90 p-3.5 text-xs text-red-800 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-200">
-              Partial field result: {activeFieldPlan.partial_reason}
+              {t.partialFieldBanner} {activeFieldPlan.partial_reason}
             </div>
           )}
 
@@ -374,7 +385,7 @@ function ComparisonContent() {
           <section className="no-print grid grid-cols-1 gap-5 xl:grid-cols-12">
             <div className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5] xl:col-span-4">
               <h2 className="mb-3 font-heading text-sm font-bold text-[#111813] dark:text-[#F5F7F5]">
-                Multi-Axis Agronomic Balance
+                {t.radarHeading}
               </h2>
               <ScoreRadarChart
                 baseline={baselineStrategy}
@@ -408,16 +419,17 @@ function ComparisonContent() {
                                 : "bg-red-500/15 text-red-700 dark:bg-red-500/20 dark:text-red-300"
                           }`}
                         >
-                          {reqCrop.outcome}
+                          {REQUESTED_OUTCOME_LABELS[lang][reqCrop.outcome] ?? reqCrop.outcome}
                         </span>
                       </div>
                       {reqCrop.replaced_by_crop_id && (
                         <p className="mt-1 text-[11px] font-semibold text-[#15803D] dark:text-[#86EFAC]">
-                          Replaced by: {reqCrop.replaced_by_crop_id}
+                          {t.replacedByLabel}{" "}
+                          {resolveCropDisplayName(reqCrop.replaced_by_crop_id, null, catalogMap, lang)}
                         </p>
                       )}
                       <p className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                        {reqCrop.explanation}
+                        {localizePlainText(reqCrop.explanation, lang, plainMode)}
                       </p>
                     </div>
                   ))}
@@ -561,7 +573,7 @@ function ComparisonContent() {
                           {plainMode ? t.bareDaysPlain : t.bareDaysLabel}
                         </span>
                         <strong className="mt-0.5 block font-mono text-sm font-bold tabular-nums text-[#15803D] dark:text-[#86EFAC]">
-                          {strat.scores.bare_field_days_per_year} d/yr
+                          {strat.scores.bare_field_days_per_year} {c.daysPerYearShort}
                         </strong>
                       </div>
                     </div>
@@ -575,7 +587,7 @@ function ComparisonContent() {
                       className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#15803D] hover:underline dark:text-[#86EFAC]"
                     >
                       {expanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
-                      {expanded ? "Hide Agronomic Breakdown" : "Inspect Benefits, Risks & Gaps"}
+                      {expanded ? t.hideDetailsBtn : t.inspectDetailsBtn}
                     </button>
 
                     {expanded && (
@@ -605,9 +617,10 @@ function ComparisonContent() {
                                 <strong className="text-[#111813] dark:text-[#F5F7F5]">
                                   {r.title}
                                 </strong>{" "}
-                                ({r.severity}): {localizePlainText(r.description, lang, plainMode)}
+                                ({RISK_SEVERITY_LABELS[lang][r.severity] ?? r.severity}):{" "}
+                                {localizePlainText(r.description, lang, plainMode)}
                                 <span className="mt-0.5 block font-medium text-[#15803D] dark:text-[#86EFAC]">
-                                  Mitigation: {r.mitigation}
+                                  {t.mitigationLabel} {localizePlainText(r.mitigation, lang, plainMode)}
                                 </span>
                               </li>
                             ))}
@@ -643,7 +656,7 @@ function ComparisonContent() {
                   {t.whatIfTitle}
                 </h2>
                 <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-                  Test hotter/drier seasons against the same parcel baseline (uses 1 guest quarter).
+                  {t.whatIfHint}
                 </p>
               </div>
               <button
@@ -652,13 +665,13 @@ function ComparisonContent() {
                 onClick={handleQuickWhatIf}
                 className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold active:not-disabled:scale-[0.96] disabled:opacity-50"
               >
-                {runningWhatIf ? "Running..." : t.whatIfRunBtn}
+                {runningWhatIf ? t.runningBtn : t.whatIfRunBtn}
               </button>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
-                  <span>Temperature Shift</span>
+                  <span>{t.tempShiftLabel}</span>
                   <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {whatIfTemp >= 0 ? `+${whatIfTemp}` : whatIfTemp} °C
                   </span>
@@ -675,7 +688,7 @@ function ComparisonContent() {
               </div>
               <div>
                 <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
-                  <span>Precipitation Change</span>
+                  <span>{t.precipChangeLabel}</span>
                   <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {whatIfPrecip >= 0 ? `+${whatIfPrecip}` : whatIfPrecip}%
                   </span>
@@ -698,6 +711,9 @@ function ComparisonContent() {
             envelope={envelope}
             fieldPlan={activeFieldPlan}
             strategy={chosenOrSuggestedStrategy}
+            lang={lang}
+            plainMode={plainMode}
+            catalogMap={catalogMap}
           />
         </>
       )}
@@ -705,15 +721,18 @@ function ComparisonContent() {
   );
 }
 
+function ComparisonSuspenseFallback() {
+  const lang = useAppStore((s) => s.lang);
+  return (
+    <div className="fs-liquid-panel rounded-3xl p-6 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+      {UI_DICT[lang].comparison.loadingText}
+    </div>
+  );
+}
+
 export default function ComparisonPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="fs-liquid-panel rounded-3xl p-6 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-          Loading rotation comparison...
-        </div>
-      }
-    >
+    <Suspense fallback={<ComparisonSuspenseFallback />}>
       <ComparisonContent />
     </Suspense>
   );

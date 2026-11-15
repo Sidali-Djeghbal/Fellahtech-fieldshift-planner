@@ -23,7 +23,9 @@ import {
 } from "@/lib/geo/guelma";
 import { useResolvedTheme } from "@/app/providers";
 import { canUseWebgl } from "@/lib/geo/webgl";
+import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { FieldDetailPublic } from "@/lib/schemas";
+import { useAppStore } from "@/store/useAppStore";
 
 export interface GuelmaOverviewMapHudLabels {
   fitExtent: string;
@@ -94,6 +96,8 @@ export function GuelmaOverviewMap({
   const [calloutPin, setCalloutPin] = useState<{ x: number; y: number } | null>(null);
   const resolvedTheme = useResolvedTheme();
   const isDarkTheme = resolvedTheme === "dark";
+  const lang = useAppStore((s) => s.lang);
+  const defaultHud = INTELLIGENCE_I18N[lang].workstation.mapHud;
 
   const selectedIndex = useMemo(() => {
     if (!selectedFieldKey || fields.length === 0) return -1;
@@ -598,7 +602,7 @@ export function GuelmaOverviewMap({
 
   const activePillLabel = selectedField
     ? `${selectedField.field_name}`
-    : hudLabels?.communesChip ?? "Guelma · 34 communes";
+    : hudLabels?.communesChip ?? defaultHud.communesChip;
 
   return (
     <div className="relative" data-testid="guelma-overview-map">
@@ -745,8 +749,8 @@ export function GuelmaOverviewMap({
             type="button"
             onClick={() => setHighContrastLayers((v) => !v)}
             aria-pressed={highContrastLayers}
-            aria-label={hudLabels?.layersLabel ?? "Toggle satellite layer contrast"}
-            title={hudLabels?.layersLabel ?? "Toggle satellite layer contrast"}
+            aria-label={hudLabels?.layersLabel ?? defaultHud.layersLabel}
+            title={hudLabels?.layersLabel ?? defaultHud.layersLabel}
             className={`pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
               highContrastLayers
                 ? "lg-capsule lg-capsule-active"
@@ -760,8 +764,8 @@ export function GuelmaOverviewMap({
             <button
               type="button"
               onClick={onStartAddFarm}
-              aria-label={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
-              title={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
+              aria-label={hudLabels?.drawParcelLabel ?? defaultHud.drawParcelLabel}
+              title={hudLabels?.drawParcelLabel ?? defaultHud.drawParcelLabel}
               className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
             >
               <PencilLine size={17} aria-hidden="true" />
@@ -775,7 +779,7 @@ export function GuelmaOverviewMap({
             type="button"
             disabled={fields.length < 2}
             onClick={() => handleStepField(-1)}
-            aria-label={hudLabels?.prevFieldLabel ?? "Previous parcel"}
+            aria-label={hudLabels?.prevFieldLabel ?? defaultHud.prevFieldLabel}
             className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
           >
             <CaretLeft size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
@@ -791,7 +795,7 @@ export function GuelmaOverviewMap({
             type="button"
             disabled={fields.length < 2}
             onClick={() => handleStepField(1)}
-            aria-label={hudLabels?.nextFieldLabel ?? "Next parcel"}
+            aria-label={hudLabels?.nextFieldLabel ?? defaultHud.nextFieldLabel}
             className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
           >
             <CaretRight size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
@@ -803,8 +807,8 @@ export function GuelmaOverviewMap({
           <button
             type="button"
             onClick={handleFitExtent}
-            aria-label={hudLabels?.fitExtent ?? "Fit extent"}
-            title={hudLabels?.fitExtent ?? "Fit extent"}
+            aria-label={hudLabels?.fitExtent ?? defaultHud.fitAllBtn}
+            title={hudLabels?.fitExtent ?? defaultHud.fitAllBtn}
             data-testid="map-fit-extent-btn"
             className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
           >
@@ -818,8 +822,8 @@ export function GuelmaOverviewMap({
             <button
               type="button"
               onClick={handleZoomIn}
-              aria-label={hudLabels?.zoomIn ?? "Zoom in"}
-              title={hudLabels?.zoomIn ?? "Zoom in"}
+              aria-label={hudLabels?.zoomIn ?? defaultHud.zoomIn}
+              title={hudLabels?.zoomIn ?? defaultHud.zoomIn}
               className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-[#0b3d2e]/10 dark:hover:bg-white/15 active:scale-[0.96]"
             >
               <Plus size={15} weight="bold" aria-hidden="true" />
@@ -827,8 +831,8 @@ export function GuelmaOverviewMap({
             <button
               type="button"
               onClick={handleZoomOut}
-              aria-label={hudLabels?.zoomOut ?? "Zoom out"}
-              title={hudLabels?.zoomOut ?? "Zoom out"}
+              aria-label={hudLabels?.zoomOut ?? defaultHud.zoomOut}
+              title={hudLabels?.zoomOut ?? defaultHud.zoomOut}
               className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-[#0b3d2e]/10 dark:hover:bg-white/15 active:scale-[0.96]"
             >
               <Minus size={15} weight="bold" aria-hidden="true" />
@@ -838,8 +842,8 @@ export function GuelmaOverviewMap({
           <button
             type="button"
             onClick={handleCenterSelected}
-            aria-label={hudLabels?.fitExtent ?? "Fit extent"}
-            title={hudLabels?.fitExtent ?? "Fit extent"}
+            aria-label={hudLabels?.fitExtent ?? defaultHud.fitAllBtn}
+            title={hudLabels?.fitExtent ?? defaultHud.fitAllBtn}
             className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
           >
             <Crosshair size={16} aria-hidden="true" />
@@ -856,7 +860,7 @@ export function GuelmaOverviewMap({
               className="lg-capsule pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3.5 pe-4 text-xs font-medium text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
             >
               <Info size={15} className="text-[var(--lg-accent)]" aria-hidden="true" />
-              <span>{hudLabels?.openInspectorLabel ?? "Open parcel inspector"}</span>
+              <span>{hudLabels?.openInspectorLabel ?? defaultHud.openInspectorLabel}</span>
             </button>
           </div>
         ) : null}
