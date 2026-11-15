@@ -140,3 +140,11 @@ Engineering decisions made for ambiguities, gaps (`G1`–`G21`), and contract nu
 - **Decision:**
   1. **`GET /auth/me/export`:** Never raw-serialize ORM models. Map explicitly to `UserDataExport` (`UserProfile`, `FarmPublic`, `FieldDetailPublic` including `warnings[]` & `crop_history[]`, safe `analysis_requests` dicts explicitly **omitting `input_snapshot_gz`**, `analysis_results`, `analysis_selections`). Zero `password_hash`, `token_hash`, or raw bytes.
   2. **`POST /auth/claim-guest`:** Lock `guest_sessions` (`FOR UPDATE`, verify `expires_at > now()`), execute `UPDATE public.farms SET user_id = :uid, guest_session_token = NULL WHERE guest_session_token = :tok` **before** `DELETE FROM public.guest_sessions WHERE guest_token = :tok` (avoiding `ON DELETE CASCADE` farm wipe), and delete Redis `guest_quota:{token_hash}:quarters`.
+
+## `IMPL-022` — Optional & Nullable `priorities.equipment_constraints` (Fertilizer & Equipment Constraints)
+- **Status:** Accepted
+- **Context:** Farmers need to specify optional constraints for both **fertilizer availability** and **agricultural equipment/machinery** limits inside `priorities.equipment_constraints`, and callers may either supply constraint strings, pass `[]`, pass `null`, or omit the field entirely.
+- **Decision:**
+  1. Remove `equipment_constraints` from `required` in `AnalysisSubmitRequest.priorities` (`openapi.yaml`) and `FarmAnalysisInput.priorities` (`schema-v5.0.json`, kept byte-identical with `SYSTEM DESGIN/.../System Architecture Blueprint/`).
+  2. Type `equipment_constraints` as `["array", "null"]` with `default: []`, keeping `maxItems: 20` and `items: {type: "string", minLength: 1, maxLength: 160}`, and document that it covers both fertilizer availability and equipment constraints.
+  3. When assembling `FarmAnalysisInput` on `POST /analysis` (`M7`), normalize omitted or `null` values to `[]` while keeping `schema-v5.0.json` permissive for optional/nullable inputs.

@@ -1830,7 +1830,7 @@ components:
         priorities:
           type: object
           additionalProperties: false
-          required: [weights, market_preference, target_crop_ids, excluded_crop_ids, equipment_constraints]
+          required: [weights, market_preference, target_crop_ids, excluded_crop_ids]
           properties:
             weights:
               $ref: "./schema-v5.0.json#/$defs/PriorityWeights"
@@ -1851,8 +1851,10 @@ components:
                 minLength: 1
                 maxLength: 64
             equipment_constraints:
-              type: array
+              type: ["array", "null"]
+              default: []
               maxItems: 20
+              description: "Optional constraints covering fertilizer availability and agricultural equipment/machinery limits. May be omitted, null, [], or a list of constraint strings."
               items:
                 type: string
                 minLength: 1

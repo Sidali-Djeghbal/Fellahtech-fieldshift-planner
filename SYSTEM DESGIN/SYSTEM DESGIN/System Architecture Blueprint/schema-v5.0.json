@@ -597,8 +597,7 @@
             "weights",
             "market_preference",
             "target_crop_ids",
-            "excluded_crop_ids",
-            "equipment_constraints"
+            "excluded_crop_ids"
           ],
           "properties": {
             "weights": {
@@ -626,8 +625,13 @@
               }
             },
             "equipment_constraints": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
+              "default": [],
               "maxItems": 20,
+              "description": "Optional constraints covering fertilizer availability and agricultural equipment/machinery limits. Omitted or null values normalize to [].",
               "items": {
                 "type": "string",
                 "minLength": 1,
