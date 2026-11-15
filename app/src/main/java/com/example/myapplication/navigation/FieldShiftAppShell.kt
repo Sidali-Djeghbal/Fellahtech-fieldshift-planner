@@ -56,6 +56,8 @@ import com.example.myapplication.core.network.ApiEndpointConfig
 import com.example.myapplication.domain.auth.SessionState
 import com.example.myapplication.feature.analysis.AnalysisConfigScreen
 import com.example.myapplication.feature.analysis.AnalysisConfigViewModel
+import com.example.myapplication.feature.analysis.AnalysisHistoryScreen
+import com.example.myapplication.feature.analysis.AnalysisHistoryViewModel
 import com.example.myapplication.feature.analysis.AnalysisProgressScreen
 import com.example.myapplication.feature.analysis.AnalysisProgressViewModel
 import com.example.myapplication.feature.analysis.AnalysisResultScreen
@@ -296,6 +298,18 @@ private fun AuthenticatedAppScaffold(
                                     navController.navigate(AnalysisRoutes.progress(requestId))
                                 },
                                 onResumeActiveRequest = { requestId ->
+                                    navController.navigate(AnalysisRoutes.progress(requestId))
+                                }
+                            )
+                        }
+                        FieldShiftTopLevelDestination.HISTORY -> {
+                            val historyViewModel: AnalysisHistoryViewModel = hiltViewModel()
+                            AnalysisHistoryScreen(
+                                viewModel = historyViewModel,
+                                onOpenResult = { analysisId ->
+                                    navController.navigate(AnalysisRoutes.result(analysisId))
+                                },
+                                onOpenProgress = { requestId ->
                                     navController.navigate(AnalysisRoutes.progress(requestId))
                                 }
                             )

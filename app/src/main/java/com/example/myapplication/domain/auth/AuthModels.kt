@@ -51,7 +51,7 @@ data class GuestSessionUsage(
 
 data class GuestSessionInfo(
     val demoLocation: DemoLocation,
-    val demoParcel: DemoParcel,
+    val demoParcel: DemoParcel? = null,
     val createdAt: String?,
     val expiresAt: String,
     val limits: GuestSessionLimits?,

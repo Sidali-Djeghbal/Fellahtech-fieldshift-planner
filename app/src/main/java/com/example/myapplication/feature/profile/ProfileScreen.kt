@@ -251,55 +251,57 @@ private fun GuestProfileCard(
         )
     }
 
-    FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.guest_demo_parcel_title),
-                style = FieldShiftTheme.typography.headlineSm,
-                color = colors.textPrimary
-            )
-            if (info.demoParcel.isUnverifiedDemoParcel) {
-                FieldShiftStatusChip(
-                    text = stringResource(id = R.string.guest_demo_unverified_badge),
-                    tone = AgronomicStatusTone.MoistureDeficitAlert
+    info.demoParcel?.let { demoParcel ->
+        FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.guest_demo_parcel_title),
+                    style = FieldShiftTheme.typography.headlineSm,
+                    color = colors.textPrimary
                 )
+                if (demoParcel.isUnverifiedDemoParcel) {
+                    FieldShiftStatusChip(
+                        text = stringResource(id = R.string.guest_demo_unverified_badge),
+                        tone = AgronomicStatusTone.MoistureDeficitAlert
+                    )
+                }
             }
-        }
-        Spacer(modifier = Modifier.height(spacing.spaceXs))
-        Text(
-            text = info.demoParcel.fieldName,
-            style = FieldShiftTheme.typography.bodyLg,
-            color = colors.textPrimary
-        )
-        Spacer(modifier = Modifier.height(spacing.spaceXs))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(spacing.spaceSm),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FieldShiftCoordinateBadge(
-                coordinatesText = CoordinatesFormatter.formatDecimal(
-                    latitude = info.demoParcel.latitude,
-                    longitude = info.demoParcel.longitude
-                ),
-                leadingIcon = Icons.Outlined.PinDrop
-            )
-            Text(
-                text = stringResource(id = R.string.guest_demo_area_ha, info.demoParcel.areaHectares),
-                style = FieldShiftTheme.typography.labelMd,
-                color = colors.textSecondary
-            )
-        }
-        info.demoParcel.warnings.forEach { warning ->
             Spacer(modifier = Modifier.height(spacing.spaceXs))
             Text(
-                text = warning.message,
-                style = FieldShiftTheme.typography.bodySm,
-                color = colors.erosionAlert
+                text = demoParcel.fieldName,
+                style = FieldShiftTheme.typography.bodyLg,
+                color = colors.textPrimary
             )
+            Spacer(modifier = Modifier.height(spacing.spaceXs))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(spacing.spaceSm),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FieldShiftCoordinateBadge(
+                    coordinatesText = CoordinatesFormatter.formatDecimal(
+                        latitude = demoParcel.latitude,
+                        longitude = demoParcel.longitude
+                    ),
+                    leadingIcon = Icons.Outlined.PinDrop
+                )
+                Text(
+                    text = stringResource(id = R.string.guest_demo_area_ha, demoParcel.areaHectares),
+                    style = FieldShiftTheme.typography.labelMd,
+                    color = colors.textSecondary
+                )
+            }
+            demoParcel.warnings.forEach { warning ->
+                Spacer(modifier = Modifier.height(spacing.spaceXs))
+                Text(
+                    text = warning.message,
+                    style = FieldShiftTheme.typography.bodySm,
+                    color = colors.erosionAlert
+                )
+            }
         }
     }
 

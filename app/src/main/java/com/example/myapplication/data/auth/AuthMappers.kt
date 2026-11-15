@@ -60,7 +60,7 @@ fun DemoParcelPreviewDto.toDomain(): DemoParcel {
 fun GuestSessionStartResponseDto.toDomain(): GuestSessionInfo {
     return GuestSessionInfo(
         demoLocation = demoLocation.toDomain(),
-        demoParcel = demoParcel.toDomain(),
+        demoParcel = demoParcel?.toDomain(),
         createdAt = null,
         expiresAt = expiresAt,
         limits = null,
@@ -89,7 +89,7 @@ fun GuestSessionUsageDto.toDomain(): GuestSessionUsage {
 fun GuestSessionInfoDto.toDomain(): GuestSessionInfo {
     return GuestSessionInfo(
         demoLocation = demoLocation.toDomain(),
-        demoParcel = demoParcel.toDomain(),
+        demoParcel = demoParcel?.toDomain(),
         createdAt = createdAt,
         expiresAt = expiresAt,
         limits = limits.toDomain(),

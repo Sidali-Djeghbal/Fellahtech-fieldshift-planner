@@ -67,6 +67,12 @@ enum class StrategySelectionStatus(val apiValue: String) {
     }
 }
 
+enum class StrategyDisplaySelection {
+    SELECTED,
+    REJECTED,
+    SUGGESTED
+}
+
 data class StrategySelectionResult(
     val analysisId: String,
     val fieldId: String,
@@ -218,7 +224,20 @@ data class Strategy(
     val scores: StrategyScores,
     val confidence: SeverityLevel,
     val explanation: Explanation
-)
+) {
+    /**
+     * Derives the effective strategy selection status from read-time merged `seasons[].selection_status`
+     * (`backend/app/services/analysis.py:merge_selections_into_result`), preserving season-level data.
+     */
+    val displaySelectionStatus: StrategyDisplaySelection
+        get() = when {
+            seasons.any { it.selectionStatus == StrategySelectionStatus.SELECTED.apiValue } ->
+                StrategyDisplaySelection.SELECTED
+            seasons.any { it.selectionStatus == StrategySelectionStatus.REJECTED.apiValue } ->
+                StrategyDisplaySelection.REJECTED
+            else -> StrategyDisplaySelection.SUGGESTED
+        }
+}
 
 data class RequestedCropEvaluation(
     val requestedCropId: String,

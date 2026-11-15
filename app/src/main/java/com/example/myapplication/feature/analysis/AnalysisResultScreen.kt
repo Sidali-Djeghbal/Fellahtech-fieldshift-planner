@@ -36,12 +36,16 @@ import com.example.myapplication.core.common.UiState
 import com.example.myapplication.core.designsystem.component.AgronomicStatusTone
 import com.example.myapplication.core.designsystem.component.FieldShiftCard
 import com.example.myapplication.core.designsystem.component.FieldShiftOutlinedButton
+import com.example.myapplication.core.designsystem.component.FieldShiftPrimaryButton
 import com.example.myapplication.core.designsystem.component.FieldShiftStatusChip
 import com.example.myapplication.core.designsystem.theme.FieldShiftTheme
+import com.example.myapplication.domain.analysis.AnalysisError
 import com.example.myapplication.domain.analysis.AnalysisJobStatus
 import com.example.myapplication.domain.analysis.AnalysisResultEnvelope
 import com.example.myapplication.domain.analysis.FieldPlan
 import com.example.myapplication.domain.analysis.Strategy
+import com.example.myapplication.domain.analysis.StrategyDisplaySelection
+import com.example.myapplication.domain.analysis.StrategySelectionStatus
 import com.example.myapplication.feature.fields.label
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,7 +132,27 @@ fun AnalysisResultScreen(
                 }
 
                 is UiState.Success -> {
-                    AnalysisResultContent(envelope = state.data)
+                    AnalysisResultContent(
+                        envelope = state.data,
+                        mutatingFieldIds = uiState.mutatingFieldIds,
+                        mutatingStrategyKey = uiState.mutatingStrategyKey,
+                        selectionError = uiState.selectionError,
+                        onSelectStrategy = { fieldId, strategyId ->
+                            viewModel.updateStrategySelection(
+                                fieldId = fieldId,
+                                strategyId = strategyId,
+                                status = StrategySelectionStatus.SELECTED
+                            )
+                        },
+                        onRejectStrategy = { fieldId, strategyId ->
+                            viewModel.updateStrategySelection(
+                                fieldId = fieldId,
+                                strategyId = strategyId,
+                                status = StrategySelectionStatus.REJECTED
+                            )
+                        },
+                        onDismissSelectionError = viewModel::dismissSelectionError
+                    )
                 }
             }
         }
@@ -136,7 +160,15 @@ fun AnalysisResultScreen(
 }
 
 @Composable
-private fun AnalysisResultContent(envelope: AnalysisResultEnvelope) {
+private fun AnalysisResultContent(
+    envelope: AnalysisResultEnvelope,
+    mutatingFieldIds: Set<String>,
+    mutatingStrategyKey: String?,
+    selectionError: AnalysisError?,
+    onSelectStrategy: (String, String) -> Unit,
+    onRejectStrategy: (String, String) -> Unit,
+    onDismissSelectionError: () -> Unit
+) {
     val colors = FieldShiftTheme.colors
     val result = envelope.result
 
@@ -147,6 +179,22 @@ private fun AnalysisResultContent(envelope: AnalysisResultEnvelope) {
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        selectionError?.let { error ->
+            FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = formatAnalysisErrorMessage(error),
+                    style = FieldShiftTheme.typography.bodyMd,
+                    color = colors.erosionAlert
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FieldShiftOutlinedButton(
+                    text = stringResource(R.string.analysis_dismiss_error),
+                    onClick = onDismissSelectionError,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
         envelope.degradedMode?.let { degraded ->
             FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -212,7 +260,13 @@ private fun AnalysisResultContent(envelope: AnalysisResultEnvelope) {
         }
 
         result.fieldPlans.forEach { fieldPlan ->
-            FieldPlanCard(fieldPlan = fieldPlan)
+            FieldPlanCard(
+                fieldPlan = fieldPlan,
+                isFieldMutating = fieldPlan.fieldId in mutatingFieldIds,
+                mutatingStrategyKey = mutatingStrategyKey,
+                onSelectStrategy = { strategyId -> onSelectStrategy(fieldPlan.fieldId, strategyId) },
+                onRejectStrategy = { strategyId -> onRejectStrategy(fieldPlan.fieldId, strategyId) }
+            )
         }
 
         FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
@@ -232,7 +286,13 @@ private fun AnalysisResultContent(envelope: AnalysisResultEnvelope) {
 }
 
 @Composable
-private fun FieldPlanCard(fieldPlan: FieldPlan) {
+private fun FieldPlanCard(
+    fieldPlan: FieldPlan,
+    isFieldMutating: Boolean,
+    mutatingStrategyKey: String?,
+    onSelectStrategy: (String) -> Unit,
+    onRejectStrategy: (String) -> Unit
+) {
     val colors = FieldShiftTheme.colors
     FieldShiftCard(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -278,7 +338,11 @@ private fun FieldPlanCard(fieldPlan: FieldPlan) {
             Spacer(modifier = Modifier.height(10.dp))
             StrategySection(
                 strategy = strategy,
-                isSuggested = strategy.strategyId == fieldPlan.suggestedStrategyId
+                isSuggested = strategy.strategyId == fieldPlan.suggestedStrategyId,
+                isFieldMutating = isFieldMutating,
+                isThisStrategyMutating = mutatingStrategyKey == "${fieldPlan.fieldId}:${strategy.strategyId}",
+                onSelectClick = { onSelectStrategy(strategy.strategyId) },
+                onRejectClick = { onRejectStrategy(strategy.strategyId) }
             )
         }
     }
@@ -287,9 +351,14 @@ private fun FieldPlanCard(fieldPlan: FieldPlan) {
 @Composable
 private fun StrategySection(
     strategy: Strategy,
-    isSuggested: Boolean
+    isSuggested: Boolean,
+    isFieldMutating: Boolean,
+    isThisStrategyMutating: Boolean,
+    onSelectClick: () -> Unit,
+    onRejectClick: () -> Unit
 ) {
     val colors = FieldShiftTheme.colors
+    val selectionStatus = strategy.displaySelectionStatus
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -308,13 +377,28 @@ private fun StrategySection(
             )
         }
 
-        if (isSuggested || strategy.isExistingRotation) {
+        if (isSuggested || strategy.isExistingRotation || selectionStatus != StrategyDisplaySelection.SUGGESTED) {
             Spacer(modifier = Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                when (selectionStatus) {
+                    StrategyDisplaySelection.SELECTED -> {
+                        FieldShiftStatusChip(
+                            text = stringResource(R.string.analysis_selection_selected),
+                            tone = AgronomicStatusTone.NominalFoliage
+                        )
+                    }
+                    StrategyDisplaySelection.REJECTED -> {
+                        FieldShiftStatusChip(
+                            text = stringResource(R.string.analysis_selection_rejected),
+                            tone = AgronomicStatusTone.MoistureDeficitAlert
+                        )
+                    }
+                    StrategyDisplaySelection.SUGGESTED -> Unit
+                }
                 if (isSuggested) {
                     FieldShiftStatusChip(
                         text = stringResource(R.string.analysis_suggested_badge),
-                        tone = AgronomicStatusTone.NominalFoliage
+                        tone = AgronomicStatusTone.TelemetryCyan
                     )
                 }
                 if (strategy.isExistingRotation) {
@@ -368,6 +452,28 @@ private fun StrategySection(
                     color = colors.erosionAlert
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FieldShiftPrimaryButton(
+                text = when {
+                    isThisStrategyMutating -> stringResource(R.string.analysis_selection_saving)
+                    selectionStatus == StrategyDisplaySelection.SELECTED -> stringResource(R.string.analysis_selection_selected)
+                    else -> stringResource(R.string.analysis_adopt_strategy)
+                },
+                onClick = onSelectClick,
+                enabled = !isFieldMutating && selectionStatus != StrategyDisplaySelection.SELECTED,
+                modifier = Modifier.weight(1f)
+            )
+            FieldShiftOutlinedButton(
+                text = stringResource(R.string.analysis_reject_strategy),
+                onClick = onRejectClick,
+                enabled = !isFieldMutating && selectionStatus != StrategyDisplaySelection.REJECTED
+            )
         }
     }
 }

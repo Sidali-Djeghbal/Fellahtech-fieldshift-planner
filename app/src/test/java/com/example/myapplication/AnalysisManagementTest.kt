@@ -46,12 +46,19 @@ import com.example.myapplication.domain.analysis.CropCatalogItem
 import com.example.myapplication.domain.analysis.CycleMode
 import com.example.myapplication.domain.analysis.DataQuality
 import com.example.myapplication.domain.analysis.DegradedModeInfo
+import com.example.myapplication.domain.analysis.Explanation
 import com.example.myapplication.domain.analysis.FarmAnalysesPage
+import com.example.myapplication.domain.analysis.FarmAnalysisSummary
 import com.example.myapplication.domain.analysis.FieldPlan
 import com.example.myapplication.domain.analysis.MarketPreference
 import com.example.myapplication.domain.analysis.PlanningConfig
 import com.example.myapplication.domain.analysis.PollErrorInfo
 import com.example.myapplication.domain.analysis.PriorityWeights
+import com.example.myapplication.domain.analysis.SeasonPlan
+import com.example.myapplication.domain.analysis.SeverityLevel
+import com.example.myapplication.domain.analysis.Strategy
+import com.example.myapplication.domain.analysis.StrategyDisplaySelection
+import com.example.myapplication.domain.analysis.StrategyScores
 import com.example.myapplication.domain.analysis.StrategySelectionResult
 import com.example.myapplication.domain.analysis.StrategySelectionStatus
 import com.example.myapplication.domain.auth.WarningNotice
@@ -75,9 +82,11 @@ import com.example.myapplication.domain.field.SoilType
 import com.example.myapplication.domain.field.WaterAvailability
 import com.example.myapplication.domain.field.WaterSource
 import com.example.myapplication.feature.analysis.AnalysisConfigViewModel
+import com.example.myapplication.feature.analysis.AnalysisHistoryViewModel
 import com.example.myapplication.feature.analysis.AnalysisProgressViewModel
 import com.example.myapplication.feature.analysis.AnalysisResultViewModel
 import com.example.myapplication.feature.analysis.AnalysisValidationError
+import com.example.myapplication.feature.analysis.HistoryItemAction
 import java.io.IOException
 import java.nio.file.Files
 import kotlinx.coroutines.CompletableDeferred
@@ -933,6 +942,400 @@ class AnalysisManagementTest {
         assertTrue(err404.isNotFound)
     }
 
+    @Test
+    fun `AnalysisResultViewModel updateStrategySelection selects rejects switches selection and prevents duplicate requests`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val repo = FakeAnalysisRepository()
+            repo.resultResponse = AnalysisCallResult.Success(sampleEnvelopeWithStrategies())
+            val vm = AnalysisResultViewModel(repo)
+            vm.loadResult("analysis_0123456789ab")
+            advanceUntilIdle()
+
+            // Hold first PATCH in flight to test duplicate submission prevention
+            val gate = CompletableDeferred<AnalysisCallResult<StrategySelectionResult>>()
+            repo.deferredSelection = gate
+
+            vm.updateStrategySelection("field_01", "S2_water_resilient", StrategySelectionStatus.SELECTED)
+            runCurrent()
+            assertTrue("field_01" in vm.uiState.value.mutatingFieldIds)
+            assertEquals("field_01:S2_water_resilient", vm.uiState.value.mutatingStrategyKey)
+
+            // Duplicate or competing selection on the same field while in flight is ignored
+            vm.updateStrategySelection("field_01", "S1_baseline", StrategySelectionStatus.SELECTED)
+            assertEquals(1, repo.selectionCalls)
+
+            // Complete PATCH 200 -> S2 becomes SELECTED, S1 stays SUGGESTED
+            repo.resultResponse = AnalysisCallResult.Failure(AnalysisError.Network("skip refresh"))
+            gate.complete(
+                AnalysisCallResult.Success(
+                    StrategySelectionResult("analysis_0123456789ab", "field_01", "S2_water_resilient", StrategySelectionStatus.SELECTED)
+                )
+            )
+            advanceUntilIdle()
+
+            assertTrue(vm.uiState.value.mutatingFieldIds.isEmpty())
+            assertNull(vm.uiState.value.mutatingStrategyKey)
+            val afterSelectS2 = (vm.uiState.value.envelopeState as UiState.Success).data.result.fieldPlans.first().strategies
+            assertEquals(StrategyDisplaySelection.SUGGESTED, afterSelectS2[0].displaySelectionStatus)
+            assertEquals(StrategyDisplaySelection.SELECTED, afterSelectS2[1].displaySelectionStatus)
+
+            // Switch selection to S1 -> S2 reverts to SUGGESTED (matching backend upsert_analysis_selection)
+            repo.deferredSelection = null
+            vm.updateStrategySelection("field_01", "S1_baseline", StrategySelectionStatus.SELECTED)
+            advanceUntilIdle()
+
+            val afterSwitchS1 = (vm.uiState.value.envelopeState as UiState.Success).data.result.fieldPlans.first().strategies
+            assertEquals(StrategyDisplaySelection.SELECTED, afterSwitchS1[0].displaySelectionStatus)
+            assertEquals(StrategyDisplaySelection.SUGGESTED, afterSwitchS1[1].displaySelectionStatus)
+
+            // Reject S2 -> S2 becomes REJECTED and remains in strategies list
+            vm.updateStrategySelection("field_01", "S2_water_resilient", StrategySelectionStatus.REJECTED)
+            advanceUntilIdle()
+
+            val afterRejectS2 = (vm.uiState.value.envelopeState as UiState.Success).data.result.fieldPlans.first().strategies
+            assertEquals(2, afterRejectS2.size)
+            assertEquals(StrategyDisplaySelection.SELECTED, afterRejectS2[0].displaySelectionStatus)
+            assertEquals(StrategyDisplaySelection.REJECTED, afterRejectS2[1].displaySelectionStatus)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel initial load selects first farm and loads history`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farm1 = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 2, "2026-10-01T00:00:00Z")
+            val farm2 = Farm("farm_2", "South Wheat", "DZ", "Setif", null, 1, "2026-10-02T00:00:00Z")
+            val summary = FarmAnalysisSummary(
+                requestId = "req-1",
+                analysisId = "analysis_0123456789ab",
+                status = AnalysisJobStatus.OK,
+                language = AppLanguage.ENGLISH,
+                catalogVersion = "v1",
+                datasetVersion = null,
+                mlEngineVersion = "5.0",
+                warnings = listOf(WarningNotice("W1", "Low rainfall", emptyList())),
+                createdAt = "2026-11-15T10:00:00Z",
+                durationMs = 1420L
+            )
+            val analysisRepo = FakeAnalysisRepository().apply {
+                historyHandler = { farmId, _, cursor, status ->
+                    assertEquals("farm_1", farmId)
+                    assertNull(cursor)
+                    assertNull(status)
+                    AnalysisCallResult.Success(FarmAnalysesPage(listOf(summary), null, false))
+                }
+            }
+            val vm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm1, farm2)), analysisRepo)
+            vm.initialize()
+            advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertFalse(state.isLoadingFarms)
+            assertFalse(state.isLoadingHistory)
+            assertEquals("farm_1", state.selectedFarmId)
+            assertEquals(listOf(summary), state.items)
+            assertFalse(state.hasMore)
+            assertEquals(1, analysisRepo.historyCalls.size)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel handles empty history and empty farms`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val emptyFarmRepo = FakeFarmRepository(emptyList())
+            val analysisRepo = FakeAnalysisRepository()
+            val noFarmsVm = AnalysisHistoryViewModel(emptyFarmRepo, analysisRepo)
+            noFarmsVm.initialize()
+            advanceUntilIdle()
+
+            assertTrue(noFarmsVm.uiState.value.farms.isEmpty())
+            assertNull(noFarmsVm.uiState.value.selectedFarmId)
+            assertTrue(analysisRepo.historyCalls.isEmpty())
+
+            val farm = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 1, "2026-10-01T00:00:00Z")
+            val emptyHistoryVm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm)), analysisRepo)
+            emptyHistoryVm.initialize()
+            advanceUntilIdle()
+
+            assertEquals("farm_1", emptyHistoryVm.uiState.value.selectedFarmId)
+            assertTrue(emptyHistoryVm.uiState.value.items.isEmpty())
+            assertNull(emptyHistoryVm.uiState.value.historyError)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel status filtering resets cursor and passes status`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farm = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 2, "2026-10-01T00:00:00Z")
+            val analysisRepo = FakeAnalysisRepository().apply {
+                historyHandler = { _, _, _, status ->
+                    if (status == null) {
+                        AnalysisCallResult.Success(
+                            FarmAnalysesPage(
+                                items = listOf(
+                                    FarmAnalysisSummary("req-1", "analysis_0123456789ab", AnalysisJobStatus.OK, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T10:00:00Z", 1000L)
+                                ),
+                                nextCursor = "cursor_page_2",
+                                hasMore = true
+                            )
+                        )
+                    } else {
+                        AnalysisCallResult.Success(
+                            FarmAnalysesPage(
+                                items = listOf(
+                                    FarmAnalysisSummary("req-2", null, AnalysisJobStatus.RUNNING, AppLanguage.FRENCH, "v1", null, null, emptyList(), "2026-11-15T11:00:00Z", null)
+                                ),
+                                nextCursor = null,
+                                hasMore = false
+                            )
+                        )
+                    }
+                }
+            }
+            val vm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm)), analysisRepo)
+            vm.initialize()
+            advanceUntilIdle()
+            assertEquals("cursor_page_2", vm.uiState.value.nextCursor)
+            assertTrue(vm.uiState.value.hasMore)
+
+            vm.selectStatusFilter(AnalysisJobStatus.RUNNING)
+            advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertEquals(AnalysisJobStatus.RUNNING, state.selectedStatusFilter)
+            assertNull(state.nextCursor)
+            assertFalse(state.hasMore)
+            assertEquals(listOf("req-2"), state.items.map { it.requestId })
+            assertEquals(AnalysisJobStatus.RUNNING, analysisRepo.historyCalls.last().status)
+            assertNull(analysisRepo.historyCalls.last().cursor)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel cursor pagination appends deduplicated items`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farm = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 2, "2026-10-01T00:00:00Z")
+            val item1 = FarmAnalysisSummary("req-1", "analysis_111111111111", AnalysisJobStatus.OK, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T10:00:00Z", 900L)
+            val item2 = FarmAnalysisSummary("req-2", "analysis_222222222222", AnalysisJobStatus.PARTIAL, AppLanguage.ENGLISH, "v1", null, null, List(2) { WarningNotice("W$it", "warn", emptyList()) }, "2026-11-15T09:00:00Z", 1100L)
+            val analysisRepo = FakeAnalysisRepository().apply {
+                historyHandler = { _, _, cursor, _ ->
+                    if (cursor == null) {
+                        AnalysisCallResult.Success(FarmAnalysesPage(listOf(item1), "cursor_2", true))
+                    } else {
+                        // Include duplicate item1 to verify deduplication by requestId
+                        AnalysisCallResult.Success(FarmAnalysesPage(listOf(item1, item2), null, false))
+                    }
+                }
+            }
+            val vm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm)), analysisRepo)
+            vm.initialize()
+            advanceUntilIdle()
+            assertTrue(vm.uiState.value.hasMore)
+
+            vm.loadMore()
+            advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertEquals(listOf("req-1", "req-2"), state.items.map { it.requestId })
+            assertFalse(state.hasMore)
+            assertNull(state.nextCursor)
+            assertEquals("cursor_2", analysisRepo.historyCalls.last().cursor)
+
+            // Extra loadMore when hasMore is false does nothing
+            val callsBefore = analysisRepo.historyCalls.size
+            vm.loadMore()
+            advanceUntilIdle()
+            assertEquals(callsBefore, analysisRepo.historyCalls.size)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel refresh reloads first page and replaces items`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farm = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 1, "2026-10-01T00:00:00Z")
+            var pageVersion = 1
+            val analysisRepo = FakeAnalysisRepository().apply {
+                historyHandler = { _, _, _, _ ->
+                    if (pageVersion == 1) {
+                        AnalysisCallResult.Success(
+                            FarmAnalysesPage(
+                                listOf(FarmAnalysisSummary("req-old", "analysis_aaaaaaaaaaaa", AnalysisJobStatus.OK, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T08:00:00Z", 800L)),
+                                null,
+                                false
+                            )
+                        )
+                    } else {
+                        AnalysisCallResult.Success(
+                            FarmAnalysesPage(
+                                listOf(FarmAnalysisSummary("req-new", null, AnalysisJobStatus.PENDING, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T12:00:00Z", null)),
+                                null,
+                                false
+                            )
+                        )
+                    }
+                }
+            }
+            val vm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm)), analysisRepo)
+            vm.initialize()
+            advanceUntilIdle()
+            assertEquals(listOf("req-old"), vm.uiState.value.items.map { it.requestId })
+
+            pageVersion = 2
+            vm.refresh()
+            advanceUntilIdle()
+
+            assertFalse(vm.uiState.value.isRefreshing)
+            assertEquals(listOf("req-new"), vm.uiState.value.items.map { it.requestId })
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel handles API and network errors on load and loadMore`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farm = Farm("farm_1", "North Olive", "DZ", "Guelma", null, 1, "2026-10-01T00:00:00Z")
+            val item1 = FarmAnalysisSummary("req-1", "analysis_111111111111", AnalysisJobStatus.OK, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T10:00:00Z", 900L)
+            var failFirst = true
+            val analysisRepo = FakeAnalysisRepository().apply {
+                historyHandler = { _, _, cursor, _ ->
+                    when {
+                        failFirst -> AnalysisCallResult.Failure(AnalysisError.Api(500, "INTERNAL", "Server error"))
+                        cursor == null -> AnalysisCallResult.Success(FarmAnalysesPage(listOf(item1), "c2", true))
+                        else -> AnalysisCallResult.Failure(AnalysisError.Network("Timeout"))
+                    }
+                }
+            }
+            val vm = AnalysisHistoryViewModel(FakeFarmRepository(listOf(farm)), analysisRepo)
+            vm.initialize()
+            advanceUntilIdle()
+
+            assertTrue(vm.uiState.value.historyError is AnalysisError.Api)
+            assertTrue(vm.uiState.value.items.isEmpty())
+
+            // Retry succeeds
+            failFirst = false
+            vm.retryHistory()
+            advanceUntilIdle()
+            assertNull(vm.uiState.value.historyError)
+            assertEquals(listOf("req-1"), vm.uiState.value.items.map { it.requestId })
+
+            // Load more fails with Network error while preserving existing items
+            vm.loadMore()
+            advanceUntilIdle()
+            assertTrue(vm.uiState.value.loadMoreError is AnalysisError.Network)
+            assertEquals(listOf("req-1"), vm.uiState.value.items.map { it.requestId })
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisHistoryViewModel resolveItemAction handles ok partial pending running and missing analysisId`() {
+        val vm = AnalysisHistoryViewModel(FakeFarmRepository(emptyList()), FakeAnalysisRepository())
+
+        val okItem = FarmAnalysisSummary("req-1", "analysis_0123456789ab", AnalysisJobStatus.OK, AppLanguage.ENGLISH, "v1", null, null, emptyList(), "2026-11-15T10:00:00Z", 900L)
+        assertEquals(HistoryItemAction.OpenResult("analysis_0123456789ab"), vm.resolveItemAction(okItem))
+
+        val partialItem = okItem.copy(status = AnalysisJobStatus.PARTIAL, analysisId = "analysis_abcdef123456")
+        assertEquals(HistoryItemAction.OpenResult("analysis_abcdef123456"), vm.resolveItemAction(partialItem))
+
+        val missingIdOk = okItem.copy(analysisId = null)
+        assertEquals(HistoryItemAction.Unavailable, vm.resolveItemAction(missingIdOk))
+
+        val invalidIdOk = okItem.copy(analysisId = "not_a_valid_id")
+        assertEquals(HistoryItemAction.Unavailable, vm.resolveItemAction(invalidIdOk))
+
+        val pendingItem = okItem.copy(requestId = "req-pending", analysisId = null, status = AnalysisJobStatus.PENDING)
+        assertEquals(HistoryItemAction.OpenProgress("req-pending"), vm.resolveItemAction(pendingItem))
+
+        val runningItem = okItem.copy(requestId = "req-running", analysisId = null, status = AnalysisJobStatus.RUNNING)
+        assertEquals(HistoryItemAction.OpenProgress("req-running"), vm.resolveItemAction(runningItem))
+
+        val failedItem = okItem.copy(requestId = "req-failed", analysisId = null, status = AnalysisJobStatus.FAILED)
+        assertEquals(HistoryItemAction.Unavailable, vm.resolveItemAction(failedItem))
+    }
+
+    @Test
+    fun `AnalysisResultViewModel updateStrategySelection preserves envelope and exposes error on API and network failures`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val repo = FakeAnalysisRepository()
+            repo.resultResponse = AnalysisCallResult.Success(sampleEnvelopeWithStrategies())
+            val vm = AnalysisResultViewModel(repo)
+            vm.loadResult("analysis_0123456789ab")
+            advanceUntilIdle()
+
+            repo.selectionResult = AnalysisCallResult.Failure(
+                AnalysisError.Api(400, "INVALID_INPUT", "Unknown strategy_id")
+            )
+            vm.updateStrategySelection("field_01", "S2_water_resilient", StrategySelectionStatus.SELECTED)
+            advanceUntilIdle()
+
+            assertTrue(vm.uiState.value.envelopeState is UiState.Success)
+            assertTrue(vm.uiState.value.mutatingFieldIds.isEmpty())
+            val apiErr = vm.uiState.value.selectionError as AnalysisError.Api
+            assertEquals(400, apiErr.httpStatus)
+
+            vm.dismissSelectionError()
+            assertNull(vm.uiState.value.selectionError)
+
+            repo.selectionResult = AnalysisCallResult.Failure(AnalysisError.Network("Timeout"))
+            vm.updateStrategySelection("field_01", "S2_water_resilient", StrategySelectionStatus.REJECTED)
+            advanceUntilIdle()
+
+            assertTrue(vm.uiState.value.envelopeState is UiState.Success)
+            assertTrue(vm.uiState.value.selectionError is AnalysisError.Network)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisResultViewModel syncs read-time merged selections from GET response`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val repo = FakeAnalysisRepository()
+            repo.resultResponse = AnalysisCallResult.Success(
+                sampleEnvelopeWithStrategies(s1Status = "rejected", s2Status = "selected")
+            )
+            val vm = AnalysisResultViewModel(repo)
+            vm.loadResult("analysis_0123456789ab")
+            advanceUntilIdle()
+
+            val strategies = (vm.uiState.value.envelopeState as UiState.Success).data.result.fieldPlans.first().strategies
+            assertEquals(StrategyDisplaySelection.REJECTED, strategies[0].displaySelectionStatus)
+            assertEquals(StrategyDisplaySelection.SELECTED, strategies[1].displaySelectionStatus)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
     private fun httpException(code: Int, body: String, retryAfter: String? = null): HttpException {
         val responseBody = body.toResponseBody("application/json".toMediaType())
         val raw = if (retryAfter != null) {
@@ -960,6 +1363,72 @@ class AnalysisManagementTest {
         marketPreference = MarketPreference.MIXED,
         fieldIds = listOf("f1")
     )
+
+    private fun sampleEnvelopeWithStrategies(
+        s1Status: String = "suggested",
+        s2Status: String = "suggested"
+    ): AnalysisResultEnvelope {
+        val scores = StrategyScores(70.0, 65.0, 60.0, 55.0, 50.0, 75.0, 74.0, 90)
+        val emptyExplanation = Explanation(emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+        return AnalysisResultEnvelope(
+            analysisId = "analysis_0123456789ab",
+            requestId = "req-1",
+            status = AnalysisJobStatus.OK,
+            datasetVersion = "ds_1",
+            warnings = emptyList(),
+            degradedMode = null,
+            result = AnalysisResultData(
+                schemaVersion = "5.0",
+                requestId = "req-1",
+                datasetVersionUsed = "ds_1",
+                generatedAt = "2026-10-01T00:00:00Z",
+                status = AnalysisJobStatus.OK,
+                language = AppLanguage.ENGLISH,
+                mlEngineVersion = "5.0.0",
+                overallSummary = "Summary",
+                disclaimer = "Disclaimer",
+                fieldPlans = listOf(
+                    FieldPlan(
+                        fieldId = "field_01",
+                        fieldName = "North Plot",
+                        status = AnalysisJobStatus.OK,
+                        partialReason = null,
+                        climateTrendSummary = "Moderate",
+                        strategies = listOf(
+                            Strategy(
+                                strategyId = "S1_baseline",
+                                name = "Existing Baseline",
+                                isExistingRotation = true,
+                                description = "Baseline",
+                                seasons = listOf(
+                                    SeasonPlan(1, Season.AUTUMN, 2026, 11, "durum_wheat", "Durum Wheat", "cereals", "main_crop", s1Status)
+                                ),
+                                scores = scores,
+                                confidence = SeverityLevel.MEDIUM,
+                                explanation = emptyExplanation
+                            ),
+                            Strategy(
+                                strategyId = "S2_water_resilient",
+                                name = "Water Resilient",
+                                isExistingRotation = false,
+                                description = "Recommended",
+                                seasons = listOf(
+                                    SeasonPlan(1, Season.SPRING, 2027, 3, "chickpea", "Chickpea", "legumes", "nitrogen_fixer", s2Status)
+                                ),
+                                scores = scores.copy(priorityFit = 84.0),
+                                confidence = SeverityLevel.HIGH,
+                                explanation = emptyExplanation
+                            )
+                        ),
+                        suggestedStrategyId = "S2_water_resilient",
+                        requestedCropResults = emptyList(),
+                        dataQuality = DataQuality(0.9, null, emptyList(), emptyList(), emptyList())
+                    )
+                ),
+                dataQuality = DataQuality(0.9, null, emptyList(), emptyList(), emptyList())
+            )
+        )
+    }
 
     private fun sampleFieldSummary(fieldId: String, name: String) = FieldSummary(
         farmId = "farm_1",
@@ -1024,11 +1493,24 @@ class AnalysisManagementTest {
             AnalysisCallResult.Success(AnalysisJobStatus.CANCELLED)
         var resultResponse: AnalysisCallResult<AnalysisResultEnvelope> =
             AnalysisCallResult.Failure(AnalysisError.Network("unset"))
+        var selectionResult: AnalysisCallResult<StrategySelectionResult>? = null
+        var deferredSelection: CompletableDeferred<AnalysisCallResult<StrategySelectionResult>>? = null
         var activeRequest: ActiveAnalysisRequest? = null
         var deferredActiveRequest: CompletableDeferred<ActiveAnalysisRequest?>? = null
         var submitCalls: Int = 0
         var pollCalls: Int = 0
+        var selectionCalls: Int = 0
         var lastIdempotencyKey: String? = null
+        val historyCalls = mutableListOf<HistoryCall>()
+        var historyHandler: (String, Int, String?, AnalysisJobStatus?) -> AnalysisCallResult<FarmAnalysesPage> =
+            { _, _, _, _ -> AnalysisCallResult.Success(FarmAnalysesPage(emptyList(), null, false)) }
+
+        data class HistoryCall(
+            val farmId: String,
+            val limit: Int,
+            val cursor: String?,
+            val status: AnalysisJobStatus?
+        )
 
         override suspend fun getCatalog(language: AppLanguage, limit: Int, cursor: String?) = catalogResult
 
@@ -1059,11 +1541,18 @@ class AnalysisManagementTest {
             fieldId: String,
             strategyId: String,
             selectionStatus: StrategySelectionStatus
-        ): AnalysisCallResult<StrategySelectionResult> = AnalysisCallResult.Success(
-            StrategySelectionResult(analysisId, fieldId, strategyId, selectionStatus)
-        )
-        override suspend fun listFarmAnalyses(farmId: String, limit: Int, cursor: String?, status: AnalysisJobStatus?): AnalysisCallResult<FarmAnalysesPage> =
-            AnalysisCallResult.Success(FarmAnalysesPage(emptyList(), null, false))
+        ): AnalysisCallResult<StrategySelectionResult> {
+            selectionCalls++
+            return deferredSelection?.await()
+                ?: selectionResult
+                ?: AnalysisCallResult.Success(
+                    StrategySelectionResult(analysisId, fieldId, strategyId, selectionStatus)
+                )
+        }
+        override suspend fun listFarmAnalyses(farmId: String, limit: Int, cursor: String?, status: AnalysisJobStatus?): AnalysisCallResult<FarmAnalysesPage> {
+            historyCalls += HistoryCall(farmId, limit, cursor, status)
+            return historyHandler(farmId, limit, cursor, status)
+        }
         override suspend fun getActiveRequest(): ActiveAnalysisRequest? =
             deferredActiveRequest?.await() ?: activeRequest
         override suspend fun saveActiveRequest(request: ActiveAnalysisRequest) {

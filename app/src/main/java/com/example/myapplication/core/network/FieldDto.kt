@@ -63,7 +63,6 @@ data class FieldWriteRequestDto(
 @Serializable
 data class FieldPatchRequestDto(
     @SerialName("field_name") val fieldName: String? = null,
-    @SerialName("is_unverified_demo_parcel") val isUnverifiedDemoParcel: Boolean? = null,
     @SerialName("location") val location: FieldLocationDto? = null,
     @SerialName("area_hectares") val areaHectares: Double? = null,
     @SerialName("elevation_m") val elevationM: Double? = null,

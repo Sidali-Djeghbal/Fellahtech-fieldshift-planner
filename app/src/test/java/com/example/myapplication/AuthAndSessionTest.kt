@@ -153,9 +153,55 @@ class AuthAndSessionTest {
         """.trimIndent()
         val guestStart = json.decodeFromString<GuestSessionStartResponseDto>(guestStartJson)
         assertEquals("gst-xyz", guestStart.guestToken)
-        assertEquals(33.8935, guestStart.demoParcel.location.latitude, 0.0001)
-        assertTrue(guestStart.demoParcel.isUnverifiedDemoParcel)
-        assertEquals("DEMO_PARCEL", guestStart.demoParcel.warnings.first().code)
+        assertEquals(33.8935, guestStart.demoParcel!!.location.latitude, 0.0001)
+        assertTrue(guestStart.demoParcel!!.isUnverifiedDemoParcel)
+        assertEquals("DEMO_PARCEL", guestStart.demoParcel!!.warnings.first().code)
+
+        val backendGuestStartJson = """
+            {
+              "guest_token": "gst-real",
+              "expires_at": "2026-11-22T00:00:00Z",
+              "demo_location": {
+                "id": 1,
+                "code": "DZ-GUELMA",
+                "name": "Guelma",
+                "country": "DZ",
+                "region": "Guelma"
+              }
+            }
+        """.trimIndent()
+        val backendGuestStart = json.decodeFromString<GuestSessionStartResponseDto>(backendGuestStartJson)
+        assertEquals("gst-real", backendGuestStart.guestToken)
+        assertNull(backendGuestStart.demoParcel)
+
+        val backendGuestInfoJson = """
+            {
+              "demo_location": {
+                "id": 1,
+                "code": "DZ-GUELMA",
+                "name": "Guelma",
+                "country": "DZ",
+                "region": "Guelma"
+              },
+              "created_at": "2026-11-15T00:00:00Z",
+              "expires_at": "2026-11-22T00:00:00Z",
+              "limits": {
+                "max_farms": 1,
+                "max_fields_per_farm": 2,
+                "max_analyses": 5,
+                "max_analysis_quarters": 20
+              },
+              "usage": {
+                "farms": 0,
+                "fields": 0,
+                "analysis_quarters": 0,
+                "analyses": 0.0
+              }
+            }
+        """.trimIndent()
+        val backendGuestInfo = json.decodeFromString<GuestSessionInfoDto>(backendGuestInfoJson)
+        assertEquals("DZ-GUELMA", backendGuestInfo.demoLocation.code)
+        assertNull(backendGuestInfo.demoParcel)
 
         val errorJson = """
             {

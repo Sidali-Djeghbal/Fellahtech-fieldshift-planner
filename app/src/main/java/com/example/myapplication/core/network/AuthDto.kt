@@ -103,7 +103,7 @@ data class GuestSessionStartResponseDto(
     @SerialName("guest_token") val guestToken: String,
     @SerialName("expires_at") val expiresAt: String,
     @SerialName("demo_location") val demoLocation: DemoLocationSummaryDto,
-    @SerialName("demo_parcel") val demoParcel: DemoParcelPreviewDto
+    @SerialName("demo_parcel") val demoParcel: DemoParcelPreviewDto? = null
 )
 
 @Serializable
@@ -125,7 +125,7 @@ data class GuestSessionUsageDto(
 @Serializable
 data class GuestSessionInfoDto(
     @SerialName("demo_location") val demoLocation: DemoLocationSummaryDto,
-    @SerialName("demo_parcel") val demoParcel: DemoParcelPreviewDto,
+    @SerialName("demo_parcel") val demoParcel: DemoParcelPreviewDto? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("expires_at") val expiresAt: String,
     @SerialName("limits") val limits: GuestSessionLimitsDto,
