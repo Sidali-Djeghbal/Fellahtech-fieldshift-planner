@@ -8,9 +8,14 @@ export type LegendKey = Exclude<LayerKey, "truecolor">;
 
 export type StratId = "s0" | "s1" | "s2";
 
-export type PresetId = "tidjelabine" | "guelma" | "constantine" | "mila" | "biskra";
+export type PresetId = string;
 
-export type ClimateKey = "inland" | "guelma" | "constantine" | "mila" | "biskra";
+export type ClimateKey =
+  | "seybouse_valley"
+  | "heliopolis_hills"
+  | "bouchegouf_basin"
+  | "oued_zenati"
+  | "tamlouka_plains";
 
 export type CropKey = "wheat" | "fallow" | "faba" | "barley" | "vetch" | "chickpea";
 
@@ -76,6 +81,11 @@ export interface Preset {
   pitch: number;
   bearing: number;
   note: string;
+  commune?: string | null;
+  soilType?: string | null;
+  soilPh?: string | null;
+  soilOm?: string | null;
+  areaHa?: number | null;
   ring: [number, number][];
   center: PresetCoord;
   liveSlope: number;

@@ -1,4 +1,10 @@
 import {
+  closeRing,
+  extractRingFromBoundary,
+  findNearestGuelmaCommune,
+} from "@/lib/geo/guelma";
+import type { FarmPublic, FieldDetailPublic } from "@/lib/schemas";
+import {
   CLIMATES,
   CROPS,
   DAYS,
@@ -235,11 +241,11 @@ async function readDemTile(lat: number, lon: number, z: number) {
   }
 }
 
-export async function measureFromDem(
-  preset: Preset
+export async function measureCoordFromDem(
+  lat: number,
+  lon: number
 ): Promise<{ elev: number; slope: number } | null> {
-  const center = preset.center;
-  const cacheKey = `fieldshift.dem.${center.lat.toFixed(4)}.${center.lon.toFixed(4)}`;
+  const cacheKey = `fieldshift.dem.${lat.toFixed(4)}.${lon.toFixed(4)}`;
   try {
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
@@ -252,7 +258,7 @@ export async function measureFromDem(
 
   const z = 12;
   try {
-    const { data, px, py, latR } = await readDemTile(center.lat, center.lon, z);
+    const { data, px, py, latR } = await readDemTile(lat, lon, z);
     const at = (x: number, y: number) => {
       const cx = Math.max(0, Math.min(255, x));
       const cy = Math.max(0, Math.min(255, y));
@@ -274,5 +280,74 @@ export async function measureFromDem(
   } catch {
     return null;
   }
+}
+
+export async function measureFromDem(
+  preset: Preset
+): Promise<{ elev: number; slope: number } | null> {
+  return measureCoordFromDem(preset.center.lat, preset.center.lon);
+}
+
+/**
+ * Converts a farmer-owned Farm + Field record from anywhere in Wilaya of Guelma
+ * into a simulator Preset for GIBS inspection, 3D relief probing, and rotation evaluation.
+ */
+export function fieldToPreset(
+  farm: Pick<FarmPublic, "farm_id" | "farm_name" | "commune">,
+  field: FieldDetailPublic
+): Preset {
+  const lat = field.location.latitude;
+  const lon = field.location.longitude;
+  const communeObj = findNearestGuelmaCommune(lat, lon);
+  const extracted = extractRingFromBoundary(field.location.boundary);
+  let ring: [number, number][];
+  if (extracted.length >= 3) {
+    ring = closeRing(extracted);
+  } else {
+    // Fallback small square proportional to hectares around point centroid
+    const halfSpan = Math.max(0.0008, Math.sqrt(field.area_hectares * 10_000) / 220_000);
+    ring = closeRing([
+      [lon - halfSpan, lat - halfSpan],
+      [lon + halfSpan, lat - halfSpan],
+      [lon + halfSpan, lat + halfSpan],
+      [lon - halfSpan, lat + halfSpan],
+    ]);
+  }
+  const clim = CLIMATES[communeObj.climateZone];
+  const elev = field.elevation_m ?? clim.powerElev;
+  const latestCrop = field.crop_history[0];
+  const soilLabel =
+    field.soil.soil_type === "unknown" ? "Unknown soil" : `${field.soil.soil_type} soil`;
+
+  return {
+    id: `${farm.farm_id}::${field.field_id}`,
+    short: `${field.field_name.slice(0, 18)} (${field.field_id})`,
+    name: `${field.field_name} · ${farm.commune ?? communeObj.name.en}`,
+    zone: `${farm.farm_name} · ${soilLabel} · ${field.water.irrigation_system}`,
+    commune: farm.commune ?? communeObj.name.en,
+    soilType: field.soil.soil_type,
+    soilPh: field.soil.soil_ph !== null ? String(field.soil.soil_ph) : null,
+    soilOm:
+      field.soil.organic_matter_percent !== null
+        ? String(field.soil.organic_matter_percent)
+        : null,
+    areaHa: field.area_hectares,
+    climate: communeObj.climateZone,
+    elev,
+    slope: 4.5,
+    overviewZoom: 15.4,
+    focusZoom: 16.2,
+    pitch: 42,
+    bearing: -12,
+    note: `${farm.farm_name} (${farm.commune ?? communeObj.name.en}, Guelma). Area ${field.area_hectares} ha, water availability: ${field.water.availability} (${field.water.source}).${
+      latestCrop
+        ? ` Latest recorded crop: ${latestCrop.crop_name_raw ?? latestCrop.crop_id} (${latestCrop.season} ${latestCrop.year}).`
+        : ""
+    }`,
+    ring,
+    center: { lon, lat },
+    liveSlope: 4.5,
+    liveElev: elev,
+  };
 }
 

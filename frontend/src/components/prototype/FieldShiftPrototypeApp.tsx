@@ -71,8 +71,29 @@ function truecolorOpacityForZoom(z: number): number {
   return 1 - (z - 8.6) / 1.2;
 }
 
-export function FieldShiftPrototypeApp() {
+export interface FieldShiftPrototypeAppProps {
+  externalPresets?: Preset[];
+  initialPresetId?: string;
+  backLabel?: string;
+  editBordersLabel?: string;
+  onBackToDashboard?: () => void;
+  onEditBorders?: (presetId: string) => void;
+}
+
+export function FieldShiftPrototypeApp({
+  externalPresets,
+  initialPresetId,
+  backLabel,
+  editBordersLabel,
+  onBackToDashboard,
+  onEditBorders,
+}: FieldShiftPrototypeAppProps = {}) {
   const setStoreLang = useAppStore((s) => s.setLang);
+
+  const presets = useMemo(
+    () => (externalPresets && externalPresets.length > 0 ? externalPresets : INITIAL_PRESETS),
+    [externalPresets]
+  );
 
   const [protoState, setProtoState] = useState<ProtoState>({
     lang: "en",
@@ -85,7 +106,17 @@ export function FieldShiftPrototypeApp() {
     plainMode: false,
   });
 
-  const [presetId, setPresetId] = useState<PresetId>("tidjelabine");
+  const [presetId, setPresetId] = useState<PresetId>(
+    initialPresetId || presets[0]?.id || "seybouse"
+  );
+
+  useEffect(() => {
+    if (initialPresetId && presets.some((p) => p.id === initialPresetId)) {
+      setPresetId(initialPresetId);
+    } else if (!presets.some((p) => p.id === presetId) && presets[0]) {
+      setPresetId(presets[0].id);
+    }
+  }, [initialPresetId, presets, presetId]);
   const [liveDemMap, setLiveDemMap] = useState<
     Partial<Record<PresetId, { elev: number; slope: number }>>
   >({});
@@ -143,9 +174,8 @@ export function FieldShiftPrototypeApp() {
 
   const loc = useMemo(() => getLoc(protoState.lang), [protoState.lang]);
   const activePreset = useMemo(
-    () =>
-      INITIAL_PRESETS.find((p) => p.id === presetId) ?? INITIAL_PRESETS[0],
-    [presetId]
+    () => presets.find((p) => p.id === presetId) ?? presets[0],
+    [presets, presetId]
   );
 
   const activeLiveDem = liveDemMap[activePreset.id];
@@ -174,6 +204,7 @@ export function FieldShiftPrototypeApp() {
   // Refs synced with latest values for MapLibre callbacks
   const latestRef = useRef({
     loc,
+    presets,
     activePreset,
     protoState,
     toggles,
@@ -185,6 +216,7 @@ export function FieldShiftPrototypeApp() {
   });
   latestRef.current = {
     loc,
+    presets,
     activePreset,
     protoState,
     toggles,
@@ -453,11 +485,11 @@ export function FieldShiftPrototypeApp() {
         | maplibregl.GeoJSONSource
         | undefined;
       if (otherSrc?.setData) {
-        otherSrc.setData(allPresetsFC(INITIAL_PRESETS, activePreset.id));
+        otherSrc.setData(allPresetsFC(presets, activePreset.id));
       }
     }
     window.__field = activePreset.center;
-  }, [activePreset, loc]);
+  }, [activePreset, presets, loc]);
 
   // Keep parcel fill/line/glow color synced with erosion score
   useEffect(() => {
@@ -527,7 +559,7 @@ export function FieldShiftPrototypeApp() {
   // Preset Selection handler (used by TopToolbar & map click)
   const handleSelectPreset = useCallback(
     (id: PresetId, fly = true) => {
-      const next = INITIAL_PRESETS.find((p) => p.id === id);
+      const next = presets.find((p) => p.id === id);
       if (!next) return;
       setPresetId(next.id);
       if (fly && mapRef.current) {
@@ -546,7 +578,7 @@ export function FieldShiftPrototypeApp() {
         setCanZoomDetail(next.overviewZoom < next.focusZoom - 0.35);
       }
     },
-    [cancelSkyDive]
+    [cancelSkyDive, presets]
   );
 
   const selectPresetRef = useRef(handleSelectPreset);
@@ -700,7 +732,7 @@ export function FieldShiftPrototypeApp() {
         // Field layers
         map.addSource("presets-other", {
           type: "geojson",
-          data: allPresetsFC(INITIAL_PRESETS, latestRef.current.activePreset.id),
+          data: allPresetsFC(latestRef.current.presets, latestRef.current.activePreset.id),
         });
         map.addLayer({
           id: "presets-fill",
@@ -916,7 +948,7 @@ export function FieldShiftPrototypeApp() {
       evaluate,
       STRATS,
       CROPS,
-      PRESETS: INITIAL_PRESETS,
+      PRESETS: latestRef.current.presets,
       SOILS,
       I18N,
       replayIntro: () => startSkyDiveIntro(true),
@@ -1144,7 +1176,7 @@ export function FieldShiftPrototypeApp() {
       />
 
       <TopToolbar
-        presets={INITIAL_PRESETS}
+        presets={presets}
         activePreset={activePreset}
         lang={protoState.lang}
         loc={loc}
@@ -1153,6 +1185,10 @@ export function FieldShiftPrototypeApp() {
         tiltOn={tiltOn}
         zenMode={zenMode}
         plainMode={protoState.plainMode}
+        backLabel={backLabel}
+        editBordersLabel={editBordersLabel}
+        onBackToDashboard={onBackToDashboard}
+        onEditBorders={onEditBorders ? () => onEditBorders(activePreset.id) : undefined}
         onSelectPreset={(id) => handleSelectPreset(id, true)}
         onSelectLang={handleSelectLang}
         onToggleLayer={(key) => handleToggleLayer(key)}

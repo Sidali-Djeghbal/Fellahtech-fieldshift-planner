@@ -14,6 +14,10 @@ interface TopToolbarProps {
   tiltOn: boolean;
   zenMode: boolean;
   plainMode: boolean;
+  backLabel?: string;
+  editBordersLabel?: string;
+  onBackToDashboard?: () => void;
+  onEditBorders?: () => void;
   onSelectPreset: (id: PresetId) => void;
   onSelectLang: (lang: Lang) => void;
   onToggleLayer: (key: LayerKey) => void;
@@ -36,6 +40,10 @@ export function TopToolbar({
   tiltOn,
   zenMode,
   plainMode,
+  backLabel,
+  editBordersLabel,
+  onBackToDashboard,
+  onEditBorders,
   onSelectPreset,
   onSelectLang,
   onToggleLayer,
@@ -63,7 +71,32 @@ export function TopToolbar({
   return (
     <header className="topbar">
       <div className="topbar-group">
-        <div className="brand-dock lg-capsule" aria-label="Field location presets">
+        {onBackToDashboard ? (
+          <button
+            className="lg-capsule tap"
+            type="button"
+            data-testid="proto-back-dashboard"
+            onClick={onBackToDashboard}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              height: "36px",
+              padding: "0 12px",
+              borderRadius: "999px",
+              color: "#f4f7f4",
+              fontWeight: 600,
+              fontSize: "12px",
+              cursor: "pointer",
+              border: "1px solid rgba(255,255,255,0.14)",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            <span>{backLabel || "← Dashboard"}</span>
+          </button>
+        ) : null}
+        <div className="brand-dock lg-capsule" aria-label="Guelma field presets">
           <div className="brand-id">
             <svg
               className="brand-glyph"
@@ -87,7 +120,7 @@ export function TopToolbar({
             className="preset-pills"
             id="preset-pills"
             role="group"
-            aria-label="Algerian parcel presets"
+            aria-label="Guelma parcel presets"
           >
             {presets.map((raw) => {
               const p = pLoc(raw, loc);
@@ -112,7 +145,7 @@ export function TopToolbar({
             <select
               className="preset-select"
               id="preset-select"
-              aria-label="Select Algerian parcel"
+              aria-label="Select Guelma parcel"
               value={activePreset.id}
               onChange={(e) => onSelectPreset(e.target.value as PresetId)}
             >
@@ -247,6 +280,17 @@ export function TopToolbar({
             </svg>
             <span>{loc.toolClean}</span>
           </button>
+
+          {onEditBorders ? (
+            <button
+              className="tool-btn tap"
+              type="button"
+              data-testid="proto-edit-borders"
+              onClick={onEditBorders}
+            >
+              <span>{editBordersLabel || "Borders"}</span>
+            </button>
+          ) : null}
 
           <button
             className="tool-btn tap"

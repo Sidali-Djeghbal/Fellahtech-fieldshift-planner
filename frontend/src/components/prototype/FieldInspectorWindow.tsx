@@ -74,17 +74,30 @@ export function FieldInspectorWindow({
 
   const p = pLoc(rawPreset, loc);
   const clim = CLIMATES[rawPreset.climate];
-  const ha = ringAreaHa(rawPreset.ring).toFixed(1);
+  const ha = (rawPreset.areaHa ?? ringAreaHa(rawPreset.ring)).toFixed(1);
   const slopeStr = liveSlope.toFixed(1);
   const when = MONTHS[monthIndex] || { y: 2025, m: 1 };
   const monthRain = clim.rain[when.m - 1] ?? 0;
 
   const wb = clim.annual - clim.et0;
-  const soilBase = SOILS[rawPreset.id] || { soc: "1.0", ph: "7.5" };
-  const soilLoc = loc.soils[rawPreset.id] || {
-    texture: "Loam",
-    omTrend: "—",
+  const farmerSoilKnown = Boolean(rawPreset.soilType && rawPreset.soilType !== "unknown");
+  const soilBase = {
+    soc: rawPreset.soilOm ?? (SOILS[rawPreset.id]?.soc || "1.1"),
+    ph: rawPreset.soilPh ?? (SOILS[rawPreset.id]?.ph || "7.4"),
   };
+  const soilLoc = farmerSoilKnown
+    ? {
+        texture:
+          (rawPreset.soilType || "loamy").charAt(0).toUpperCase() +
+          (rawPreset.soilType || "loamy").slice(1),
+        omTrend: rawPreset.commune
+          ? `${rawPreset.commune} · Field record`
+          : "Field record",
+      }
+    : loc.soils[rawPreset.id] || {
+        texture: "Loam",
+        omTrend: "—",
+      };
 
   const base = results[0].res;
   const selEntry =
@@ -282,7 +295,9 @@ export function FieldInspectorWindow({
             <div className="health-card">
               <div className="health-top">
                 <span className="health-lbl">{loc.hlthSoilLbl}</span>
-                <span className="conf-tag low">{loc.confSoilLow}</span>
+                <span className={`conf-tag ${farmerSoilKnown ? "med" : "low"}`}>
+                  {farmerSoilKnown ? loc.confPower : loc.confSoilLow}
+                </span>
               </div>
               <div className="health-val" id="h-soil-tex">
                 {soilLoc.texture}
