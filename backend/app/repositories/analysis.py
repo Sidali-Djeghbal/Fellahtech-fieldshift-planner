@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 import json
+import secrets
 import uuid
 from collections.abc import Sequence
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
-from sqlalchemy import and_, delete, select, tuple_, update
+from sqlalchemy import and_, delete, func, or_, select, text, tuple_, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.errors import ErrorCode
 from app.models.analysis import AnalysisRequest, AnalysisResult, AnalysisSelection
 from app.models.demo import GuestSession
 from app.models.farm import Farm
@@ -406,3 +410,524 @@ async def list_farm_analyses(
         )
         for row in rows
     ]
+
+
+_REFUNDABLE_ML_CODES: frozenset[str] = frozenset(
+    {
+        ErrorCode.ML_UNAVAILABLE.value,
+        ErrorCode.ML_TIMEOUT.value,
+        ErrorCode.ML_INVALID_RESPONSE.value,
+        ErrorCode.ML_CONTRACT_ERROR.value,
+        ErrorCode.DATASET_VERSION_UNAVAILABLE.value,
+        ErrorCode.ML_DATASET_ERROR.value,
+        ErrorCode.INTERNAL_ERROR.value,
+    }
+)
+
+_CLAIM_NEXT_JOB_SQL = text(
+    """
+    WITH next_job AS (
+        SELECT request_id
+        FROM public.analysis_requests
+        WHERE cancelled_at IS NULL
+          AND (
+              status = 'pending'
+              OR (
+                  status = 'running'
+                  AND lease_until IS NOT NULL
+                  AND lease_until < :now
+                  AND attempts < :max_attempts
+              )
+          )
+        ORDER BY created_at ASC, request_id ASC
+        FOR UPDATE SKIP LOCKED
+        LIMIT 1
+    )
+    UPDATE public.analysis_requests AS ar
+    SET
+        status = 'running',
+        lease_until = :lease_until,
+        heartbeat_at = :now,
+        attempts = ar.attempts + 1
+    FROM next_job
+    WHERE ar.request_id = next_job.request_id
+    RETURNING ar.request_id
+    """
+)
+
+
+@dataclass(frozen=True, slots=True)
+class WorkerFinalizeOutcome:
+    """Outcome summary returned after committing worker terminal state transitions."""
+
+    outcome: Literal["completed", "failed", "cancelled", "vanished", "skipped"]
+    analysis_id: str | None = None
+    refunded_quarters: int = 0
+    guest_token_hash: str | None = None
+    final_status: str | None = None
+    final_error_code: str | None = None
+
+
+def _ensure_utc_dt(dt: datetime) -> datetime:
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+
+
+def _is_analysis_id_unique_violation(exc: IntegrityError) -> bool:
+    orig = getattr(exc, "orig", None)
+    constraint_name = str(
+        getattr(orig, "constraint_name", None)
+        or getattr(getattr(orig, "__cause__", None), "constraint_name", None)
+        or ""
+    ).lower()
+    if "analysis_id" in constraint_name and "request_id" not in constraint_name:
+        return True
+    err_str = str(exc).lower()
+    return "analysis_id" in err_str and "request_id" not in err_str
+
+
+async def _lookup_guest_token_hash_for_request(
+    db: AsyncSession,
+    *,
+    request_id: str,
+) -> str | None:
+    stmt = (
+        select(Farm.guest_session_token)
+        .select_from(AnalysisRequest)
+        .join(Farm, Farm.id == AnalysisRequest.farm_id)
+        .where(AnalysisRequest.request_id == request_id)
+    )
+    tok = (await db.execute(stmt)).scalar_one_or_none()
+    return str(tok) if tok is not None else None
+
+
+async def _lock_guest_and_request(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    lock_guest_row: bool,
+) -> tuple[AnalysisRequest | None, str | None]:
+    if lock_guest_row:
+        initial_guest_tok = await _lookup_guest_token_hash_for_request(
+            db,
+            request_id=request_id,
+        )
+        if initial_guest_tok is not None:
+            await db.execute(
+                select(GuestSession.guest_token)
+                .where(GuestSession.guest_token == initial_guest_tok)
+                .with_for_update()
+            )
+
+    req_stmt = (
+        select(AnalysisRequest)
+        .where(AnalysisRequest.request_id == request_id)
+        .with_for_update()
+    )
+    req = (await db.execute(req_stmt)).scalar_one_or_none()
+    if req is None:
+        return None, None
+    current_guest_tok = await _lookup_guest_token_hash_for_request(
+        db,
+        request_id=request_id,
+    )
+    return req, current_guest_tok
+
+
+async def claim_next_analysis_job(
+    db: AsyncSession,
+    *,
+    now: datetime,
+    lease_seconds: int,
+    max_attempts: int,
+) -> str | None:
+    """Atomically claim oldest pending or reclaimable stale job via `FOR UPDATE SKIP LOCKED`."""
+    current_now = _ensure_utc_dt(now)
+    lease_until = current_now + timedelta(seconds=lease_seconds)
+    result = await db.execute(
+        _CLAIM_NEXT_JOB_SQL,
+        {
+            "now": current_now,
+            "lease_until": lease_until,
+            "max_attempts": max_attempts,
+        },
+    )
+    claimed_id = result.scalar_one_or_none()
+    return str(claimed_id) if claimed_id is not None else None
+
+
+async def heartbeat_and_check_cancel(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    now: datetime,
+    lease_seconds: int,
+) -> tuple[bool, datetime | None]:
+    """Extend active lease + heartbeat timestamp and return `(exists_running, cancelled_at)`."""
+    current_now = _ensure_utc_dt(now)
+    lease_until = current_now + timedelta(seconds=lease_seconds)
+    stmt = (
+        update(AnalysisRequest)
+        .where(
+            AnalysisRequest.request_id == request_id,
+            AnalysisRequest.status == "running",
+        )
+        .values(lease_until=lease_until, heartbeat_at=current_now)
+        .returning(AnalysisRequest.cancelled_at)
+    )
+    row = (await db.execute(stmt)).one_or_none()
+    if row is None:
+        return False, None
+    return True, row[0]
+
+
+async def get_job_dispatch_row(
+    db: AsyncSession,
+    *,
+    request_id: str,
+) -> tuple[AnalysisRequest, str | None] | None:
+    """Load claimed `AnalysisRequest` paired with optional owning guest token hash."""
+    stmt = (
+        select(AnalysisRequest, Farm.guest_session_token)
+        .join(Farm, Farm.id == AnalysisRequest.farm_id)
+        .where(AnalysisRequest.request_id == request_id)
+    )
+    row = (await db.execute(stmt)).one_or_none()
+    if row is None:
+        return None
+    return row[0], str(row[1]) if row[1] is not None else None
+
+
+async def lock_and_mark_dispatched(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    now: datetime,
+) -> tuple[Literal["proceed", "cancelled", "abort"], int, str | None]:
+    """Lock `analysis_requests` before ML dispatch, enforcing `cancelled_at IS NULL`."""
+    current_now = _ensure_utc_dt(now)
+    stmt = (
+        select(AnalysisRequest)
+        .where(AnalysisRequest.request_id == request_id)
+        .with_for_update()
+    )
+    req = (await db.execute(stmt)).scalar_one_or_none()
+    if req is None:
+        return "abort", 0, None
+
+    guest_token_hash = await _lookup_guest_token_hash_for_request(
+        db,
+        request_id=request_id,
+    )
+    if req.cancelled_at is not None:
+        if req.status == "running":
+            req.status = "cancelled"
+            refunded = int(req.quota_units) if (req.sent_at is None and req.quota_units > 0) else 0
+            if refunded > 0:
+                req.quota_units = 0
+            return "cancelled", refunded, guest_token_hash
+        return "cancelled", 0, guest_token_hash
+
+    if req.status != "running":
+        return "abort", 0, guest_token_hash
+
+    if req.sent_at is None:
+        req.sent_at = current_now
+    return "proceed", 0, guest_token_hash
+
+
+async def count_guest_ml_refunds(
+    db: AsyncSession,
+    *,
+    guest_token_hash: str,
+) -> int:
+    """Count ML-error refunds already granted to a guest session (`IMPL-011`)."""
+    stmt = (
+        select(func.count(AnalysisRequest.request_id))
+        .select_from(AnalysisRequest)
+        .join(Farm, Farm.id == AnalysisRequest.farm_id)
+        .where(
+            Farm.guest_session_token == guest_token_hash,
+            AnalysisRequest.status == "failed",
+            AnalysisRequest.sent_at.is_not(None),
+            AnalysisRequest.quota_units == 0,
+        )
+    )
+    return int((await db.execute(stmt)).scalar_one())
+
+
+async def _apply_guest_failure_refund_if_eligible(
+    db: AsyncSession,
+    *,
+    req: AnalysisRequest,
+    guest_token_hash: str | None,
+    error_code_value: str,
+    max_guest_ml_refunds: int,
+) -> int:
+    if guest_token_hash is None or req.quota_units <= 0:
+        return 0
+    if req.sent_at is None:
+        refunded = int(req.quota_units)
+        req.quota_units = 0
+        return refunded
+    if error_code_value not in _REFUNDABLE_ML_CODES:
+        return 0
+    prior_refunds = await count_guest_ml_refunds(
+        db,
+        guest_token_hash=guest_token_hash,
+    )
+    if prior_refunds < max_guest_ml_refunds:
+        refunded = int(req.quota_units)
+        req.quota_units = 0
+        return refunded
+    return 0
+
+
+async def _insert_analysis_result_with_retry(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    status: str,
+    dataset_version_used: str,
+    ml_engine_version: str,
+    result_json: dict[str, Any],
+    validation_passed: bool,
+    validation_errors: list[dict[str, Any]] | None,
+) -> str:
+    max_mint_attempts = 8
+    for attempt in range(max_mint_attempts):
+        candidate_id = f"analysis_{secrets.token_hex(6)}"
+        try:
+            async with db.begin_nested():
+                row = AnalysisResult(
+                    analysis_id=candidate_id,
+                    request_id=request_id,
+                    status=status,
+                    dataset_version_used=dataset_version_used,
+                    ml_engine_version=ml_engine_version,
+                    result_json=result_json,
+                    validation_passed=validation_passed,
+                    validation_errors=validation_errors,
+                )
+                db.add(row)
+                await db.flush()
+            return candidate_id
+        except IntegrityError as exc:
+            if _is_analysis_id_unique_violation(exc) and attempt + 1 < max_mint_attempts:
+                continue
+            raise
+    raise RuntimeError("Exhausted attempts minting unique analysis_id")
+
+
+async def finalize_worker_cancelled(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    require_stale_before: datetime | None = None,
+) -> WorkerFinalizeOutcome:
+    """Finalize a cooperatively cancelled running request without writing `analysis_results`."""
+    stmt = (
+        select(AnalysisRequest)
+        .where(AnalysisRequest.request_id == request_id)
+        .with_for_update()
+    )
+    req = (await db.execute(stmt)).scalar_one_or_none()
+    if req is None:
+        return WorkerFinalizeOutcome(outcome="vanished")
+    if req.status != "running":
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+    if require_stale_before is not None and (
+        req.lease_until is None or _ensure_utc_dt(req.lease_until) >= require_stale_before
+    ):
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+
+    guest_token_hash = await _lookup_guest_token_hash_for_request(
+        db,
+        request_id=request_id,
+    )
+    req.status = "cancelled"
+    refunded = 0
+    if req.sent_at is None and req.quota_units > 0:
+        refunded = int(req.quota_units)
+        req.quota_units = 0
+    return WorkerFinalizeOutcome(
+        outcome="cancelled",
+        refunded_quarters=refunded,
+        guest_token_hash=guest_token_hash,
+        final_status="cancelled",
+    )
+
+
+async def finalize_worker_success(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    result_status: str,
+    dataset_version_used: str,
+    ml_engine_version: str,
+    result_json: dict[str, Any],
+    validation_passed: bool,
+    validation_errors: list[dict[str, Any]] | None,
+    failure_error_code: ErrorCode | None,
+    duration_ms: int,
+    catalog_version_used: str | None,
+    max_guest_ml_refunds: int,
+    now: datetime,
+) -> WorkerFinalizeOutcome:
+    """Persist result under final `status=='running' AND cancelled_at IS NULL` cascade guard."""
+    current_now = _ensure_utc_dt(now)
+    req, guest_token_hash = await _lock_guest_and_request(
+        db,
+        request_id=request_id,
+        lock_guest_row=not validation_passed,
+    )
+    if req is None:
+        return WorkerFinalizeOutcome(outcome="vanished")
+    if req.cancelled_at is not None:
+        refunded = 0
+        if req.status == "running":
+            req.status = "cancelled"
+            if req.sent_at is None and req.quota_units > 0:
+                refunded = int(req.quota_units)
+                req.quota_units = 0
+        return WorkerFinalizeOutcome(
+            outcome="cancelled",
+            refunded_quarters=refunded,
+            guest_token_hash=guest_token_hash,
+            final_status=req.status,
+        )
+    if req.status != "running":
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+
+    if catalog_version_used is not None and req.catalog_version != catalog_version_used:
+        req.catalog_version = catalog_version_used
+
+    analysis_id = await _insert_analysis_result_with_retry(
+        db,
+        request_id=request_id,
+        status=result_status if validation_passed else "invalid",
+        dataset_version_used=dataset_version_used,
+        ml_engine_version=ml_engine_version,
+        result_json=result_json,
+        validation_passed=validation_passed,
+        validation_errors=validation_errors if validation_errors else None,
+    )
+    req.received_at = current_now
+    req.duration_ms = max(0, duration_ms)
+
+    if validation_passed:
+        req.status = result_status
+        req.error_code = None
+        return WorkerFinalizeOutcome(
+            outcome="completed",
+            analysis_id=analysis_id,
+            refunded_quarters=0,
+            guest_token_hash=guest_token_hash,
+            final_status=req.status,
+            final_error_code=None,
+        )
+
+    err_code = (failure_error_code or ErrorCode.ML_INVALID_RESPONSE).value
+    req.status = "failed"
+    req.error_code = err_code
+    refunded = await _apply_guest_failure_refund_if_eligible(
+        db,
+        req=req,
+        guest_token_hash=guest_token_hash,
+        error_code_value=err_code,
+        max_guest_ml_refunds=max_guest_ml_refunds,
+    )
+    return WorkerFinalizeOutcome(
+        outcome="failed",
+        analysis_id=analysis_id,
+        refunded_quarters=refunded,
+        guest_token_hash=guest_token_hash,
+        final_status="failed",
+        final_error_code=err_code,
+    )
+
+
+async def finalize_worker_failure(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    error_code: ErrorCode,
+    duration_ms: int,
+    max_guest_ml_refunds: int,
+    now: datetime,
+    require_stale_before: datetime | None = None,
+) -> WorkerFinalizeOutcome:
+    """Persist terminal `failed` request and conditional guest quota refund (`IMPL-011`)."""
+    del now
+    req, guest_token_hash = await _lock_guest_and_request(
+        db,
+        request_id=request_id,
+        lock_guest_row=True,
+    )
+    if req is None:
+        return WorkerFinalizeOutcome(outcome="vanished")
+    if req.status != "running":
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+    if require_stale_before is not None and (
+        req.lease_until is None or _ensure_utc_dt(req.lease_until) >= require_stale_before
+    ):
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+
+    if req.cancelled_at is not None:
+        req.status = "cancelled"
+        refunded = 0
+        if req.sent_at is None and req.quota_units > 0:
+            refunded = int(req.quota_units)
+            req.quota_units = 0
+        return WorkerFinalizeOutcome(
+            outcome="cancelled",
+            refunded_quarters=refunded,
+            guest_token_hash=guest_token_hash,
+            final_status="cancelled",
+        )
+
+    err_val = error_code.value
+    req.status = "failed"
+    req.error_code = err_val
+    req.duration_ms = max(0, duration_ms)
+    refunded = await _apply_guest_failure_refund_if_eligible(
+        db,
+        req=req,
+        guest_token_hash=guest_token_hash,
+        error_code_value=err_val,
+        max_guest_ml_refunds=max_guest_ml_refunds,
+    )
+    return WorkerFinalizeOutcome(
+        outcome="failed",
+        refunded_quarters=refunded,
+        guest_token_hash=guest_token_hash,
+        final_status="failed",
+        final_error_code=err_val,
+    )
+
+
+async def list_reaper_stale_candidates(
+    db: AsyncSession,
+    *,
+    now: datetime,
+    max_attempts: int,
+    limit: int = 50,
+) -> list[tuple[str, bool]]:
+    """Return `(request_id, is_cancelled)` for expired leases past max attempts or cancelled."""
+    current_now = _ensure_utc_dt(now)
+    stmt = (
+        select(AnalysisRequest.request_id, AnalysisRequest.cancelled_at.is_not(None))
+        .where(
+            AnalysisRequest.status == "running",
+            AnalysisRequest.lease_until.is_not(None),
+            AnalysisRequest.lease_until < current_now,
+            or_(
+                AnalysisRequest.cancelled_at.is_not(None),
+                AnalysisRequest.attempts >= max_attempts,
+            ),
+        )
+        .order_by(AnalysisRequest.lease_until.asc())
+        .limit(limit)
+    )
+    rows = (await db.execute(stmt)).all()
+    return [(str(row[0]), bool(row[1])) for row in rows]
+
