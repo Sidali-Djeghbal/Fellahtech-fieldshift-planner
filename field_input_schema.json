@@ -86,7 +86,7 @@
         },
         "source": {
           "type": "string",
-          "enum": ["groundwater", "well", "reservoir", "river", "rainfed", "other"]
+          "enum": ["groundwater", "well", "reservoir", "river", "rainfed", "other", "unknown"]
         },
         "irrigation_system": {
           "type": "string",

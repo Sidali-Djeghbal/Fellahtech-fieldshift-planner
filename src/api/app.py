@@ -147,6 +147,24 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
             ],
         }
 
+    def _value_error_422_response(exc: ValueError) -> JSONResponse:
+        msg = str(exc)
+        err_code = (
+            "INVALID_FIELD_POLYGON"
+            if any(tok in msg.lower() for tok in ("polygon", "geometry", "guelma", "epsg", "area"))
+            else "INVALID_PRIORITY_WEIGHTS"
+            if "weight" in msg.lower()
+            else "INVALID_ANALYSIS_INPUT"
+        )
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error_code": err_code,
+                "message": msg,
+                "details": [],
+            },
+        )
+
     @application.post("/api/v1/fields/validate", response_model=FieldValidationResponse, tags=["Fields"])
     def validate_field(req: FieldValidationRequest) -> Dict[str, Any]:
         scientific_payload = req.to_scientific_payload()
@@ -155,21 +173,7 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
         except FarmerInputValidationError:
             raise
         except ValueError as exc:
-            msg = str(exc)
-            err_code = (
-                "INVALID_FIELD_POLYGON"
-                if any(tok in msg.lower() for tok in ("polygon", "geometry", "guelma", "epsg", "area"))
-                else "INVALID_PRIORITY_WEIGHTS"
-                if "weight" in msg.lower()
-                else "INVALID_ANALYSIS_INPUT"
-            )
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "error_code": err_code,
-                    "message": msg,
-                },
-            ) from exc
+            return _value_error_422_response(exc)
 
     @application.post("/api/v1/fields/analyze", response_model=FieldAnalyzeResponse, tags=["Analyses"])
     def analyze_field(req: FieldAnalyzeRequest) -> Dict[str, Any]:
@@ -198,21 +202,7 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
         except FarmerInputValidationError:
             raise
         except ValueError as exc:
-            msg = str(exc)
-            err_code = (
-                "INVALID_FIELD_POLYGON"
-                if any(tok in msg.lower() for tok in ("polygon", "geometry", "guelma", "epsg", "area"))
-                else "INVALID_PRIORITY_WEIGHTS"
-                if "weight" in msg.lower()
-                else "INVALID_ANALYSIS_INPUT"
-            )
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "error_code": err_code,
-                    "message": msg,
-                },
-            ) from exc
+            return _value_error_422_response(exc)
 
         repo_inst.save_analysis(
             analysis_id=analysis_id,

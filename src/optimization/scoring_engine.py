@@ -165,6 +165,36 @@ def _validate_weight_value(name: str, val: Any) -> Optional[float]:
     return fval
 
 
+def _resolve_farmer_weights_from_mapping(
+    mapping: Dict[str, Any],
+    *,
+    explicit_mode: bool,
+) -> Tuple[Dict[str, Optional[float]], str]:
+    """Validate and resolve 5 farmer weights while keeping omitted core weights at DEFAULT_FARMER_WEIGHTS."""
+    core_keys = ("water_saving_weight", "soil_improvement_weight", "income_weight", "risk_reduction_weight")
+    farmer_w = {k: _validate_weight_value(k, mapping.get(k)) for k in FARMER_WEIGHT_KEYS}
+    any_provided = any(v is not None for v in farmer_w.values())
+    if not any_provided:
+        return dict(DEFAULT_FARMER_WEIGHTS), "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS"
+
+    core_provided = any(farmer_w[k] is not None for k in core_keys)
+    if not core_provided:
+        # Preserve balanced default core priorities when only forage_value_weight (0.0 or >0) is supplied.
+        for k in core_keys:
+            farmer_w[k] = DEFAULT_FARMER_WEIGHTS[k]
+    else:
+        if all((v is None or v == 0.0) for v in farmer_w.values()):
+            raise ValueError(
+                "All provided priority weights are zero or null; at least one positive (> 0.0) weight is required."
+            )
+        for k in core_keys:
+            if farmer_w[k] is None:
+                farmer_w[k] = 0.0
+
+    src_label = "EXPLICIT_FARMER_PRIORITY_WEIGHTS" if explicit_mode else "FIELD_PROFILE_FARMER_WEIGHTS"
+    return farmer_w, src_label
+
+
 def _resolve_weights(
     candidate_output: Dict[str, Any],
     field_profile: Optional[Dict[str, Any]],
@@ -197,26 +227,10 @@ def _resolve_weights(
                 raise ValueError("At least one active priority weight must be positive (> 0.0).")
             return raw_obj, {"forage_value_weight": raw_obj.get("forage_value")}, "EXPLICIT_OBJECTIVE_WEIGHTS"
 
-        farmer_w: Dict[str, Optional[float]] = {k: None for k in FARMER_WEIGHT_KEYS}
-        for k in FARMER_WEIGHT_KEYS:
-            farmer_w[k] = _validate_weight_value(k, priority_weights.get(k))
-        if all((v is None or v == 0.0) for v in farmer_w.values()):
-            raise ValueError("All provided priority weights are zero or null; at least one positive (> 0.0) weight is required.")
-        source_label = "EXPLICIT_FARMER_PRIORITY_WEIGHTS"
+        farmer_w, source_label = _resolve_farmer_weights_from_mapping(priority_weights, explicit_mode=True)
     elif field_profile is not None and field_profile.get("section_a_farmer_provided", {}).get("preferences"):
         prefs = field_profile["section_a_farmer_provided"]["preferences"]
-        farmer_w = {k: _validate_weight_value(k, prefs.get(k)) for k in FARMER_WEIGHT_KEYS}
-        any_provided = any(v is not None for v in farmer_w.values())
-        if not any_provided:
-            farmer_w = dict(DEFAULT_FARMER_WEIGHTS)
-            source_label = "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS"
-        else:
-            if all((v is None or v == 0.0) for v in farmer_w.values()):
-                raise ValueError("Farmer provided weights contain zero positive priorities (> 0.0).")
-            for k in ("water_saving_weight", "soil_improvement_weight", "income_weight", "risk_reduction_weight"):
-                if farmer_w[k] is None:
-                    farmer_w[k] = 0.0
-            source_label = "FIELD_PROFILE_FARMER_WEIGHTS"
+        farmer_w, source_label = _resolve_farmer_weights_from_mapping(prefs, explicit_mode=False)
     else:
         farmer_w = dict(DEFAULT_FARMER_WEIGHTS)
         source_label = "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS"
@@ -256,14 +270,23 @@ def _eval_water_efficiency(
     avail = water_ctx.get("availability", "unknown")
     source = water_ctx.get("source", "other")
     irrig_sys = water_ctx.get("irrigation_system", "unknown")
-    irrig_active = (source != "rainfed") and (irrig_sys != "none") and (avail in ("abundant", "moderate"))
+    irrig_active = (
+        (source not in {"rainfed", "unknown", None})
+        and (irrig_sys not in {"none", "unknown", None})
+        and (avail in ("abundant", "moderate"))
+    )
 
     crops = [s["crop_id"] for s in strat["seasons"]]
     has_strict_irrig = any(
         kb.crops[c]["parameters"]["water_requirement_category"]["value"] == "STRICTLY_IRRIGATED" for c in crops
     )
+    water_unconfirmed = (
+        (avail == "unknown")
+        or (source == "unknown" and irrig_sys != "none")
+        or (irrig_sys == "unknown" and source != "rainfed")
+    )
 
-    if (gpm_mm is None and power_mm is None) or (avail == "unknown" and has_strict_irrig):
+    if (gpm_mm is None and power_mm is None) or (water_unconfirmed and has_strict_irrig):
         return (
             {
                 "score": None,
@@ -323,10 +346,10 @@ def _eval_water_efficiency(
     missing: List[str] = []
     if gpm_mm is None or power_mm is None:
         missing.append("One regional precipitation source (GPM or NASA POWER) is missing.")
-    if avail == "unknown":
-        missing.append("Farmer water.availability is 'unknown'; rainfed tolerance scored conservatively only.")
+    if water_unconfirmed:
+        missing.append("Farmer water parameters include 'unknown'; rainfed tolerance scored conservatively only.")
 
-    status = "PARTIAL" if (gpm_mm is None or power_mm is None or avail == "unknown") else "SCORED"
+    status = "PARTIAL" if (gpm_mm is None or power_mm is None or water_unconfirmed) else "SCORED"
     conf = (
         f"MODERATE (Coarse 11 km GPM vs 55-69 km POWER spread delta={spread:.4f})"
         if spread is not None
@@ -734,6 +757,13 @@ def _eval_farmer_priority_fit(
 
     # Operational readiness component [0..0.5]
     slot_scores: List[float] = []
+    unsupported_eq = sorted({
+        tag
+        for s in strat["seasons"]
+        for r in s["slot_constraint_evaluations"]
+        if r["rule_id"] == "RULE_EQUIPMENT_CONSTRAINT_CHECK"
+        for tag in (r.get("observed_inputs") or {}).get("unsupported_equipment_tags", [])
+    })
     for s in strat["seasons"]:
         rules = {r["rule_id"]: r["status"] for r in s["slot_constraint_evaluations"]}
         w_st = rules.get("RULE_WATER_IRRIGATION_GATE", "UNKNOWN")
@@ -753,16 +783,20 @@ def _eval_farmer_priority_fit(
     missing: List[str] = []
     if equip_flag == "NOT_PROVIDED":
         missing.append("equipment_constraints is null ('NOT_PROVIDED'); machinery compatibility unverified (RULE_EQUIPMENT_CONSTRAINT_CHECK).")
-    status = "PARTIAL" if equip_flag == "NOT_PROVIDED" else "SCORED"
+    if unsupported_eq:
+        missing.append(
+            f"Unsupported equipment_constraints tag(s) {unsupported_eq} not modeled in Phase E/G crop profiles; kept as UNKNOWN (not PASS)."
+        )
+    status = "PARTIAL" if (equip_flag == "NOT_PROVIDED" or bool(unsupported_eq)) else "SCORED"
     return {
         "score": score,
         "status": status,
         "evidence": [
             "preference_handling (target_crop_ids, excluded_crop_ids) & RULE_EQUIPMENT_CONSTRAINT_CHECK / RULE_WATER_IRRIGATION_GATE",
-            f"equipment_constraints={equip_flag}; eligible_targets_matched={sum(1 for t in req_targets if t in crops_set)}/{len(req_targets)}.",
+            f"equipment_constraints={equip_flag}; eligible_targets_matched={sum(1 for t in req_targets if t in crops_set)}/{len(req_targets)}; unsupported_equipment_tags={unsupported_eq}.",
         ],
         "evidence_classification": "USER_REPORTED + AGRONOMIC_RULE_BASED",
-        "confidence_or_uncertainty": "HIGH when equipment_constraints confirmed; PARTIAL when null ('NOT_PROVIDED')",
+        "confidence_or_uncertainty": "HIGH when equipment_constraints confirmed & modeled; PARTIAL when null ('NOT_PROVIDED') or contains unmodeled tags",
         "missing_information": missing,
         "applicability_condition": "Always applicable.",
         "explanation": f"Farmer priority & operational fit score {score:.4f} combining target alignment, exclusions, irrigation, and equipment status.",
@@ -887,10 +921,13 @@ def rank_rotation_candidates(
         candidate_output, field_profile, priority_weights
     )
     forage_w = raw_farmer_weights.get("forage_value_weight")
-    forage_flag = pref_handling.get("optional_input_completeness", {}).get(
-        "forage_value_weight",
-        "PROVIDED" if forage_w is not None else "NOT_PROVIDED",
-    )
+    if priority_weights is not None and ("forage_value_weight" in priority_weights or "forage_value" in priority_weights):
+        forage_flag = "PROVIDED" if forage_w is not None else "NOT_PROVIDED"
+    else:
+        forage_flag = pref_handling.get("optional_input_completeness", {}).get(
+            "forage_value_weight",
+            "PROVIDED" if forage_w is not None else "NOT_PROVIDED",
+        )
 
     # 1. Score all strategies across all 8 objectives without fabricating missing data
     per_strategy_scores: Dict[str, Dict[str, Dict[str, Any]]] = {}

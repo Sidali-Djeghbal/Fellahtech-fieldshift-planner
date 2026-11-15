@@ -25,6 +25,7 @@ from src.agronomic.constraint_engine import (
 )
 from src.agronomic.land_use_assessment import LAND_USE_SUPPORTED, assess_land_use
 from src.agronomic.temporal_planning import (
+    assess_crop_history_completeness,
     season_window_bounds,
     validate_and_build_planning_timeline,
 )
@@ -144,8 +145,15 @@ def _assess_crop_history(field_profile: Dict[str, Any], min_entries: int) -> Dic
     flags = sec_a["input_completeness_flags"]
     hist_status = flags.get("crop_history", "NOT_PROVIDED")
     hist = sec_a.get("crop_history")
+    start_season = sec_a["planning"]["start_season"]
     start_year = sec_a["planning"]["start_year"]
 
+    summary = assess_crop_history_completeness(
+        hist,
+        start_season,
+        start_year,
+        min_entries_for_complete=min_entries,
+    )
     if hist is None:
         return {
             "completeness_flag": hist_status,
@@ -154,30 +162,31 @@ def _assess_crop_history(field_profile: Dict[str, Any], min_entries: int) -> Dic
             "sufficient_for_existing_baseline": False,
             "resolved_chronological_sequence": [],
             "most_recent_predecessor": None,
+            "predecessor_period": None,
             "limitation_note": "crop_history is null ('NOT_PROVIDED'); cannot verify predecessor break safety or construct an existing rotation baseline.",
         }
 
-    ordered = sorted(hist, key=lambda h: (h["year"], {"Winter": 1, "Spring": 2, "Summer": 3, "Autumn": 4}.get(h["season"], 9)))
-    resolved = [h for h in ordered if h.get("crop_id_resolved") is not None]
-    recent = [h for h in resolved if (start_year - 4) <= int(h["year"]) < start_year]
-    last_pre = next((h["crop_id_resolved"] for h in reversed(resolved) if int(h["year"]) == start_year - 1), None)
-
-    sufficient = len(recent) >= min_entries and last_pre is not None
-    note = (
-        f"Resolved {len(recent)} recent crop_history season(s) ending cleanly at {start_year - 1} ({last_pre})."
-        if sufficient
-        else (
-            f"Insufficient verified history ({len(recent)} recent resolved entries, predecessor at {start_year - 1}={last_pre}): "
+    recent = summary["recent_resolved_entries"]
+    resolved_all = [h for h in summary["ordered_entries"] if h.get("crop_id_resolved") is not None]
+    last_pre = summary["most_recent_predecessor"]
+    pred_rec = summary["predecessor_record"]
+    sufficient = summary["sufficient_for_existing_baseline"]
+    if sufficient and pred_rec is not None:
+        note = f"Resolved {len(recent)} recent crop_history season(s) ending cleanly at {pred_rec['season']} {pred_rec['year']} ({last_pre})."
+    else:
+        pred_desc = f"{pred_rec['season']} {pred_rec['year']}={last_pre}" if pred_rec else f"none resolved immediately before {start_season} {start_year}"
+        note = (
+            f"Insufficient verified history ({len(recent)} recent resolved entries, immediate predecessor={pred_desc}): "
             f"existing-rotation baseline withheld; no missing history invented."
         )
-    )
     return {
         "completeness_flag": hist_status,
         "raw_entries_count": len(hist),
-        "resolved_entries_count": len(resolved),
+        "resolved_entries_count": len(resolved_all),
         "sufficient_for_existing_baseline": sufficient,
         "resolved_chronological_sequence": [{"year": h["year"], "season": h["season"], "crop_id": h["crop_id_resolved"]} for h in recent],
         "most_recent_predecessor": last_pre,
+        "predecessor_period": f"{pred_rec['season']} {pred_rec['year']}" if pred_rec else None,
         "limitation_note": note,
     }
 
@@ -369,7 +378,10 @@ def _construct_pattern_sequences(
     })
 
     # 5. Irrigation-Gated Cash Rotation (if irrigated OR farmer explicitly targets TOMATO_IND / POTATO)
-    irrig_eligible = water.get("source") != "rainfed" and water.get("irrigation_system") != "none"
+    irrig_eligible = (
+        water.get("source") not in {"rainfed", "unknown", None}
+        and water.get("irrigation_system") not in {"none", "unknown", None}
+    )
     if (irrig_eligible or "TOMATO_IND" in targets) and "TOMATO_IND" not in excluded:
         cereal_cash = "DURUM_WHEAT" if "DURUM_WHEAT" not in excluded else "BARLEY"
         leg_cash = "FABA_BEAN" if "FABA_BEAN" not in excluded else "VETCH_OAT"

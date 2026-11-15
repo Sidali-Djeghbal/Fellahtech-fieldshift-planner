@@ -34,7 +34,7 @@ class FieldInputContract(StrictModel):
 
 class WaterInputContract(StrictModel):
     availability: Literal["limited", "moderate", "abundant", "unknown"]
-    source: Literal["groundwater", "well", "reservoir", "river", "rainfed", "other"]
+    source: Literal["groundwater", "well", "reservoir", "river", "rainfed", "other", "unknown"]
     irrigation_system: Literal["drip", "sprinkler", "surface", "none", "unknown"]
 
 

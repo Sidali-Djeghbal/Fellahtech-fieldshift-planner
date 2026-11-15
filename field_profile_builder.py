@@ -26,6 +26,7 @@ from fieldshift_integration.config import PROJECT_ROOT
 from src.agronomic.land_use_assessment import LAND_USE_SUPPORTED, assess_land_use
 from src.agronomic.temporal_planning import (
     TemporalPlanningError,
+    assess_crop_history_completeness,
     validate_and_build_planning_timeline,
 )
 
@@ -35,7 +36,7 @@ CONSTRAINTS_CSV = PROJECT_ROOT / "docs" / "phaseE" / "agronomic_constraints_fram
 
 VALID_SEASONS = {"Winter", "Spring", "Summer", "Autumn"}
 VALID_WATER_AVAIL = {"limited", "moderate", "abundant", "unknown"}
-VALID_WATER_SRC = {"groundwater", "well", "reservoir", "river", "rainfed", "other"}
+VALID_WATER_SRC = {"groundwater", "well", "reservoir", "river", "rainfed", "other", "unknown"}
 VALID_IRRIG_SYS = {"drip", "sprinkler", "surface", "none", "unknown"}
 
 QUALITY_TAXONOMY = (
@@ -193,6 +194,26 @@ def _classify_weight_input(present: bool, val: Any, key_name: str) -> Tuple[Opti
     return float(val), "PROVIDED"
 
 
+def validate_target_excluded_conflict(preferences: Optional[Dict[str, Any]]) -> None:
+    """Reject API requests where target_crop_ids and excluded_crop_ids intersect."""
+    if not isinstance(preferences, dict):
+        return
+    targets = preferences.get("target_crop_ids")
+    excluded = preferences.get("excluded_crop_ids")
+    if not isinstance(targets, list) or not isinstance(excluded, list):
+        return
+    target_set = {str(c).strip() for c in targets if isinstance(c, str) and c.strip()}
+    excluded_set = {str(c).strip() for c in excluded if isinstance(c, str) and c.strip()}
+    overlap = sorted(target_set & excluded_set)
+    if overlap:
+        raise FarmerInputValidationError(
+            f"Conflicting crop_id(s) appear in both preferences.target_crop_ids and preferences.excluded_crop_ids: {overlap}. "
+            "Remove overlapping crop_id(s) so crop intent is unambiguous.",
+            error_code="TARGET_EXCLUDED_CROP_CONFLICT",
+            details={"conflicting_crop_ids": overlap},
+        )
+
+
 def validate_farmer_input(
     payload: Dict[str, Any],
     *,
@@ -323,6 +344,12 @@ def validate_farmer_input(
     except TemporalPlanningError as exc:
         raise FarmerInputValidationError(str(exc), error_code=exc.error_code, details=exc.details) from exc
 
+    history_completeness = assess_crop_history_completeness(
+        norm_history,
+        pln["start_season"],
+        sy,
+    )["completeness_flag"]
+
     # 5. Preferences (optional; omitted/null subfields preserved distinctly from [])
     list_pref_keys = ("target_crop_ids", "excluded_crop_ids", "equipment_constraints")
     weight_pref_keys = (
@@ -358,6 +385,15 @@ def validate_farmer_input(
             val, status = _classify_weight_input(wk in pref, pref.get(wk), wk)
             norm_pref[wk] = val
             completeness_flags[wk] = status
+        core_weight_keys = ("water_saving_weight", "soil_improvement_weight", "income_weight", "risk_reduction_weight")
+        if any(norm_pref.get(ck) is not None for ck in core_weight_keys) and all(
+            (norm_pref.get(wk) is None or norm_pref.get(wk) == 0.0) for wk in weight_pref_keys
+        ):
+            raise FarmerInputValidationError(
+                "Provided farmer priority weights sum to zero; at least one positive (> 0.0) weight is required when custom core weights are supplied.",
+                error_code="INVALID_PRIORITY_WEIGHTS",
+                details={"provided_weights": {wk: norm_pref[wk] for wk in weight_pref_keys if norm_pref[wk] is not None}},
+            )
         norm_pref["provenance"] = "USER_REPORTED"
 
     return {
@@ -530,7 +566,7 @@ def _build_quality_and_clarifications(
     dem_status = geospatial_ctx["extracted_datasets"]["terrain_dem"]["dem_slope_pct"]["quality_status"]
 
     # Materiality rule 1: Water uncertainty impacts Rainfed vs Irrigated crop gating
-    if wat["availability"] == "unknown" or (wat["source"] != "rainfed" and wat["irrigation_system"] == "unknown"):
+    if wat["availability"] == "unknown" or wat["source"] == "unknown" or (wat["source"] != "rainfed" and wat["irrigation_system"] == "unknown"):
         follow_ups.append({
             "question_id": "Q_WATER_MATERIAL",
             "material_reason": "Irrigation capacity determines whether summer crops (such as processing tomato) are feasible or excluded.",
@@ -538,14 +574,27 @@ def _build_quality_and_clarifications(
             "fallback_if_unanswered": "Run dual scenarios (Rainfed-safe vs. Supplemental-irrigated) and disclose uncertainty clearly.",
         })
 
-    # Materiality rule 2: Missing recent history affects cereal/pulse/Solanaceae disease intervals
+    # Materiality rule 2: Missing/partial recent history affects cereal/pulse/Solanaceae disease intervals
     start_yr = farmer_data["planning"]["start_year"]
-    recent_yrs = {h["year"] for h in hist}
-    if farmer_data["crop_history"] is None or not hist or (start_yr - 1) not in recent_yrs:
+    start_ssn = farmer_data["planning"]["start_season"]
+    hist_assessment = assess_crop_history_completeness(farmer_data["crop_history"], start_ssn, start_yr)
+    if hist_assessment["completeness_flag"] != "PROVIDED_COMPLETE":
+        pred_rec = hist_assessment["predecessor_record"]
+        if pred_rec is None:
+            farmer_prompt = (
+                f"What crop (or fallow) was planted immediately before {start_ssn} {start_yr} "
+                f"(and in {start_yr - 1}–{start_yr - 2} if remembered)?"
+            )
+        else:
+            farmer_prompt = (
+                f"Immediate predecessor ({pred_rec['season']} {pred_rec['year']}: {hist_assessment['most_recent_predecessor']}) "
+                f"is known, but multi-year history is {hist_assessment['completeness_flag']}; "
+                f"what crop(s) preceded it in {start_yr - 1}–{start_yr - 2}?"
+            )
         follow_ups.append({
             "question_id": "Q_LAST_CROP_MATERIAL",
             "material_reason": "Previous 1-2 crops govern cereal weed/disease carryover and legume/Solanaceae 3-4 year break rules.",
-            "farmer_prompt": f"What crop (or fallow) was planted on this field in {start_yr - 1} (and {start_yr - 2} if remembered)?",
+            "farmer_prompt": farmer_prompt,
             "fallback_if_unanswered": "Apply conservative disease-break warnings without assuming safe break history.",
         })
 

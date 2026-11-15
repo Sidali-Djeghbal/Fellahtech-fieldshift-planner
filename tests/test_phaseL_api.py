@@ -176,7 +176,9 @@ class TestPhaseLApplicationIntegration(unittest.TestCase):
         outside = _base_payload("L_OUTSIDE", POLY_OUTSIDE_GUELMA)
         r_out = self.client.post("/api/v1/fields/validate", json=outside)
         self.assertEqual(r_out.status_code, 422)
-        self.assertIn("outside Guelma", r_out.json()["detail"]["message"])
+        self.assertEqual(r_out.json()["error_code"], "INVALID_FIELD_POLYGON")
+        self.assertIn("outside Guelma", r_out.json()["message"])
+        self.assertIsInstance(r_out.json()["details"], list)
 
         # 3. MultiPolygon rejected -> 422
         multi = _base_payload("L_MULTI")
@@ -228,10 +230,18 @@ class TestPhaseLApplicationIntegration(unittest.TestCase):
 
         # 3. All-zero provided weights cleanly rejected as INVALID_PRIORITY_WEIGHTS (422)
         zero_weights = copy.deepcopy(minimal)
-        zero_weights["preferences"] = {"forage_value_weight": 0.0}
+        zero_weights["preferences"] = {
+            "water_saving_weight": 0.0,
+            "soil_improvement_weight": 0.0,
+            "income_weight": 0.0,
+            "risk_reduction_weight": 0.0,
+            "forage_value_weight": 0.0,
+        }
         r_zero = self.client.post("/api/v1/fields/analyze", json=zero_weights)
         self.assertEqual(r_zero.status_code, 422)
-        self.assertEqual(r_zero.json()["detail"]["error_code"], "INVALID_PRIORITY_WEIGHTS")
+        self.assertEqual(r_zero.json()["error_code"], "INVALID_PRIORITY_WEIGHTS")
+        self.assertIn("message", r_zero.json())
+        self.assertIsInstance(r_zero.json()["details"], list)
 
     def test_05_unknown_water_infeasible_targets_and_no_eligible_recommendation(self) -> None:
         # 1. Unknown water requesting TOMATO_IND + OLIVE -> never forced pass

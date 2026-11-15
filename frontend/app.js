@@ -185,16 +185,8 @@ function buildApiPayload(includeAnalyzeFields = true) {
   if (fMode === "null") {
     prefs.forage_value_weight = null;
   } else if (fMode === "zero") {
-    prefs.water_saving_weight = 0.25;
-    prefs.soil_improvement_weight = 0.30;
-    prefs.income_weight = 0.20;
-    prefs.risk_reduction_weight = 0.25;
     prefs.forage_value_weight = 0.0;
   } else {
-    prefs.water_saving_weight = 0.15;
-    prefs.soil_improvement_weight = 0.20;
-    prefs.income_weight = 0.05;
-    prefs.risk_reduction_weight = 0.15;
     prefs.forage_value_weight = Number(fMode);
   }
 
@@ -422,7 +414,8 @@ async function init() {
       const body = await res.json();
       el("validationOutput").classList.remove("hidden");
       if (!res.ok) {
-        el("validationOutput").innerHTML = `<div class="notice notice-error">${body.message || JSON.stringify(body.detail)}</div>`;
+        const errCode = body.error_code ? `[${body.error_code}] ` : "";
+        el("validationOutput").innerHTML = `<div class="notice notice-error">${errCode}${body.message || JSON.stringify(body.detail || body)}</div>`;
       } else {
         el("validationOutput").innerHTML = `<div class="notice notice-info"><strong>Polygon Valid:</strong> ${body.area_ha} ha inside <strong>${body.primary_commune ? body.primary_commune.name_2 : "Guelma"}</strong> (${body.wilaya_overlap_pct}% overlap).</div>`;
       }
@@ -441,7 +434,8 @@ async function init() {
       });
       const body = await res.json();
       if (!res.ok) {
-        showError((body.detail && body.detail.message) || body.message || "Validation failed.");
+        const errCode = body.error_code ? `[${body.error_code}] ` : "";
+        showError(`${errCode}${body.message || (body.detail && body.detail.message) || "Validation failed."}`);
         return;
       }
       renderAnalysisResult(body);

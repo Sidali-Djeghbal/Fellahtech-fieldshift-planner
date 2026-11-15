@@ -29,6 +29,7 @@ from src.agronomic.land_use_assessment import (
     LAND_USE_UNVERIFIED,
     assess_land_use,
 )
+from src.agronomic.temporal_planning import assess_crop_history_completeness
 
 KNOWLEDGE_DIR = PROJECT_ROOT / "agronomic_knowledge"
 CROP_PROFILES_JSON = KNOWLEDGE_DIR / "crop_profiles.json"
@@ -178,10 +179,10 @@ def _eval_water_irrigation_gate(kb: AgronomicKnowledgeBase, crop: Dict[str, Any]
                 f"{crop['canonical_name']} requires strict irrigation and cannot be grown on a rainfed / unirrigated parcel.",
                 "Phase E CON_13_IRRIGATION binary gate.", obs,
             )
-        if avail == "unknown" or sys == "unknown":
+        if avail == "unknown" or src == "unknown" or sys == "unknown":
             return _make_rule(
                 kb, "RULE_WATER_IRRIGATION_GATE", "UNKNOWN",
-                f"Water availability='{avail}' or irrigation_system='{sys}' is unknown for strictly irrigated {crop['canonical_name']}.",
+                f"Water availability='{avail}', source='{src}', or irrigation_system='{sys}' is unknown for strictly irrigated {crop['canonical_name']}.",
                 "An unknown water gate MUST NOT auto-pass (triggers Q_WATER_MATERIAL).", obs,
             )
         if avail == "limited":
@@ -196,10 +197,10 @@ def _eval_water_irrigation_gate(kb: AgronomicKnowledgeBase, crop: Dict[str, Any]
             "Dam quota volumes remain unverified spatially; surface irrigation incurs higher evaporative loss than drip.", obs,
         )
     # Rainfed or supplemental crop
-    if avail == "unknown" and regime == "RAINFED_OR_SUPPLEMENTAL":
+    if (avail == "unknown" or src == "unknown" or sys == "unknown") and regime == "RAINFED_OR_SUPPLEMENTAL":
         return _make_rule(
             kb, "RULE_WATER_IRRIGATION_GATE", "PASS",
-            f"{crop['canonical_name']} can operate rainfed (supplemental capacity unknown).",
+            f"{crop['canonical_name']} can operate rainfed (supplemental capacity/source unknown).",
             "Evaluated conservatively under rainfed assumption in rainfall check.", obs,
         )
     return _make_rule(
@@ -215,7 +216,11 @@ def _eval_precipitation_regime(
     gpm_ann = _metric_val(gpm, "gpm_annual_precip_2016_2025_mean_mm")
     np_ann = _metric_val(npw, "nasa_power_annual_precip_2016_2025_mean_mm")
     min_req = _param(crop, "min_annual_rainfed_precip_mm")["value"]
-    irrig_active = (water.get("availability") in {"moderate", "abundant"}) and (water.get("source") != "rainfed") and (water.get("irrigation_system") != "none")
+    irrig_active = (
+        water.get("availability") in {"moderate", "abundant"}
+        and water.get("source") not in {"rainfed", "unknown", None}
+        and water.get("irrigation_system") not in {"none", "unknown", None}
+    )
     obs = {"gpm_annual_mm": gpm_ann, "nasa_power_annual_mm": np_ann, "min_rainfed_mm": min_req, "irrig_active": irrig_active}
 
     if min_req is None:
@@ -306,7 +311,11 @@ def _eval_soil_moisture(
     obs = {"smap_winter_rz_m3m3": win_sm, "smap_spring_rz_m3m3": spr_sm}
     if win_sm is None and spr_sm is None:
         return _make_rule(kb, "RULE_ROOTZONE_SOIL_MOISTURE_CONTEXT", "UNKNOWN", "SMAP 11 km root-zone moisture unavailable locally.", "Moisture context unresolved.", obs)
-    irrig_active = (water.get("availability") in {"moderate", "abundant"}) and (water.get("source") != "rainfed")
+    irrig_active = (
+        water.get("availability") in {"moderate", "abundant"}
+        and water.get("source") not in {"rainfed", "unknown", None}
+        and water.get("irrigation_system") not in {"none", "unknown", None}
+    )
     if not irrig_active and crop["crop_id"] in {"CHICKPEA_SPRING", "FABA_BEAN", "LENTIL"} and spr_sm is not None and spr_sm < 0.21:
         return _make_rule(
             kb, "RULE_ROOTZONE_SOIL_MOISTURE_CONTEXT", "WARNING",
@@ -440,7 +449,19 @@ def _eval_salinity_unmeasured(kb: AgronomicKnowledgeBase, crop: Dict[str, Any], 
     sys = water.get("irrigation_system")
     tol = _param(crop, "salinity_tolerance")["value"]
     obs = {"water_source": src, "irrigation_system": sys, "crop_salinity_tolerance": tol}
-    if src in {"reservoir", "river", "well", "groundwater"} and sys != "none":
+    if src == "rainfed" or sys == "none":
+        return _make_rule(
+            kb, "RULE_SALINITY_UNMEASURED_IRRIGATION", "PASS",
+            "Rainfed / unirrigated parcel carries minimal irrigation-induced secondary salinization exposure.",
+            "Natural soil ECe remains unmeasured locally.", obs,
+        )
+    if src == "unknown" or src is None:
+        return _make_rule(
+            kb, "RULE_SALINITY_UNMEASURED_IRRIGATION", "UNKNOWN",
+            f"Water source='{src}' (irrigation_system='{sys}') leaves irrigation-induced salinization exposure unverified for {crop['canonical_name']}.",
+            "Unknown water source cannot be treated as confirmed rainfed; local ECe/ECw unavailable.", obs,
+        )
+    if src in {"reservoir", "river", "well", "groundwater", "other"} and sys != "none":
         if crop["crop_id"] in {"BARLEY", "BARE_FALLOW"}:
             return _make_rule(
                 kb, "RULE_SALINITY_UNMEASURED_IRRIGATION", "WARNING",
@@ -453,9 +474,9 @@ def _eval_salinity_unmeasured(kb: AgronomicKnowledgeBase, crop: Dict[str, Any], 
             "Secondary salinization hazard unverified (Seybouse literature); triggers Q_IRRIGATION_SALINITY_SIGN.", obs,
         )
     return _make_rule(
-        kb, "RULE_SALINITY_UNMEASURED_IRRIGATION", "PASS",
-        "Rainfed parcel carries minimal irrigation-induced secondary salinization exposure.",
-        "Natural soil ECe remains unmeasured locally.", obs,
+        kb, "RULE_SALINITY_UNMEASURED_IRRIGATION", "UNKNOWN",
+        f"Unresolved salinity context for source='{src}', system='{sys}'.",
+        "Local ECe/ECw unavailable.", obs,
     )
 
 
@@ -527,26 +548,60 @@ def _eval_equipment_constraints(kb: AgronomicKnowledgeBase, crop: Dict[str, Any]
     eq_list = pref.get("equipment_constraints")
     ops = _param(crop, "machinery_and_operations")["value"] or {}
     sensitive = set(ops.get("equipment_tags_sensitive") or [])
-    obs = {"equipment_completeness": eq_status, "equipment_constraints": eq_list, "sensitive_tags": sorted(sensitive)}
+    known_kb_tags = {
+        tag
+        for c_prof in kb.crops.values()
+        for tag in ((_param(c_prof, "machinery_and_operations")["value"] or {}).get("equipment_tags_sensitive") or [])
+    }
 
     if eq_status == "NOT_PROVIDED" or eq_list is None:
+        obs = {
+            "equipment_completeness": eq_status,
+            "equipment_constraints": eq_list,
+            "sensitive_tags": sorted(sensitive),
+            "unsupported_equipment_tags": [],
+        }
         return _make_rule(
             kb, "RULE_EQUIPMENT_CONSTRAINT_CHECK", "UNKNOWN",
             "Optional equipment_constraints is null ('NOT_PROVIDED'); refusing to assume machinery availability.",
             "Preserves strict null vs [] separation per Phase G Section 8.", obs,
         )
     if eq_status == "EXPLICITLY_CONFIRMED_EMPTY" or len(eq_list) == 0:
+        obs = {
+            "equipment_completeness": eq_status,
+            "equipment_constraints": eq_list,
+            "sensitive_tags": sorted(sensitive),
+            "unsupported_equipment_tags": [],
+        }
         return _make_rule(
             kb, "RULE_EQUIPMENT_CONSTRAINT_CHECK", "PASS",
             "Farmer explicitly confirmed empty equipment_constraints ([]).",
             "Machinery constraints verified empty.", obs,
         )
     hits = sorted(set(eq_list) & sensitive)
+    unmodeled = sorted(set(eq_list) - known_kb_tags)
+    obs = {
+        "equipment_completeness": eq_status,
+        "equipment_constraints": eq_list,
+        "sensitive_tags": sorted(sensitive),
+        "unsupported_equipment_tags": unmodeled,
+    }
     if hits:
+        extra_note = (
+            f" Note: additional tag(s) {unmodeled} are unmodeled in KB."
+            if unmodeled
+            else ""
+        )
         return _make_rule(
             kb, "RULE_EQUIPMENT_CONSTRAINT_CHECK", "WARNING",
-            f"Declared equipment constraints {hits} conflict with {crop['canonical_name']} operations ({ops.get('operations')}).",
+            f"Declared equipment constraints {hits} conflict with {crop['canonical_name']} operations ({ops.get('operations')}).{extra_note}",
             "Requires contractor service or alternative crop selection.", obs,
+        )
+    if unmodeled:
+        return _make_rule(
+            kb, "RULE_EQUIPMENT_CONSTRAINT_CHECK", "UNKNOWN",
+            f"Declared equipment tag(s) {unmodeled} are NOT modeled in Phase E/G crop profiles; compatibility for {crop['canonical_name']} remains unverified rather than assumed PASS.",
+            "Explicitly unsupported equipment constraint tag(s): requires manual local equipment check.", obs,
         )
     return _make_rule(
         kb, "RULE_EQUIPMENT_CONSTRAINT_CHECK", "PASS",
@@ -760,36 +815,43 @@ def evaluate_crop_sequence(
             {"sequence_crops": list(sequence_crops)},
         ))
 
-    # Extract resolved recent historical timeline (year -> resolved crop_id)
+    # Extract resolved recent historical timeline using canonical SEASON_ORDER chronology
     hist_raw = sec_a.get("crop_history")
-    hist_map: Dict[int, Optional[str]] = {}
-    if hist_raw:
-        for h in hist_raw:
-            yr = int(h["year"])
-            hist_map[yr] = h.get("crop_id_resolved")
+    hist_flag = sec_a["input_completeness_flags"]["crop_history"]
+    hist_summary = assess_crop_history_completeness(hist_raw, start_season, start_year)
+    pred_rec = hist_summary["predecessor_record"]
+    pred2_rec = hist_summary["predecessor_2_record"]
+    prev_year_crop = hist_summary["most_recent_predecessor"]
+    prev2_year_crop = hist_summary["predecessor_2"]
 
-    prev_year_crop = hist_map.get(start_year - 1)
-    prev2_year_crop = hist_map.get(start_year - 2)
-    if hist_raw is None or (start_year - 1) not in hist_map or prev_year_crop is None:
+    if prev_year_crop is None:
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_10_UNKNOWN_PREDECESSOR_GUARD", "UNKNOWN",
-            f"Crop preceding start_year ({start_year - 1}) is missing or unresolved (crop_history={sec_a['input_completeness_flags']['crop_history']}); break safety for slot 0 ({sequence_crops[0]}) is unverified.",
-            {"start_year": start_year, "prev_year_crop": prev_year_crop, "history_completeness": sec_a["input_completeness_flags"]["crop_history"]},
+            f"Immediate predecessor preceding {start_season} {start_year} is missing or unresolved (crop_history={hist_flag}); break safety for slot 0 ({sequence_crops[0]}) is unverified.",
+            {"start_season": start_season, "start_year": start_year, "prev_year_crop": prev_year_crop, "history_completeness": hist_flag},
         ))
     else:
+        pred_label = f"{pred_rec['season']} {pred_rec['year']}"
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_10_UNKNOWN_PREDECESSOR_GUARD", "PASS",
-            f"Predecessor history for {start_year - 1} resolved cleanly as '{prev_year_crop}'.",
-            {"start_year": start_year, "prev_year_crop": prev_year_crop, "prev2_year_crop": prev2_year_crop},
+            f"Immediate predecessor history ({pred_label}) resolved cleanly as '{prev_year_crop}'.",
+            {
+                "start_season": start_season,
+                "start_year": start_year,
+                "predecessor_period": pred_label,
+                "prev_year_crop": prev_year_crop,
+                "prev2_year_crop": prev2_year_crop,
+                "history_completeness": hist_flag,
+            },
         ))
 
     # Build chronological combined crop chain [known history..., seq...] for return-interval checks
     # Keep track of indices belonging to planned sequence
     combined: List[Tuple[str, str]] = []
-    if prev2_year_crop is not None:
-        combined.append((f"T-2({start_year - 2})", prev2_year_crop))
-    if prev_year_crop is not None:
-        combined.append((f"T-1({start_year - 1})", prev_year_crop))
+    if pred2_rec is not None and prev2_year_crop is not None:
+        combined.append((f"T-2({pred2_rec['season']} {pred2_rec['year']})", prev2_year_crop))
+    if pred_rec is not None and prev_year_crop is not None:
+        combined.append((f"T-1({pred_rec['season']} {pred_rec['year']})", prev_year_crop))
     plan_start_idx = len(combined)
     for i, cid in enumerate(sequence_crops):
         combined.append((f"S{i + 1}", cid))
@@ -960,7 +1022,11 @@ def evaluate_crop_sequence(
         ))
 
     # Water competition / Sunflower before rainfed cereal / Autumn Potato overlap
-    irrig_active = (water.get("availability") in {"moderate", "abundant"}) and (water.get("source") != "rainfed")
+    irrig_active = (
+        water.get("availability") in {"moderate", "abundant"}
+        and water.get("source") not in {"rainfed", "unknown", None}
+        and water.get("irrigation_system") not in {"none", "unknown", None}
+    )
     sun_before_cereal = any(
         combined[i - 1][1] == "SUNFLOWER" and combined[i][1] in cereals and not irrig_active
         for i in range(max(1, plan_start_idx), len(combined))

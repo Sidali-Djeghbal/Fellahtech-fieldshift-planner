@@ -423,7 +423,7 @@ def _assess_critical_data_adequacy(
             "impact": "SoilGrids Nitrogen is quarantined (N>SOC anomaly) and local lab N/P/K is unavailable.",
         })
 
-    if opt_flags.get("crop_history") in ("NOT_PROVIDED", "EXPLICITLY_CONFIRMED_EMPTY") or not cand_out.get("history_assessment", {}).get("sufficient_for_existing_baseline", False):
+    if opt_flags.get("crop_history") in ("NOT_PROVIDED", "EXPLICITLY_CONFIRMED_EMPTY", "PROVIDED_PARTIAL") or not cand_out.get("history_assessment", {}).get("sufficient_for_existing_baseline", False):
         critical_missing.append({
             "variable": "verified_multi_year_crop_history",
             "severity": "CRITICAL_VERIFICATION_REQUIRED",
@@ -489,7 +489,10 @@ def _build_data_quality(
 
     opt_flags = sec_d["input_completeness_flags"]
     farmer_items = ["crop_history", "equipment_constraints", "forage_value_weight"]
-    farmer_provided_or_empty = sum(1 for k in farmer_items if opt_flags.get(k) in ("PROVIDED", "EXPLICITLY_CONFIRMED_EMPTY"))
+    farmer_provided_or_empty = sum(
+        1 for k in farmer_items
+        if opt_flags.get(k) in ("PROVIDED", "PROVIDED_PARTIAL", "PROVIDED_COMPLETE", "EXPLICITLY_CONFIRMED_EMPTY")
+    )
 
     completeness_score = round((avail_geospatial + farmer_provided_or_empty) / max(total_geospatial + len(farmer_items), 1), 4)
     critical_adequacy = _assess_critical_data_adequacy(
@@ -511,7 +514,24 @@ def _build_data_quality(
         if opt_flags.get(k) == "NOT_PROVIDED":
             missing_data.append(f"Farmer optional input '{k}' is null ('NOT_PROVIDED'); never silently defaulted to empty list or zero.")
 
+    unsupported_eq_tags = sorted({
+        tag
+        for strat in cand_out.get("strategies", [])
+        for slot in strat.get("seasons", [])
+        for rule in slot.get("slot_constraint_evaluations", [])
+        if rule.get("rule_id") == "RULE_EQUIPMENT_CONSTRAINT_CHECK"
+        for tag in (rule.get("observed_inputs") or {}).get("unsupported_equipment_tags", [])
+    })
+    if unsupported_eq_tags:
+        missing_data.append(
+            f"Unsupported equipment_constraints tag(s) {unsupported_eq_tags} are not modeled in Phase E/G crop profiles (retained as UNKNOWN)."
+        )
+
     warnings: List[str] = []
+    if unsupported_eq_tags:
+        warnings.append(
+            f"[UNSUPPORTED_EQUIPMENT_TAG] Equipment tag(s) {unsupported_eq_tags} are unmodeled in crop_profiles.json and treated conservatively as UNKNOWN (never assumed PASS)."
+        )
     for diag in field_profile["section_c_agronomic_knowledge_base"].get("descriptive_field_diagnostics", []):
         if diag["status"] != "ADEQUATE_BUFFERING":
             warnings.append(f"[{diag['constraint_id']}] {diag['finding']}")

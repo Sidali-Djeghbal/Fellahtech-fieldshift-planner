@@ -7,7 +7,12 @@ import json
 from typing import Any, Dict, Optional
 
 from field_geospatial_processor import validate_and_project_polygon
-from field_profile_builder import FarmerInputValidationError, build_field_profile, validate_farmer_input
+from field_profile_builder import (
+    FarmerInputValidationError,
+    build_field_profile,
+    validate_farmer_input,
+    validate_target_excluded_conflict,
+)
 from fieldshift_integration.config import (
     BOUNDARY_COMMUNES_GPKG,
     BOUNDARY_WILAYA_GPKG,
@@ -58,6 +63,9 @@ def validate_farmer_submission(
     clock: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Validate farmer input contract + GeoJSON Polygon inside Guelma Wilaya (no raster extraction)."""
+    validate_target_excluded_conflict(
+        scientific_payload.get("preferences") if isinstance(scientific_payload, dict) else None
+    )
     normalized = validate_farmer_input(
         scientific_payload,
         reference_date=reference_date,
@@ -149,6 +157,9 @@ def run_field_analysis_pipeline(
     clock: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Execute Phases F -> G -> H -> I -> J + Draft 2020-12 schema/semantic validation."""
+    validate_target_excluded_conflict(
+        scientific_payload.get("preferences") if isinstance(scientific_payload, dict) else None
+    )
     kb = load_knowledge_base()
     field_profile = build_field_profile(
         scientific_payload,

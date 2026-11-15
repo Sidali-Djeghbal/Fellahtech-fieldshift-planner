@@ -18,7 +18,102 @@ PLANNING_MODE_HISTORICAL = "HISTORICAL_SIMULATION"
 VALID_PLANNING_MODES = (PLANNING_MODE_CURRENT, PLANNING_MODE_HISTORICAL)
 
 SEASON_ORDER = ("Winter", "Spring", "Summer", "Autumn")
+SEASON_RANK: Dict[str, int] = {s: idx for idx, s in enumerate(SEASON_ORDER)}
 ClockProvider = Callable[[], date]
+
+
+def season_sort_key(year: int, season: str) -> Tuple[int, int]:
+    """Return canonical chronological sort key `(year, season_index)` matching SEASON_ORDER."""
+    if season not in SEASON_RANK:
+        raise ValueError(f"Unsupported agricultural season '{season}'. Expected one of {SEASON_ORDER}.")
+    return (int(year), SEASON_RANK[season])
+
+
+def season_ordinal(year: int, season: str) -> int:
+    """Return monotonic integer season ordinal (`year * 4 + season_index`)."""
+    yr, s_idx = season_sort_key(year, season)
+    return yr * len(SEASON_ORDER) + s_idx
+
+
+def assess_crop_history_completeness(
+    crop_history: Optional[List[Dict[str, Any]]],
+    start_season: str,
+    start_year: int,
+    *,
+    min_entries_for_complete: int = 2,
+) -> Dict[str, Any]:
+    """Classify crop_history and extract chronological predecessors strictly preceding planning start."""
+    if crop_history is None:
+        return {
+            "completeness_flag": "NOT_PROVIDED",
+            "ordered_entries": [],
+            "prior_entries": [],
+            "recent_resolved_entries": [],
+            "predecessor_record": None,
+            "predecessor_2_record": None,
+            "most_recent_predecessor": None,
+            "predecessor_2": None,
+            "sufficient_for_existing_baseline": False,
+        }
+    if len(crop_history) == 0:
+        return {
+            "completeness_flag": "EXPLICITLY_CONFIRMED_EMPTY",
+            "ordered_entries": [],
+            "prior_entries": [],
+            "recent_resolved_entries": [],
+            "predecessor_record": None,
+            "predecessor_2_record": None,
+            "most_recent_predecessor": None,
+            "predecessor_2": None,
+            "sufficient_for_existing_baseline": False,
+        }
+
+    start_ord = season_ordinal(start_year, start_season)
+    ordered = sorted(crop_history, key=lambda h: season_sort_key(int(h["year"]), str(h["season"])))
+    prior = [h for h in ordered if season_ordinal(int(h["year"]), str(h["season"])) < start_ord]
+    any_non_prior = len(prior) < len(ordered)
+    any_unresolved = any(h.get("crop_id_resolved") is None for h in prior)
+
+    latest_prior = prior[-1] if prior else None
+    predecessor_record: Optional[Dict[str, Any]] = None
+    if latest_prior is not None:
+        gap = start_ord - season_ordinal(int(latest_prior["year"]), str(latest_prior["season"]))
+        if 1 <= gap <= 4 and latest_prior.get("crop_id_resolved") is not None:
+            predecessor_record = latest_prior
+
+    predecessor_2_record: Optional[Dict[str, Any]] = None
+    if predecessor_record is not None and len(prior) >= 2:
+        prev2 = prior[-2]
+        prev2_gap = start_ord - season_ordinal(int(prev2["year"]), str(prev2["season"]))
+        if 1 <= prev2_gap <= 16 and prev2.get("crop_id_resolved") is not None:
+            predecessor_2_record = prev2
+
+    recent_resolved = [
+        h for h in prior
+        if h.get("crop_id_resolved") is not None
+        and 1 <= (start_ord - season_ordinal(int(h["year"]), str(h["season"]))) <= 16
+    ]
+    distinct_recent_slots = {(int(h["year"]), str(h["season"])) for h in recent_resolved}
+
+    complete = (
+        (not any_non_prior)
+        and (not any_unresolved)
+        and (predecessor_record is not None)
+        and (len(distinct_recent_slots) >= min_entries_for_complete)
+    )
+    return {
+        "completeness_flag": "PROVIDED_COMPLETE" if complete else "PROVIDED_PARTIAL",
+        "ordered_entries": ordered,
+        "prior_entries": prior,
+        "recent_resolved_entries": recent_resolved,
+        "predecessor_record": predecessor_record,
+        "predecessor_2_record": predecessor_2_record,
+        "most_recent_predecessor": predecessor_record.get("crop_id_resolved") if predecessor_record else None,
+        "predecessor_2": predecessor_2_record.get("crop_id_resolved") if predecessor_2_record else None,
+        "sufficient_for_existing_baseline": (
+            predecessor_record is not None and len(distinct_recent_slots) >= min_entries_for_complete
+        ),
+    }
 
 
 class TemporalPlanningError(ValueError):
@@ -215,27 +310,34 @@ def validate_and_build_planning_timeline(
                 f"Explicit HISTORICAL_SIMULATION mode requested for {start_season} {start_year}."
             )
 
-    # Check crop_history vs planning start consistency
+    # Check crop_history vs planning start consistency (strictly prior chronological order)
     if isinstance(crop_history, list):
+        start_ord = season_ordinal(start_year, start_season)
         for idx, rec in enumerate(crop_history):
             if not isinstance(rec, dict):
                 continue
             hy = rec.get("year")
             hs = rec.get("season")
             if isinstance(hy, int) and hs in config.windows:
-                h_start, _ = season_window_bounds(str(hs), hy, config=config)
-                if h_start > start_dt:
+                h_ord = season_ordinal(hy, str(hs))
+                if h_ord >= start_ord:
+                    rel = "concurrent with" if h_ord == start_ord else "chronologically after"
                     msg = (
-                        f"Crop history record #{idx + 1} ({hs} {hy}) occurs chronologically after planned start "
-                        f"({start_season} {start_year}); sequence carryover assumes history precedes slot 1."
+                        f"Crop history record #{idx + 1} ({hs} {hy}) is {rel} planned start "
+                        f"({start_season} {start_year}); sequence carryover requires history strictly before slot 1."
                     )
-                    if planning_mode == PLANNING_MODE_CURRENT:
-                        raise TemporalPlanningError(
-                            msg,
-                            error_code="CROP_HISTORY_AFTER_PLANNING_START",
-                            details={"history_record_index": idx, "history_season": hs, "history_year": hy},
-                        )
-                    warnings.append(msg)
+                    raise TemporalPlanningError(
+                        msg,
+                        error_code="CROP_HISTORY_AFTER_PLANNING_START",
+                        details={
+                            "history_record_index": idx,
+                            "history_season": hs,
+                            "history_year": hy,
+                            "start_season": start_season,
+                            "start_year": start_year,
+                            "relation": rel,
+                        },
+                    )
 
     # Build unified chronological multi-season slot timeline
     slots: List[Dict[str, Any]] = []
