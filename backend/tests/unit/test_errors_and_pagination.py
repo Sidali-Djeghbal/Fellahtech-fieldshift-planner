@@ -226,7 +226,7 @@ async def test_deprecation_middleware_hook_emits_headers_when_configured() -> No
     )
     transport = httpx.ASGITransport(app=wrapped)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
-        resp = await client.get("/api/v1/health")
+        resp = await client.get("/api/v1/health?check=live")
         assert resp.status_code == 200
         assert resp.headers.get("deprecation") == "true"
         assert resp.headers.get("sunset") == "Wed, 31 Dec 2026 23:59:59 GMT"

@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Literal
 
-from sqlalchemy import and_, delete, func, or_, select, text, tuple_, update
+from sqlalchemy import and_, case, delete, func, or_, select, text, tuple_, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -1054,5 +1054,67 @@ async def finalize_worker_last_good_replay(
         final_status=req.status,
         final_error_code=req.error_code,
     )
+
+
+async def count_worker_queue_stats(
+    db: AsyncSession,
+    *,
+    now: datetime,
+) -> tuple[int, int, int]:
+    """Return `(active_running_jobs, pending_jobs, stale_leases)` from `analysis_requests`."""
+    stmt = select(
+        func.count(case((AnalysisRequest.status == "pending", 1))).label("pending_jobs"),
+        func.count(
+            case(
+                (
+                    and_(
+                        AnalysisRequest.status == "running",
+                        AnalysisRequest.lease_until.is_not(None),
+                        AnalysisRequest.lease_until < now,
+                    ),
+                    1,
+                )
+            )
+        ).label("stale_leases"),
+        func.count(
+            case(
+                (
+                    and_(
+                        AnalysisRequest.status == "running",
+                        or_(
+                            AnalysisRequest.lease_until.is_(None),
+                            AnalysisRequest.lease_until >= now,
+                        ),
+                    ),
+                    1,
+                )
+            )
+        ).label("active_running"),
+    )
+    row = (await db.execute(stmt)).one()
+    return (
+        int(row[2] or 0),
+        int(row[0] or 0),
+        int(row[1] or 0),
+    )
+
+
+async def clear_expired_idempotency_keys(
+    db: AsyncSession,
+    *,
+    cutoff: datetime,
+) -> int:
+    """Clear `idempotency_key` on requests created before `cutoff` (24h window, `IMPL-010`)."""
+    stmt = (
+        update(AnalysisRequest)
+        .where(
+            AnalysisRequest.idempotency_key.is_not(None),
+            AnalysisRequest.created_at < cutoff,
+        )
+        .values(idempotency_key=None)
+        .returning(AnalysisRequest.request_id)
+    )
+    rows = (await db.execute(stmt)).all()
+    return len(rows)
 
 

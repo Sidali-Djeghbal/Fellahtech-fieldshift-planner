@@ -9,10 +9,11 @@ import json
 import random
 import signal
 import time
+import uuid
 from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
@@ -34,7 +35,9 @@ from app.ml_client.base import MLAuthError, MLClientError
 from app.ml_client.manager import AsyncRedisStatusStore, MLProviderManager
 from app.repositories import analysis as analysis_repo
 from app.repositories import catalog as catalog_repo
+from app.repositories import user as user_repo
 from app.services.verification import verify_analysis_result
+from app.services.worker_heartbeat import clear_worker_heartbeat, publish_worker_heartbeat
 from app.worker import breaker
 from app.worker.jobs import (
     DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
@@ -250,6 +253,7 @@ class WorkerRunner:
         bulkhead_probe_interval_seconds: float = _DEFAULT_BULKHEAD_PROBE_INTERVAL_S,
         probe_stale_after_seconds: float | None = None,
         jitter_fn: Callable[[], float] | None = None,
+        worker_id: str | None = None,
     ) -> None:
         self._settings = settings
         self._engine = engine
@@ -266,6 +270,7 @@ class WorkerRunner:
         self._bulkhead_probe_interval_s = bulkhead_probe_interval_seconds
         self._probe_stale_after_s = probe_stale_after_seconds
         self._jitter_fn = jitter_fn
+        self._worker_id = worker_id or uuid.uuid4().hex
         self._logger = structlog.get_logger("app.worker.runner")
 
     async def _sync_redis_refund_if_needed(
@@ -1097,6 +1102,26 @@ class WorkerRunner:
                                 status="failed",
                                 error_code=fin.final_error_code or ErrorCode.INTERNAL_ERROR.value,
                             ).inc()
+
+                async with self._sessionmaker() as cleanup_db:
+                    cleared_keys = await analysis_repo.clear_expired_idempotency_keys(
+                        cleanup_db,
+                        cutoff=now - timedelta(hours=24),
+                    )
+                    purged_guests = await user_repo.delete_expired_guest_sessions(
+                        cleanup_db,
+                        now=now,
+                    )
+                    # TODO(OQ-7): Add configurable `input_snapshot_gz` archival TTL per RPO policy.
+                    await cleanup_db.commit()
+
+                if swept or cleared_keys or purged_guests:
+                    await self._logger.ainfo(
+                        "worker_reaper_housekeeping_completed",
+                        stale_jobs_swept=swept,
+                        expired_idempotency_keys_cleared=cleared_keys,
+                        expired_guest_sessions_purged=purged_guests,
+                    )
                 return swept
             finally:
                 with contextlib.suppress(BaseException):
@@ -1138,7 +1163,14 @@ class WorkerRunner:
     async def _maintenance_loop(self, stop_event: asyncio.Event) -> None:
         last_catalog_sync = 0.0
         catalog_interval_s = float(self._settings.ML_CATALOG_SYNC_HOURS * 3600)
+        heartbeat_ttl_s = max(30, 2 * self._settings.ML_HEALTH_CHECK_INTERVAL_SECONDS)
         while not stop_event.is_set():
+            with contextlib.suppress(Exception):
+                await publish_worker_heartbeat(
+                    self._redis_client,
+                    worker_id=self._worker_id,
+                    ttl_seconds=heartbeat_ttl_s,
+                )
             with contextlib.suppress(Exception):
                 await self._publish_provider_status_best_effort()
             with contextlib.suppress(Exception):
@@ -1169,6 +1201,13 @@ class WorkerRunner:
     async def run(self, stop_event: asyncio.Event | None = None) -> None:
         """Start concurrent worker pool and maintenance loops until `stop_event` is set."""
         active_stop = stop_event or asyncio.Event()
+        heartbeat_ttl_s = max(30, 2 * self._settings.ML_HEALTH_CHECK_INTERVAL_SECONDS)
+        with contextlib.suppress(Exception):
+            await publish_worker_heartbeat(
+                self._redis_client,
+                worker_id=self._worker_id,
+                ttl_seconds=heartbeat_ttl_s,
+            )
         with contextlib.suppress(Exception):
             await self._publish_provider_status_best_effort()
 
@@ -1182,7 +1221,23 @@ class WorkerRunner:
             await active_stop.wait()
         finally:
             active_stop.set()
+            with contextlib.suppress(BaseException):
+                await self._logger.ainfo(
+                    "worker_graceful_shutdown_started",
+                    worker_id=self._worker_id,
+                    concurrency=self._concurrency,
+                )
             await asyncio.gather(*tasks, return_exceptions=True)
+            with contextlib.suppress(Exception):
+                await clear_worker_heartbeat(
+                    self._redis_client,
+                    worker_id=self._worker_id,
+                )
+            with contextlib.suppress(BaseException):
+                await self._logger.ainfo(
+                    "worker_graceful_shutdown_complete",
+                    worker_id=self._worker_id,
+                )
 
 
 async def run_worker_service(settings: Settings | None = None) -> None:

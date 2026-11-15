@@ -186,11 +186,6 @@ def create_app(
 
     fastapi_app.include_router(api_v1_router)
 
-    # M0 scaffold liveness stub; replaced in M11 with full PG/Redis/dataset/breaker probe.
-    @fastapi_app.get("/api/v1/health", tags=["System"])
-    async def health_liveness_stub(check: str = "live") -> dict[str, str]:
-        return {"status": "ok", "check": check, "phase": "m0_scaffold"}
-
     return fastapi_app
 
 

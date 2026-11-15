@@ -371,3 +371,14 @@ async def load_user_export_bundle(
         analysis_results=res_rows,
         analysis_selections=sel_rows,
     )
+
+
+async def delete_expired_guest_sessions(db: AsyncSession, *, now: datetime) -> int:
+    """Purge guest session rows whose `expires_at` timestamp has passed (`IMPL-010`)."""
+    stmt = (
+        delete(GuestSession)
+        .where(GuestSession.expires_at <= now)
+        .returning(GuestSession.guest_token)
+    )
+    rows = (await db.execute(stmt)).all()
+    return len(rows)
