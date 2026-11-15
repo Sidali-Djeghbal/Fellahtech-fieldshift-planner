@@ -60,17 +60,38 @@ It ships as four cooperating deliverables:
 
 ## System Architecture
 
-<p align="center">
-  <img src="docs/assets/system-architecture.svg" alt="System architecture" />
-</p>
+```mermaid
+flowchart TB
+    subgraph CLIENTS["Clients"]
+        direction LR
+        WEB["Web workspace<br/>Next.js 15 · React 19 · MapLibre<br/>static export → Cloudflare Workers"]
+        MOB["Android app<br/>Kotlin · Jetpack Compose<br/>Hilt · Retrofit"]
+    end
 
-```
-Next.js (Cloudflare)  ─┐
-                       ├─ HTTPS /api/v1 ─▶ FastAPI ──▶ PostgreSQL 16 + PostGIS
-Android (Compose)     ─┘                     │  │
-                                             │  └────▶ Redis (rate limits, job queue)
-                                             │              └─▶ worker
-                                             └─────▶ SI Model (geopandas) ──▶ local datasets
+    subgraph API["Backend API · FastAPI /api/v1"]
+        ROUTES["Auth · farms · fields · analyses<br/>catalog · health<br/>JWT + guest · idempotency · quotas"]
+    end
+
+    subgraph STATE["State"]
+        PG[("PostgreSQL 16 + PostGIS 3.4<br/>public + dataset schemas")]
+        RD[("Redis 7<br/>rate limits · job queue")]
+        WK["Worker<br/>job leasing · retries"]
+    end
+
+    subgraph ENGINE["Decision engine"]
+        SI["SI Model · FastAPI<br/>geopandas · rasterio · scipy<br/>temporal rotation planner"]
+        DS[("Local datasets<br/>SoilGrids · NASA POWER<br/>Sentinel-2 · SRTM · Guelma boundaries")]
+    end
+
+    WEB -->|"HTTPS · JSON"| ROUTES
+    MOB -->|"HTTPS · JSON"| ROUTES
+    ROUTES -->|"asyncpg"| PG
+    ROUTES -->|"enqueue"| RD
+    RD --> WK
+    WK -->|"internal HTTP"| SI
+    ROUTES -.->|"sync wait (optional)"| SI
+    SI -->|"read-only"| DS
+    SI -->|"persist results"| PG
 ```
 
 **Analysis flow:** client submits a minimal farmer contract (`field.geometry`, `water`, `planning`, optional `crop_history`) → API validates against the strict intake schema, hashes the payload for idempotency, enqueues a job → worker calls the SI model → the model resolves the polygon against Guelma boundaries, soil and climate layers, runs the temporal planner → the API persists an `ANAL_*` analysis with provenance and readiness flags → the client polls or receives the completed result.

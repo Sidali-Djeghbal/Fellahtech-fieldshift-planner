@@ -26,21 +26,65 @@ The platform is split into four deliverables that share one contract (`/api/v1`)
 
 ## 2. Architecture at a glance
 
-<p align="center">
-  <img src="assets/system-architecture.svg" alt="System architecture" />
-</p>
+```mermaid
+flowchart TB
+    subgraph CLIENTS["Clients"]
+        direction LR
+        WEB["Web workspace<br/>Next.js 15 · React 19 · MapLibre<br/>Cloudflare Workers"]
+        MOB["Android app<br/>Kotlin · Jetpack Compose<br/>Hilt · Retrofit"]
+    end
 
+    subgraph API["Backend API · FastAPI /api/v1"]
+        ROUTES["Auth · farms · fields · analyses<br/>catalog · health"]
+        GUARD["Contract validation<br/>idempotency · quotas · rate limits"]
+    end
+
+    subgraph STATE["State"]
+        PG[("PostgreSQL 16 + PostGIS 3.4<br/>public schema · dataset schema")]
+        RD[("Redis 7<br/>rate limits · job queue")]
+        WK["Worker<br/>job leasing"]
+    end
+
+    subgraph ENGINE["Decision engine"]
+        SI["SI Model · FastAPI<br/>geopandas · rasterio · scipy"]
+        DS[("Local datasets<br/>SoilGrids · NASA POWER<br/>Sentinel-2 · SRTM · boundaries")]
+    end
+
+    WEB -->|"HTTPS · JSON"| ROUTES
+    MOB -->|"HTTPS · JSON"| ROUTES
+    ROUTES --> GUARD
+    GUARD -->|"asyncpg"| PG
+    GUARD -->|"enqueue"| RD
+    RD --> WK
+    WK -->|"internal HTTP"| SI
+    GUARD -.->|"sync wait (optional)"| SI
+    SI -->|"read-only"| DS
+    SI -->|"persist results"| PG
 ```
-Client (Next.js / Android)
-   │  HTTPS  JSON
-   ▼
-FastAPI backend  ── asyncpg ──▶ PostgreSQL 16 + PostGIS 3.4
-   │      │                        ├─ public schema (farms, fields, analyses)
-   │      │                        └─ dataset schema (read-only spatial data)
-   │      └── Redis 7 ──▶ worker (job leasing, async analyses)
-   │
-   └── internal HTTP ──▶ SI Model (FastAPI + geopandas + rasterio)
-                              └── versioned local datasets
+
+### Request lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant A as Backend API
+    participant R as Redis
+    participant W as Worker
+    participant M as SI Model
+    participant P as PostgreSQL
+
+    C->>A: POST /api/v1/analysis
+    A->>A: validate contract + hash payload
+    A->>R: enqueue job
+    A-->>C: 202 + request_id
+    W->>R: lease job
+    W->>M: POST /fields/analyze
+    M->>P: read dataset schema
+    M-->>W: rotation plan + provenance
+    W->>P: persist analysis (ANAL_*)
+    C->>A: GET /analysis/requests/{id}
+    A-->>C: completed + analysis_id
 ```
 
 **Request path for an analysis**
