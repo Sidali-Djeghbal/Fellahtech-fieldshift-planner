@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Field Shift - Guelma Wilaya, Algeria",
+  "phase": "Phase G - Crop Sequence Compatibility Rules",
+  "notes": "Rules govern consecutive transitions (predecessor -> successor) and rolling multi-year return windows using Phase E ITGC / ICARDA / FAO pathology evidence.",
+  "sequence_rules": [
+    {
+      "seq_rule_id": "SEQ_01_PERENNIAL_GUARD",
+      "name": "Annual-Perennial Scope Separation",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "docs/phaseE/crop_system_inventory.csv; DSA Guelma olive sector",
+      "rule": "Never include perennial tree crop OLIVE inside an annual crop sequence slot or convert olive groves into annual cereal rotations.",
+      "outcome_on_violation": "FAIL"
+    },
+    {
+      "seq_rule_id": "SEQ_02_CEREAL_REPETITION",
+      "name": "Cereal Monoculture & Grass-Weed Guard",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "CON_11_SEQUENCE; ITGC / ICARDA Algeria cereal pathology",
+      "thresholds": {
+        "max_consecutive_cereal_seasons": 2,
+        "one_repeat_warning": true,
+        "three_in_a_row_fail": true
+      },
+      "rule": "Same-species consecutive wheat (Durum->Durum / Soft->Soft) or cereal->cereal triggers WARNING at 2 consecutive cereal campaigns (take-all, Fusarium, wild oat buildup) and HARD FAIL if >=3 consecutive cereal campaigns occur without a broadleaf/forage/fallow break.",
+      "outcome_on_one_repeat": "WARNING",
+      "outcome_on_three_consecutive": "FAIL"
+    },
+    {
+      "seq_rule_id": "SEQ_03_SOLANACEAE_BREAK",
+      "name": "Solanaceae 3-4 Year Return Break",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "CON_11_SEQUENCE; DSA Guelma / Cahiers Agricultures Bouchegouf studies",
+      "min_gap_years": 3,
+      "family_members": ["TOMATO_IND", "POTATO"],
+      "rule": "Never plant Tomato after Tomato, Potato after Potato, Tomato after Potato, or Potato after Tomato within a 3-year return gap (Verticillium/Fusarium wilt, nematodes, late blight, Orobanche).",
+      "outcome_on_violation": "FAIL"
+    },
+    {
+      "seq_rule_id": "SEQ_04_PULSE_BROOMRAPE_BREAK",
+      "name": "Food Legume Return Interval & Orobanche / Ascochyta Guard",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "CON_11_SEQUENCE; ITGC/MDPI & ICARDA-ITGC Winter Chickpea Program",
+      "min_same_pulse_gap_years": 3,
+      "family_members": ["FABA_BEAN", "CHICKPEA_WINTER", "CHICKPEA_SPRING", "LENTIL"],
+      "rule": "Consecutive same food legume or Faba Bean <-> Lentil fails immediately (<3 yr gap accelerates Orobanche crenata, Botrytis, Ascochyta, Fusarium wilt). Cross-legume transitions (e.g. Faba Bean -> Chickpea) within <3 yr trigger WARNING for shared fungal/soilborne carryover.",
+      "outcome_on_same_or_orobanche_repeat": "FAIL",
+      "outcome_on_cross_pulse_short_gap": "WARNING"
+    },
+    {
+      "seq_rule_id": "SEQ_05_SUNFLOWER_BREAK",
+      "name": "Sunflower Sclerotinia & Orobanche cumana Break",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "crop_system_inventory.csv; FAO AquaCrop",
+      "min_gap_years": 3,
+      "rule": "Consecutive or <3 yr repeated Sunflower fails immediately due to Sclerotinia rot and Orobanche cumana buildup.",
+      "outcome_on_violation": "FAIL"
+    },
+    {
+      "seq_rule_id": "SEQ_06_VETCH_OAT_ROLE_AND_REPEAT",
+      "name": "Vetch-Oat Fallow Replacement & Oat Host Caution",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "crop_system_inventory.csv; ITGC / CIHEAM ArimNet Algeria",
+      "rule": "Cereal -> Vetch-Oat -> Cereal is an approved fallow-replacement break if hay is cut before grass-weed seed shed (PASS with oat-weed cut timing note); consecutive Vetch-Oat -> Vetch-Oat triggers WARNING due to recurring Avena host.",
+      "outcome_on_repeat": "WARNING"
+    },
+    {
+      "seq_rule_id": "SEQ_07_LEGUME_CEREAL_SYNERGY",
+      "name": "Legume -> Cereal Break & Symbiotic N Advantage",
+      "evidence_classification": "SOFT_CONSTRAINT",
+      "source": "CON_12_LEGUME_CEREAL (ITGC / ICARDA Mediterranean trials)",
+      "rule": "Food legume or Vetch-Oat followed by Durum Wheat / Soft Wheat / Barley interrupts cereal root diseases/wild oats and supplies organic N/residue synergy (conditioned on valid pulse gap & adequate moisture).",
+      "outcome_when_valid": "PASS"
+    },
+    {
+      "seq_rule_id": "SEQ_08_BARE_FALLOW_COVER",
+      "name": "Soil Cover & Consecutive Bare Fallow Prevention",
+      "evidence_classification": "HARD_CONSTRAINT",
+      "source": "crop_system_inventory.csv; CON_03_SOC; ITGC/CIHEAM Algeria",
+      "rule": "Consecutive Bare Fallow -> Bare Fallow fails (zero productivity & soil cover loss); single Bare Fallow on low-SOC (<18 g/kg) or unmeasured-slope soils triggers WARNING favoring Vetch-Oat replacement.",
+      "outcome_on_consecutive": "FAIL",
+      "outcome_on_low_soc_or_unknown_slope": "WARNING"
+    },
+    {
+      "seq_rule_id": "SEQ_09_WATER_COMPETITION_AND_CALENDAR",
+      "name": "Subsoil Moisture Depletion & Harvest-Planting Overlap",
+      "evidence_classification": "EXPERT_ASSUMPTION",
+      "source": "crop_system_inventory.csv; CON_08_ROOT_SM; FAO AquaCrop",
+      "rule": "Deep-rooted Sunflower before rainfed Winter Cereal warns of deep profile moisture depletion if Autumn rains arrive late; Autumn Potato (Nov-Dec harvest) into Winter Cereal/Pulse warns of severe field harvest-planting calendar overlap.",
+      "outcome_on_risk": "WARNING"
+    },
+    {
+      "seq_rule_id": "SEQ_10_UNKNOWN_PREDECESSOR_GUARD",
+      "name": "Missing Crop History Uncertainty Guard",
+      "evidence_classification": "UNKNOWN",
+      "source": "CON_11_SEQUENCE; Field Profile Q_LAST_CROP_MATERIAL",
+      "rule": "When prior crop history before seq[0] is null ('NOT_PROVIDED') or empty ('EXPLICITLY_CONFIRMED_EMPTY') or resolves to crop_id_resolved=null, pathogen break intervals for seq[0] are evaluated as UNKNOWN rather than assumed safe.",
+      "outcome_when_missing": "UNKNOWN"
+    }
+  ],
+  "group_membership": {
+    "CEREALS": ["DURUM_WHEAT", "SOFT_WHEAT", "BARLEY"],
+    "FOOD_LEGUMES": ["FABA_BEAN", "CHICKPEA_WINTER", "CHICKPEA_SPRING", "LENTIL"],
+    "SOLANACEAE": ["TOMATO_IND", "POTATO"],
+    "FORAGE_MIX": ["VETCH_OAT"],
+    "OILSEED": ["SUNFLOWER"],
+    "PERENNIAL": ["OLIVE"],
+    "FALLOW": ["BARE_FALLOW"]
+  }
+}
