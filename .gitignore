@@ -25,3 +25,6 @@ htmlcov/
 # OS & editor junk
 .DS_Store
 Thumbs.db
+
+# Sibling AI model project (has its own git repo)
+Feild-Shift-SI-Model/

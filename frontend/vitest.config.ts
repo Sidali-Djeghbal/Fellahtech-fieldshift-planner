@@ -7,6 +7,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    env: {
+      NEXT_PUBLIC_API_MODE: "fixture",
+    },
     include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
   },
   resolve: {

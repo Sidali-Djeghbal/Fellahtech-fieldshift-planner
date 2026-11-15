@@ -157,8 +157,11 @@ export function getStrategySelectionStatus(strategy: Strategy): SelectionStatus 
 
 const BUILTIN_CROP_NAMES: Record<string, Record<Language, string>> = {
   durum_wheat: { en: "Durum Wheat", fr: "Blé dur", ar: "قمح صلب" },
+  soft_wheat: { en: "Soft Wheat", fr: "Blé tendre", ar: "قمح لين" },
   barley: { en: "Barley", fr: "Orge", ar: "شعير" },
-  chickpea: { en: "Chickpea", fr: "Pois chiche", ar: "حمص" },
+  chickpea: { en: "Winter Chickpea", fr: "Pois chiche d'hiver", ar: "حمص شتوي" },
+  chickpea_spring: { en: "Spring Chickpea", fr: "Pois chiche de printemps", ar: "حمص ربيعي" },
+  vetch: { en: "Vetch-Oat", fr: "Vesce-Avoine", ar: "بيقية-شوفان" },
   vetch_forage: { en: "Vetch Forage", fr: "Vesce fourragère", ar: "بيقية علفية" },
   sunflower: { en: "Sunflower", fr: "Tournesol", ar: "دوار الشمس" },
   fallow: { en: "Bare Fallow", fr: "Jachère", ar: "أرض بور" },
@@ -166,6 +169,9 @@ const BUILTIN_CROP_NAMES: Record<string, Record<Language, string>> = {
   lentil: { en: "Lentil", fr: "Lentille", ar: "عدس" },
   oats_forage: { en: "Oats Forage", fr: "Avoine fourragère", ar: "شوفان علفي" },
   berseem_clover: { en: "Berseem Clover", fr: "Trèfle d'Alexandrie", ar: "برسيم" },
+  tomato: { en: "Processing Tomato", fr: "Tomate industrielle", ar: "طماطم صناعية" },
+  potato: { en: "Potato", fr: "Pomme de terre", ar: "بطاطس" },
+  olive: { en: "Olive", fr: "Olivier", ar: "زيتون" },
 };
 
 /** Resolve localized crop label from catalog (with built-in Guelma crop fallback). */

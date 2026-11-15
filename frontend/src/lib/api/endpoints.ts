@@ -51,7 +51,8 @@ import {
   serializeFieldPatchRequest,
   serializeFieldWriteRequest,
 } from "@/lib/schemas";
-import { apiClient } from "./client";
+import { apiClient, isFixtureMode } from "./client";
+import { siModelBridge } from "./siModelAdapter";
 
 function buildQuery(params: Record<string, string | number | undefined | null>): string {
   const qs = new URLSearchParams();
@@ -69,6 +70,9 @@ function buildQuery(params: Record<string, string | number | undefined | null>):
 // ---------------------------------------------------------------------------
 
 export async function startGuestSession(demoLocationId = 1): Promise<GuestSessionStartResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.startGuestSession(demoLocationId);
+  }
   const data = await apiClient.request<unknown>("/auth/guest", {
     method: "POST",
     body: { demo_location_id: demoLocationId },
@@ -83,6 +87,9 @@ export async function registerUser(input: {
   full_name: string;
   preferred_lang?: Language;
 }): Promise<RegisterResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.registerUser(input);
+  }
   const data = await apiClient.request<unknown>("/auth/register", {
     method: "POST",
     body: input,
@@ -95,6 +102,9 @@ export async function loginUser(input: {
   email: string;
   password: string;
 }): Promise<TokenPairResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.loginUser(input);
+  }
   const data = await apiClient.request<unknown>("/auth/login", {
     method: "POST",
     body: input,
@@ -104,6 +114,9 @@ export async function loginUser(input: {
 }
 
 export async function refreshAuthToken(refresh_token: string): Promise<TokenPairResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.refreshAuthToken(refresh_token);
+  }
   const data = await apiClient.request<unknown>("/auth/refresh", {
     method: "POST",
     body: { refresh_token },
@@ -113,6 +126,9 @@ export async function refreshAuthToken(refresh_token: string): Promise<TokenPair
 }
 
 export async function logoutUser(refresh_token?: string | null): Promise<void> {
+  if (!isFixtureMode()) {
+    return siModelBridge.logoutUser(refresh_token);
+  }
   await apiClient.request<void>("/auth/logout", {
     method: "POST",
     body: refresh_token ? { refresh_token } : undefined,
@@ -121,20 +137,32 @@ export async function logoutUser(refresh_token?: string | null): Promise<void> {
 }
 
 export async function getMe(): Promise<UserProfile> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getMe();
+  }
   const data = await apiClient.request<unknown>("/auth/me", { method: "GET" });
   return UserProfileSchema.parse(data);
 }
 
 export async function deleteMe(): Promise<void> {
+  if (!isFixtureMode()) {
+    return siModelBridge.deleteMe();
+  }
   await apiClient.request<void>("/auth/me", { method: "DELETE" });
 }
 
 export async function exportMeData(): Promise<UserDataExport> {
+  if (!isFixtureMode()) {
+    return siModelBridge.exportMeData();
+  }
   const data = await apiClient.request<unknown>("/auth/me/export", { method: "GET" });
   return UserDataExportSchema.parse(data);
 }
 
 export async function claimGuestSession(): Promise<{ claimed_farms_count: number }> {
+  if (!isFixtureMode()) {
+    return siModelBridge.claimGuestSession();
+  }
   return apiClient.request<{ claimed_farms_count: number }>("/auth/claim-guest", {
     method: "POST",
     sendBothAuthAndGuest: true,
@@ -149,12 +177,18 @@ export async function listDemoLocations(params?: {
   limit?: number;
   cursor?: string;
 }): Promise<{ items: DemoLocationSummary[]; next_cursor: string | null; has_more: boolean }> {
+  if (!isFixtureMode()) {
+    return siModelBridge.listDemoLocations(params);
+  }
   return apiClient.request(`/demo/locations${buildQuery(params ?? {})}`, {
     method: "GET",
   });
 }
 
 export async function getDemoLocationBoundary(id = 1): Promise<BoundaryFeature> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getDemoLocationBoundary(id);
+  }
   const data = await apiClient.request<unknown>(`/demo/locations/${id}/boundary`, {
     method: "GET",
   });
@@ -162,11 +196,17 @@ export async function getDemoLocationBoundary(id = 1): Promise<BoundaryFeature> 
 }
 
 export async function getDemoSession(): Promise<GuestSessionInfo> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getDemoSession();
+  }
   const data = await apiClient.request<unknown>("/demo/session", { method: "GET" });
   return GuestSessionInfoSchema.parse(data);
 }
 
 export async function deleteDemoSession(): Promise<void> {
+  if (!isFixtureMode()) {
+    return siModelBridge.deleteDemoSession();
+  }
   await apiClient.request<void>("/demo/session", { method: "DELETE" });
 }
 
@@ -181,6 +221,9 @@ export async function listFarms(params?: {
   region?: string;
   search?: string;
 }): Promise<FarmPage> {
+  if (!isFixtureMode()) {
+    return siModelBridge.listFarms(params);
+  }
   const data = await apiClient.request<unknown>(`/farms${buildQuery(params ?? {})}`, {
     method: "GET",
   });
@@ -188,6 +231,9 @@ export async function listFarms(params?: {
 }
 
 export async function createFarm(payload: FarmWriteRequest): Promise<FarmPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.createFarm(payload);
+  }
   const data = await apiClient.request<unknown>("/farms", {
     method: "POST",
     body: payload,
@@ -196,6 +242,9 @@ export async function createFarm(payload: FarmWriteRequest): Promise<FarmPublic>
 }
 
 export async function getFarm(farmId: string): Promise<FarmPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getFarm(farmId);
+  }
   const data = await apiClient.request<unknown>(`/farms/${farmId}`, { method: "GET" });
   return FarmPublicSchema.parse(data);
 }
@@ -204,6 +253,9 @@ export async function replaceFarm(
   farmId: string,
   payload: FarmWriteRequest
 ): Promise<FarmPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.replaceFarm(farmId, payload);
+  }
   const data = await apiClient.request<unknown>(`/farms/${farmId}`, {
     method: "PUT",
     body: payload,
@@ -215,6 +267,9 @@ export async function patchFarm(
   farmId: string,
   payload: FarmPatchRequest
 ): Promise<FarmPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.patchFarm(farmId, payload);
+  }
   const data = await apiClient.request<unknown>(`/farms/${farmId}`, {
     method: "PATCH",
     body: payload,
@@ -223,6 +278,9 @@ export async function patchFarm(
 }
 
 export async function deleteFarm(farmId: string): Promise<void> {
+  if (!isFixtureMode()) {
+    return siModelBridge.deleteFarm(farmId);
+  }
   await apiClient.request<void>(`/farms/${farmId}`, { method: "DELETE" });
 }
 
@@ -239,6 +297,9 @@ export async function listFields(
     water_availability?: WaterAvailability;
   }
 ): Promise<FieldPage> {
+  if (!isFixtureMode()) {
+    return siModelBridge.listFields(farmId, params);
+  }
   const data = await apiClient.request<unknown>(
     `/farms/${farmId}/fields${buildQuery(params ?? {})}`,
     { method: "GET" }
@@ -250,6 +311,9 @@ export async function createField(
   farmId: string,
   draft: FieldWriteDraft
 ): Promise<FieldPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.createField(farmId, draft);
+  }
   const payload = serializeFieldWriteRequest(draft);
   const data = await apiClient.request<unknown>(`/farms/${farmId}/fields`, {
     method: "POST",
@@ -259,6 +323,9 @@ export async function createField(
 }
 
 export async function getField(farmId: string, fieldId: string): Promise<FieldDetailPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getField(farmId, fieldId);
+  }
   const data = await apiClient.request<unknown>(
     `/farms/${farmId}/fields/${encodeURIComponent(fieldId)}`,
     { method: "GET" }
@@ -271,6 +338,9 @@ export async function replaceField(
   fieldId: string,
   draft: FieldWriteDraft
 ): Promise<FieldDetailPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.replaceField(farmId, fieldId, draft);
+  }
   const payload = serializeFieldWriteRequest(draft);
   const data = await apiClient.request<unknown>(
     `/farms/${farmId}/fields/${encodeURIComponent(fieldId)}`,
@@ -287,6 +357,9 @@ export async function patchField(
   fieldId: string,
   patch: Partial<FieldWriteDraft>
 ): Promise<FieldDetailPublic> {
+  if (!isFixtureMode()) {
+    return siModelBridge.patchField(farmId, fieldId, patch);
+  }
   // Enforce OpenAPI FieldPatchRequest additionalProperties:false & ADR-5 sanitization
   const sanitized = serializeFieldPatchRequest(patch);
   const data = await apiClient.request<unknown>(
@@ -300,6 +373,9 @@ export async function patchField(
 }
 
 export async function deleteField(farmId: string, fieldId: string): Promise<void> {
+  if (!isFixtureMode()) {
+    return siModelBridge.deleteField(farmId, fieldId);
+  }
   await apiClient.request<void>(
     `/farms/${farmId}/fields/${encodeURIComponent(fieldId)}`,
     { method: "DELETE" }
@@ -314,6 +390,9 @@ export async function submitAnalysis(
   payload: AnalysisSubmitRequest,
   idempotencyKey?: string
 ): Promise<AnalysisQueuedResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.submitAnalysis(payload, idempotencyKey);
+  }
   const key =
     idempotencyKey ??
     (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -330,6 +409,9 @@ export async function submitAnalysis(
 export async function pollAnalysisRequest(
   requestId: string
 ): Promise<AnalysisPollEnvelope> {
+  if (!isFixtureMode()) {
+    return siModelBridge.pollAnalysisRequest(requestId);
+  }
   const data = await apiClient.request<unknown>(
     `/analysis/requests/${encodeURIComponent(requestId)}`,
     { method: "GET" }
@@ -340,12 +422,18 @@ export async function pollAnalysisRequest(
 export async function cancelAnalysisRequest(
   requestId: string
 ): Promise<{ request_id: string; status: "cancelled" }> {
+  if (!isFixtureMode()) {
+    return siModelBridge.cancelAnalysisRequest(requestId);
+  }
   return apiClient.request(`/analysis/requests/${encodeURIComponent(requestId)}/cancel`, {
     method: "POST",
   });
 }
 
 export async function getAnalysisResult(analysisId: string): Promise<AnalysisEnvelope> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getAnalysisResult(analysisId);
+  }
   const data = await apiClient.request<unknown>(
     `/analysis/${encodeURIComponent(analysisId)}`,
     { method: "GET" }
@@ -361,6 +449,9 @@ export async function updateAnalysisSelection(
     selection_status: "selected" | "rejected";
   }
 ): Promise<SelectionPatchResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.updateAnalysisSelection(analysisId, payload);
+  }
   const data = await apiClient.request<unknown>(
     `/analysis/${encodeURIComponent(analysisId)}/selection`,
     {
@@ -379,6 +470,9 @@ export async function listFarmAnalyses(
     status?: "pending" | "running" | "ok" | "partial" | "failed" | "cancelled";
   }
 ): Promise<FarmAnalysesPage> {
+  if (!isFixtureMode()) {
+    return siModelBridge.listFarmAnalyses(farmId, params);
+  }
   const data = await apiClient.request<unknown>(
     `/farms/${farmId}/analyses${buildQuery(params ?? {})}`,
     { method: "GET" }
@@ -398,6 +492,9 @@ export async function getCatalogPage(params?: {
   lang?: Language;
   version?: string;
 }): Promise<CatalogPage> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getCatalogPage(params);
+  }
   const data = await apiClient.request<unknown>(
     `/catalog${buildQuery({ limit: 50, ...params })}`,
     { method: "GET" }
@@ -428,6 +525,9 @@ export async function fetchAllCatalogItems(
 export async function getHealth(
   check: "live" | "ready" | "dependencies" = "dependencies"
 ): Promise<HealthResponse> {
+  if (!isFixtureMode()) {
+    return siModelBridge.getHealth(check);
+  }
   const data = await apiClient.request<unknown>(`/health?check=${check}`, {
     method: "GET",
     skipAuthRefresh: true,
