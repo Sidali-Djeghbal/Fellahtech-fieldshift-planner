@@ -1,9 +1,11 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowLeft,
   CaretDown,
   CaretUp,
   CheckCircle,
@@ -53,6 +55,7 @@ function ComparisonContent() {
     activeFarmId,
     activeAnalysisId,
     simulateDegradedReplay,
+    setSimulateDegradedReplay,
     setActiveAnalysisId,
   } = useAppStore();
 
@@ -207,15 +210,34 @@ function ComparisonContent() {
           <h1 className="font-heading text-2xl font-extrabold text-[#111827]">{t.title}</h1>
           <p className="mt-1 text-xs text-[#6B7280]">{t.subtitle}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          data-testid="print-brief-btn"
-          className="inline-flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-bold text-[#111827] hover:bg-gray-50 shadow-xs transition"
-        >
-          <Printer size={16} />
-          {t.printBriefBtn}
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[11px] font-medium text-[#374151] shadow-xs">
+            <input
+              type="checkbox"
+              data-testid="toggle-degraded-preview"
+              checked={simulateDegradedReplay}
+              onChange={(e) => setSimulateDegradedReplay(e.target.checked)}
+              className="accent-[#137135] rounded"
+            />
+            <span>{UI_DICT[lang].dashboard.simulateDegradedLabel}</span>
+          </label>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-gray-50 shadow-xs transition"
+          >
+            <ArrowLeft size={14} />
+            <span>Command Center</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            data-testid="print-brief-btn"
+            className="inline-flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-bold text-[#111827] hover:bg-gray-50 shadow-xs transition"
+          >
+            <Printer size={16} />
+            {t.printBriefBtn}
+          </button>
+        </div>
       </div>
 
       {analysisQuery.error && <ApiErrorCard error={analysisQuery.error} lang={lang} />}

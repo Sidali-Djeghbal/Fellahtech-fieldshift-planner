@@ -71,16 +71,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     };
   }, [theme]);
 
+  const isWorkspaceRoute = pathname === "/" || pathname === "/dashboard";
+
   useEffect(() => {
-    if (pathname === "/") return;
+    if (isWorkspaceRoute) return;
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  }, [lang, pathname]);
+  }, [lang, isWorkspaceRoute]);
 
   return (
     <ResolvedThemeContext.Provider value={resolvedTheme}>
       <QueryClientProvider client={queryClient}>
-        {pathname === "/" ? children : <AppShell>{children}</AppShell>}
+        {isWorkspaceRoute ? children : <AppShell>{children}</AppShell>}
       </QueryClientProvider>
     </ResolvedThemeContext.Provider>
   );

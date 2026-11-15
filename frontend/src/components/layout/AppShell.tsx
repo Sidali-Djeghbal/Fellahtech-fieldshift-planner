@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2">
             {/* Left: Active Field / Farm Breadcrumb */}
             <div className="flex items-center gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2">
                 <span className="font-heading text-sm font-extrabold tracking-wide text-[#00291B]">
                   {t.brandTitle}
                 </span>

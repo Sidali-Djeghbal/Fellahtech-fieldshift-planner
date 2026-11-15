@@ -964,7 +964,7 @@ export function GuelmaBorderEditorMap({
       data-testid="guelma-border-editor"
     >
       {/* Top Floating CAD Bar */}
-      <header className="relative z-30 flex flex-wrap items-center justify-between gap-2.5 border-b border-[#111813]/10 bg-white/85 px-2 py-1.5 backdrop-blur-xl dark:border-white/10 dark:bg-[#121713]/85">
+      <header className="relative z-30 flex flex-wrap items-center justify-between gap-2.5 border-b border-[#111813]/10 bg-white/85 px-2 py-1.5 backdrop-blur-4xl dark:border-white/10 dark:bg-[#121713]/85">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -975,7 +975,7 @@ export function GuelmaBorderEditorMap({
             {t.backDashboard}
           </button>
           <div>
-            <h2 className="p-2 text-sm font-semibold text-[#111813] dark:text-[#F5F7F5]">
+            <h2 className="p-1 text-sm font-semibold text-[#111813] dark:text-[#F5F7F5]">
               {mode === "edit" ? t.editBordersTitle : t.newFieldTitle}
             </h2>
             <p className="hidden text-[11px] text-[#4A5A4E] dark:text-[#9CA89E] md:block">{t.subtitle}</p>
@@ -1280,9 +1280,6 @@ export function GuelmaBorderEditorMap({
                 ? t.hintSnapClose
                 : t.hintAddVertex}
             </span>
-            <p>
-              اختر أي بلدية من بلديات قالمة الـ 34، ضع نقاط الزوايا على حدود الحقل، عدّل الأضلاع، ثم اضغط «حفظ مزرعتي».
-            </p>
           </div>
         </div>
 

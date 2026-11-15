@@ -29,7 +29,7 @@ export interface RequestOptions {
 }
 
 export function isFixtureMode(): boolean {
-  return process.env.NEXT_PUBLIC_API_MODE === "fixture";
+  return process.env.NEXT_PUBLIC_API_MODE !== "live";
 }
 
 function createUuid(): string {

@@ -6,10 +6,10 @@ export default function NotFound() {
       <h2 className="text-2xl font-bold text-[#111827]">Page Not Found</h2>
       <p className="mt-2 text-sm text-[#6B7280]">Could not find requested resource</p>
       <Link
-        href="/dashboard"
+        href="/"
         className="mt-4 rounded-lg bg-[#00291B] px-4 py-2 text-xs font-semibold text-white hover:bg-[#003825] transition"
       >
-        Return to Dashboard
+        Return to Command Center
       </Link>
     </div>
   );

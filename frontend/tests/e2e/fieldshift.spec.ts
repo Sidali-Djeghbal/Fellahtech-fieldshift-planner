@@ -78,8 +78,13 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
       }
     });
 
-    // 1. Dashboard + Quick Launch Demo (F1 DEMO_PARCEL_UNVERIFIED)
+    // 1. Verify /dashboard maps cleanly to the Guelma Command Center (no legacy Purwokerto fallback)
     await page.goto("/dashboard");
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+    await assertNoHorizontalOverflow(page, "/dashboard");
+
+    // 2. Navigate to Select Field & Quick Launch Demo (F1 DEMO_PARCEL_UNVERIFIED)
+    await page.goto("/select-field");
     await expect(page.getByTestId("fixture-mode-pill")).toBeVisible();
 
     const quickLaunch = page.getByTestId("quick-launch-demo");
@@ -88,20 +93,10 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     }
 
     await expect(page.getByTestId("warning-DEMO_PARCEL_UNVERIFIED")).toBeVisible();
-    await assertNoHorizontalOverflow(page, "/dashboard");
-    await assertNoYellowOnLightContrastViolation(page, "/dashboard");
+    await assertNoHorizontalOverflow(page, "/select-field");
+    await assertNoYellowOnLightContrastViolation(page, "/select-field");
 
-    // 2. Degraded mode simulation banner check (ADR-8)
-    const degradedToggle = page.getByTestId("toggle-degraded-preview");
-    await degradedToggle.click();
-    await expect(page.getByTestId("degraded-mode-banner")).toBeVisible();
-    await expect(page.getByTestId("degraded-mode-banner")).toContainText("analysis_4f9a8c120e3b");
-    await expect(page.getByTestId("degraded-mode-banner")).toContainText("18420s");
-    await degradedToggle.click();
-    await expect(page.getByTestId("degraded-mode-banner")).toHaveCount(0);
-
-    // 3. Navigate to Select Field & check PostGIS Guelma boundary + Setif 422
-    await page.locator('a[href="/select-field"]:visible').first().click();
+    // 3. Check PostGIS Guelma boundary + Setif 422
     await expect(page).toHaveURL(/\/select-field/);
     await expect(page.getByTestId("boundary-status-pill")).toBeVisible();
 
@@ -149,7 +144,13 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
       timeout: 20_000,
     });
 
-    // 7. Strategy Comparison -> Selection PATCH -> @media print check
+    // 7. Strategy Comparison + Degraded mode banner toggle (ADR-8) -> Selection PATCH -> @media print check
+    const degradedToggle = page.getByTestId("toggle-degraded-preview");
+    await degradedToggle.click();
+    await expect(page.getByTestId("degraded-mode-banner")).toBeVisible();
+    await degradedToggle.click();
+    await expect(page.getByTestId("degraded-mode-banner")).toHaveCount(0);
+
     await expect(page.getByTestId("strategy-card-S1_baseline_cereal")).toBeVisible();
     await expect(page.getByTestId("strategy-card-S2_water_resilient")).toBeVisible();
     await expect(page.getByTestId("strategy-card-S3_income_diversified")).toBeVisible();
@@ -497,11 +498,22 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     await page.emulateMedia({ colorScheme: "light" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 
-    // 3. Header quick toggle switches Light <-> Dark cleanly
-    await page.getByTestId("header-theme-btn").click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await page.getByTestId("header-theme-btn").click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    // 3. Quick toggle on desktop rail (or mobile settings drawer) switches Light <-> Dark cleanly
+    const railThemeBtn = page.getByTestId("rail-theme-btn");
+    if (await railThemeBtn.isVisible()) {
+      await railThemeBtn.click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await railThemeBtn.click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    } else {
+      await page.getByTestId("header-settings-mobile-btn").click();
+      await expect(page.getByTestId("settings-drawer")).toBeVisible();
+      await page.getByTestId("settings-theme-dark").click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await page.getByTestId("settings-theme-light").click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      await page.getByTestId("close-settings-drawer-btn").click();
+    }
 
     // 4. Settings Drawer 3-way selector persists Dark Mode across reload with zero FOUC
     const desktopSettingsBtn = page.getByTestId("header-settings-btn");

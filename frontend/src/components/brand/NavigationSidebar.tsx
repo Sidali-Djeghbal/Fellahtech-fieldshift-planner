@@ -29,7 +29,7 @@ export function NavigationSidebar({ onOpenAuth, onLogout }: NavigationSidebarPro
   const { user, authMode, plainMode, togglePlainMode } = useAppStore();
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
+    { href: "/", label: "Command Center", icon: SquaresFour },
     { href: "/farm-profile", label: "Crop Management", icon: Plant },
     { href: "/weather", label: "Climate & Weather", icon: CloudSun, isMock: true },
     { href: "/evidence", label: "Evidence & Reports", icon: FileText },
@@ -45,7 +45,7 @@ export function NavigationSidebar({ onOpenAuth, onLogout }: NavigationSidebarPro
     >
       {/* Brand Logo at Top */}
       <div className="flex h-12 w-full items-center justify-center pt-1">
-        <Link href="/dashboard" title="FieldShift Home" className="flex items-center justify-center">
+        <Link href="/" title="FieldShift Command Center" className="flex items-center justify-center">
           <FieldShiftLogo size={22} className="w-[22px] h-[30px]" />
         </Link>
       </div>

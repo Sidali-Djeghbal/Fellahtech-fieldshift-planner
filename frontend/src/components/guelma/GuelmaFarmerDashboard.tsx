@@ -966,22 +966,6 @@ export function GuelmaFarmerDashboard({
 
                 <button
                   type="button"
-                  onClick={() => onChangeTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                  data-testid="header-theme-btn"
-                  aria-label={
-                    resolvedTheme === "dark" ? ws.settings.switchToLight : ws.settings.switchToDark
-                  }
-                  title={
-                    resolvedTheme === "dark" ? ws.settings.switchToLight : ws.settings.switchToDark
-                  }
-                  className="fs-liquid-pill inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#3E4C42] hover:text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#D1DBD3] dark:hover:text-[#FFFFFF]"
-                >
-                  <Moon size={16} aria-hidden="true" className="inline dark:hidden" />
-                  <Sun size={16} aria-hidden="true" className="hidden text-[#FCD34D] dark:inline" />
-                </button>
-
-                <button
-                  type="button"
                   onClick={onOpenAuthModal}
                   data-testid="header-auth-btn"
                   aria-label={intel.header.accountBtn}

@@ -27,7 +27,7 @@ export default defineConfig({
   },
   webServer: {
     command: "NEXT_PUBLIC_API_MODE=fixture npm run dev -- -p 3100 -H 127.0.0.1",
-    url: "http://127.0.0.1:3100/dashboard",
+    url: "http://127.0.0.1:3100/",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
