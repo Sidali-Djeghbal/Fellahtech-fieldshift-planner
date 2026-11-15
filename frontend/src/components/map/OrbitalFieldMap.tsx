@@ -349,7 +349,7 @@ export function OrbitalFieldMap({
   }
 
   return (
-    <div className="lg-map-frame lg-map-hud lg-specular relative h-[420px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] lg:h-[560px]">
+    <div className="lg-map-frame lg-map-hud lg-specular relative h-[420px] w-full overflow-hidden rounded-3xl bg-[#e4ede6] dark:bg-[#070d0a] lg:h-[560px]">
       {!webglFallback ? (
         <div
           ref={containerRef}
@@ -369,9 +369,12 @@ export function OrbitalFieldMap({
             const lat = Number((36.68 - relY * 0.65).toFixed(6));
             onAddVertex([lon, lat]);
           }}
-          className="flex h-full w-full flex-col items-center justify-center bg-[#0a1310] p-4"
+          className="flex h-full w-full flex-col items-center justify-center bg-[#EEF3EF] p-4 dark:bg-[#0a1310]"
         >
-          <svg viewBox="0 0 400 260" className="h-full w-full max-w-xl">
+          <svg
+            viewBox="0 0 400 260"
+            className="h-full w-full max-w-xl text-[#15803d] dark:text-[#4ADE80]"
+          >
             <polygon
               points={
                 (
@@ -384,8 +387,8 @@ export function OrbitalFieldMap({
                   })
                   .join(" ")
               }
-              fill="rgba(74, 222, 128, 0.14)"
-              stroke="#4ADE80"
+              fill="rgba(21, 128, 61, 0.14)"
+              stroke="currentColor"
               strokeWidth="2"
               strokeDasharray="6 3"
             />
@@ -398,8 +401,8 @@ export function OrbitalFieldMap({
                     return `${x},${y}`;
                   })
                   .join(" ")}
-                fill="rgba(74, 222, 128, 0.3)"
-                stroke="#4ADE80"
+                fill="rgba(21, 128, 61, 0.28)"
+                stroke="currentColor"
                 strokeWidth="2.5"
                 strokeDasharray="4 4"
               />
@@ -408,8 +411,8 @@ export function OrbitalFieldMap({
               cx={Math.max(10, Math.min(390, ((targetCenter[0] - 6.9) / 1.1) * 380 + 10))}
               cy={Math.max(10, Math.min(250, ((36.72 - targetCenter[1]) / 0.72) * 240 + 10))}
               r="7"
-              fill="#4ADE80"
-              stroke="#0a1310"
+              fill="currentColor"
+              stroke="#ffffff"
               strokeWidth="2"
             />
           </svg>
@@ -421,7 +424,7 @@ export function OrbitalFieldMap({
 
       {/* Top Overlay Controls */}
       <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2">
-        <div className="lg-capsule pointer-events-auto rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-[#f4f7f4]">
+        <div className="lg-capsule pointer-events-auto rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-[var(--lg-fg)]">
           <span dir="ltr" className="font-mono tabular-nums">
             {targetCenter[1].toFixed(5)}°N, {targetCenter[0].toFixed(5)}°E
           </span>
@@ -437,7 +440,7 @@ export function OrbitalFieldMap({
       </div>
 
       {/* Mandatory Map Attribution Pill */}
-      <div className="lg-capsule pointer-events-none absolute bottom-3 start-3 z-20 rounded-full px-3 py-1 text-[10px] text-white/60">
+      <div className="lg-capsule pointer-events-none absolute bottom-3 start-3 z-20 rounded-full px-3 py-1 text-[10px] text-[var(--lg-fg-muted)]">
         {attributionText}
       </div>
     </div>

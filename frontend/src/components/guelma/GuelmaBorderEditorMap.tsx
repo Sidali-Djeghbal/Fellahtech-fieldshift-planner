@@ -979,25 +979,25 @@ export function GuelmaBorderEditorMap({
 
   return (
     <div
-      className="relative flex h-screen min-h-[680px] w-full flex-col overflow-hidden bg-[#EEF3EF] text-[#111813] dark:bg-[#121713] dark:text-[#F5F7F5]"
+      className="lg-map-hud relative flex h-screen min-h-[680px] w-full flex-col overflow-hidden bg-[#EEF3EF] text-[var(--lg-fg)] dark:bg-[#121713]"
       data-testid="guelma-border-editor"
     >
       {/* Top Floating CAD Bar */}
-      <header className="lg-map-hud relative z-30 flex flex-wrap items-center justify-between gap-2.5 border-b border-white/10 bg-[rgba(13,20,17,0.78)] px-3 py-2 text-[#f4f7f4] shadow-md backdrop-blur-[28px] backdrop-saturate-[185%]">
+      <header className="lg-surface relative z-30 flex flex-wrap items-center justify-between gap-2.5 rounded-none border-x-0 border-t-0 px-3 py-2 text-[var(--lg-fg)] shadow-md">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onBack}
             data-testid="border-editor-back"
-            className="lg-capsule inline-flex min-h-9 items-center gap-2.5 rounded-full px-3.5 text-xs font-semibold text-[#f4f7f4] active:not-disabled:scale-[0.97]"
+            className="lg-capsule inline-flex min-h-9 items-center gap-2.5 rounded-full px-3.5 text-xs font-semibold text-[var(--lg-fg)] active:not-disabled:scale-[0.97]"
           >
             {t.backDashboard}
           </button>
           <div>
-            <h2 className="p-1 text-sm font-semibold text-[#f4f7f4]">
+            <h2 className="p-1 text-sm font-semibold text-[var(--lg-fg)]">
               {mode === "edit" ? t.editBordersTitle : t.newFieldTitle}
             </h2>
-            <p className="hidden text-[11px] text-white/60 md:block">{t.subtitle}</p>
+            <p className="hidden text-[11px] text-[var(--lg-fg-muted)] md:block">{t.subtitle}</p>
           </div>
         </div>
 
@@ -1006,7 +1006,7 @@ export function GuelmaBorderEditorMap({
           <div className="relative flex items-center">
             <MagnifyingGlass
               size={15}
-              className="pointer-events-none absolute start-3 text-[#eab34d]"
+              className="pointer-events-none absolute start-3 z-10 text-[var(--lg-warn)]"
               aria-hidden="true"
             />
             <input
@@ -1019,7 +1019,7 @@ export function GuelmaBorderEditorMap({
               }}
               placeholder={t.searchCommune}
               data-testid="commune-search-input"
-              className="lg-capsule min-h-10 w-full rounded-full border border-white/15 bg-[rgba(15,23,19,0.60)] py-1.5 pe-9 ps-9 text-xs text-[#f4f7f4] placeholder:text-white/45 backdrop-blur-[24px] transition-[border-color,background-color] focus:border-[rgba(234,179,77,0.6)] focus:outline-none focus:ring-1 focus:ring-[rgba(234,179,77,0.4)] sm:text-xs"
+              className="lg-capsule min-h-10 w-full rounded-full py-1.5 pe-9 ps-9 text-xs text-[var(--lg-fg)] placeholder:text-[var(--lg-fg-subtle)] transition-[border-color,background-color] focus:border-[var(--lg-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--lg-accent)] sm:text-xs"
             />
             {communeQuery ? (
               <button
@@ -1029,7 +1029,7 @@ export function GuelmaBorderEditorMap({
                   setCommuneQuery("");
                   setCommuneDropdownOpen(true);
                 }}
-                className="absolute end-1.5 flex h-8 w-8 items-center justify-center rounded-full text-white/50 transition-colors hover:text-white"
+                className="absolute end-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full text-[var(--lg-fg-subtle)] transition-colors hover:text-[var(--lg-fg)]"
               >
                 <X size={13} aria-hidden="true" />
               </button>
@@ -1038,16 +1038,16 @@ export function GuelmaBorderEditorMap({
 
           {communeDropdownOpen ? (
             <div
-              className="lg-surface lg-specular absolute start-0 top-full z-40 mt-1.5 max-h-64 w-full overflow-y-auto rounded-2xl border border-white/15 bg-[rgba(13,20,17,0.88)] p-1.5 shadow-2xl backdrop-blur-[28px]"
+              className="lg-surface lg-specular absolute start-0 top-full z-40 mt-1.5 max-h-64 w-full overflow-y-auto rounded-2xl !bg-[rgba(247,252,249,0.92)] p-1.5 shadow-2xl dark:!bg-[rgba(13,20,17,0.88)]"
               data-testid="commune-dropdown"
             >
-              <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#eab34d]">
+              <div className="flex items-center justify-between px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--lg-warn)]">
                 <span>{t.allCommunesLabel(GUELMA_COMMUNES.length)}</span>
                 <button
                   type="button"
                   onClick={() => setCommuneDropdownOpen(false)}
                   aria-label="Close commune menu"
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-white/50 transition-colors hover:text-white"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-[var(--lg-fg-subtle)] transition-colors hover:text-[var(--lg-fg)]"
                 >
                   <X size={12} aria-hidden="true" />
                 </button>
@@ -1057,10 +1057,10 @@ export function GuelmaBorderEditorMap({
                   key={c.id}
                   type="button"
                   onClick={() => handleJumpToCommune(c)}
-                  className="flex min-h-9 w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-start text-xs text-[#f4f7f4] transition-[background-color] hover:bg-white/10"
+                  className="flex min-h-9 w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-start text-xs text-[var(--lg-fg)] transition-[background-color] hover:bg-[#0b3d2e]/10 dark:hover:bg-white/10"
                 >
                   <span className="font-medium">{c.name[lang] || c.name.en}</span>
-                  <span className="text-[10px] text-white/50">
+                  <span className="text-[10px] text-[var(--lg-fg-subtle)]">
                     {c.daira[lang] || c.daira.en}
                   </span>
                 </button>
@@ -1071,7 +1071,7 @@ export function GuelmaBorderEditorMap({
 
         {/* Layer & 2D/3D Controls */}
         <div className="flex items-center gap-1.5">
-          <div className="lg-capsule inline-flex rounded-full border border-white/12 bg-[rgba(15,23,19,0.60)] p-0.5 text-[11px] font-semibold">
+          <div className="lg-capsule inline-flex rounded-full p-0.5 text-[11px] font-semibold">
             {(["none", "ndvi", "sm"] as const).map((k) => (
               <button
                 key={k}
@@ -1080,7 +1080,7 @@ export function GuelmaBorderEditorMap({
                 className={`min-h-9 rounded-full px-3 text-xs transition-[background-color,color] ${
                   overlay === k
                     ? "lg-capsule-active font-semibold"
-                    : "font-medium text-white/70 hover:bg-white/10 hover:text-white"
+                    : "font-medium text-[var(--lg-fg-muted)] hover:bg-[#0b3d2e]/10 hover:text-[var(--lg-fg)] dark:hover:bg-white/10"
                 }`}
               >
                 {k === "none" ? "RGB" : k.toUpperCase()}
@@ -1093,7 +1093,7 @@ export function GuelmaBorderEditorMap({
             className={`lg-capsule inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-[transform,background-color,border-color] active:scale-[0.96] ${
               tilt3d
                 ? "lg-capsule-active"
-                : "text-white/80 hover:bg-white/10 hover:text-white"
+                : "text-[var(--lg-fg-muted)] hover:text-[var(--lg-fg)]"
             }`}
           >
             <Cube size={14} aria-hidden="true" />
@@ -1103,7 +1103,7 @@ export function GuelmaBorderEditorMap({
       </header>
 
       {/* Main Map Viewport */}
-      <div className="lg-map-frame lg-map-hud lg-specular relative flex-1 overflow-hidden bg-[#0a1310] dark:bg-[#070d0a]">
+      <div className="lg-map-frame lg-specular relative flex-1 overflow-hidden bg-[#e4ede6] dark:bg-[#070d0a]">
         {!webglFailed ? (
           <div ref={mapContainerRef} className="h-full w-full" />
         ) : (
@@ -1277,7 +1277,7 @@ export function GuelmaBorderEditorMap({
         {/* Quick Guelma Sample Borders Toolbar (Top-Left Overlay) */}
         <div className="pointer-events-none absolute start-3 top-3 z-20 flex flex-col gap-2">
           <div className="lg-surface lg-specular pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl p-2.5 shadow-xl">
-            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#eab34d]">
+            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--lg-warn)]">
               {t.quickPresetLabel}:
             </span>
             {GUELMA_PARCEL_PRESETS.slice(0, 5).map((p) => (
@@ -1286,15 +1286,15 @@ export function GuelmaBorderEditorMap({
                 type="button"
                 onClick={() => handleApplyQuickPreset(p.id)}
                 data-testid={`quick-border-${p.id}`}
-                className="lg-capsule min-h-8 rounded-full px-3 py-1 text-[11px] font-medium text-[#f4f7f4] transition-[transform,background-color] hover:bg-white/10 active:scale-[0.96]"
+                className="lg-capsule min-h-8 rounded-full px-3 py-1 text-[11px] font-medium text-[var(--lg-fg)] transition-[transform,background-color] active:scale-[0.96]"
               >
                 {p.commune} · {p.areaHectares} ha
               </button>
             ))}
           </div>
 
-          <div className="lg-capsule pointer-events-auto flex max-w-sm flex-wrap items-center gap-2 rounded-xl px-4 py-2 text-[11px] text-[#f4f7f4]">
-            <Crosshair size={15} className="shrink-0 text-[#eab34d]" aria-hidden="true" />
+          <div className="lg-capsule pointer-events-auto flex max-w-sm flex-wrap items-center gap-2 rounded-xl px-4 py-2 text-[11px] text-[var(--lg-fg)]">
+            <Crosshair size={15} className="shrink-0 text-[var(--lg-warn)]" aria-hidden="true" />
             <span>
               {isClosed
                 ? t.hintAdjustVertices
@@ -1311,19 +1311,19 @@ export function GuelmaBorderEditorMap({
           <div
             className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${
               selfIntersects || !insideGuelma
-                ? "border border-red-400/35 bg-red-500/20 text-red-200"
+                ? "border border-red-600/30 bg-[var(--lg-danger-bg)] text-[var(--lg-danger)] dark:border-red-400/35"
                 : canSave
-                ? "border border-[#4ade80]/35 bg-[#22c55e]/20 text-[#dcfce7]"
-                : "border border-[rgba(234,179,77,0.35)] bg-[rgba(234,179,77,0.18)] text-[#eab34d]"
+                ? "border border-emerald-700/30 bg-[var(--lg-accent-bg)] text-[var(--lg-accent)] dark:border-[#4ade80]/35"
+                : "border border-amber-700/30 bg-[var(--lg-warn-bg)] text-[var(--lg-warn)] dark:border-[rgba(234,179,77,0.35)]"
             }`}
             data-testid="border-status-pill"
           >
             {selfIntersects || !insideGuelma ? (
-              <WarningCircle size={16} weight="fill" className="shrink-0 text-red-400" aria-hidden="true" />
+              <WarningCircle size={16} weight="fill" className="shrink-0 text-[var(--lg-danger)]" aria-hidden="true" />
             ) : canSave ? (
-              <CheckCircle size={16} weight="fill" className="shrink-0 text-[#4ade80]" aria-hidden="true" />
+              <CheckCircle size={16} weight="fill" className="shrink-0 text-[var(--lg-accent)]" aria-hidden="true" />
             ) : (
-              <Compass size={16} weight="duotone" className="shrink-0 text-[#eab34d]" aria-hidden="true" />
+              <Compass size={16} weight="duotone" className="shrink-0 text-[var(--lg-warn)]" aria-hidden="true" />
             )}
             <span>{statusText}</span>
           </div>
@@ -1331,40 +1331,40 @@ export function GuelmaBorderEditorMap({
           {/* Numeric Telemetry Grid */}
           <div className="mt-2.5 grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
             <div className="lg-tile rounded-xl px-2.5 py-2">
-              <div className="font-sans text-[10px] text-white/50">{t.areaLbl}</div>
-              <div className="mt-0.5 text-sm font-bold text-[#eab34d]" data-testid="cad-area-value">
+              <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.areaLbl}</div>
+              <div className="mt-0.5 text-sm font-bold text-[var(--lg-warn)]" data-testid="cad-area-value">
                 {areaHectares > 0 ? `${areaHectares.toFixed(2)} ha` : "0.00 ha"}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
-              <div className="font-sans text-[10px] text-white/50">{t.perimLbl}</div>
-              <div className="mt-0.5 text-sm font-bold text-[#f4f7f4]" data-testid="cad-perim-value">
+              <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.perimLbl}</div>
+              <div className="mt-0.5 text-sm font-bold text-[var(--lg-fg)]" data-testid="cad-perim-value">
                 {perimeterMeters} m
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
-              <div className="font-sans text-[10px] text-white/50">{t.verticesLbl}</div>
-              <div className="mt-0.5 text-xs font-bold text-[#f4f7f4]" data-testid="cad-vertices-count">
+              <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.verticesLbl}</div>
+              <div className="mt-0.5 text-xs font-bold text-[var(--lg-fg)]" data-testid="cad-vertices-count">
                 {vertices.length} {isClosed ? "(closed)" : ""}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
-              <div className="font-sans text-[10px] text-white/50">{t.communeDetectedLbl}</div>
-              <div className="mt-0.5 truncate font-sans text-xs font-semibold text-[#f4f7f4]">
+              <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.communeDetectedLbl}</div>
+              <div className="mt-0.5 truncate font-sans text-xs font-semibold text-[var(--lg-fg)]">
                 {nearestCommune.name[lang] || nearestCommune.name.en}
               </div>
             </div>
           </div>
 
           {/* Non-binding DEM Reference & Centroid */}
-          <div className="lg-tile mt-2 flex items-center justify-between rounded-xl px-2.5 py-1.5 text-[10px] text-white/80">
+          <div className="lg-tile mt-2 flex items-center justify-between rounded-xl px-2.5 py-1.5 text-[10px] text-[var(--lg-fg-muted)]">
             <span className="inline-flex items-center gap-1 font-mono tabular-nums" dir="ltr">
-              <MapPin size={12} className="text-[#eab34d]" aria-hidden="true" />
+              <MapPin size={12} className="text-[var(--lg-warn)]" aria-hidden="true" />
               {centroid
                 ? `${centroid.latitude.toFixed(4)}° N, ${centroid.longitude.toFixed(4)}° E`
                 : `${svgCenter[1].toFixed(4)}° N, ${svgCenter[0].toFixed(4)}° E`}
             </span>
-            <span className="font-mono tabular-nums text-[#4ade80]" title={t.demNonBindingNote}>
+            <span className="font-mono tabular-nums text-[var(--lg-accent)]" title={t.demNonBindingNote}>
               {demRef ? `${demRef.elev}m · ${demRef.slope}%` : t.demRefLbl}
             </span>
           </div>
@@ -1376,7 +1376,7 @@ export function GuelmaBorderEditorMap({
               onClick={handleUndo}
               disabled={undoStack.length === 0}
               data-testid="cad-undo-btn"
-              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#f4f7f4] transition-[background-color,color] hover:bg-white/10 disabled:opacity-40"
+              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[var(--lg-fg)] transition-[background-color,color] disabled:opacity-40"
             >
               <ArrowCounterClockwise size={13} aria-hidden="true" />
               <span>{t.undo}</span>
@@ -1385,7 +1385,7 @@ export function GuelmaBorderEditorMap({
               type="button"
               onClick={handleRedo}
               disabled={redoStack.length === 0}
-              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#f4f7f4] transition-[background-color,color] hover:bg-white/10 disabled:opacity-40"
+              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[var(--lg-fg)] transition-[background-color,color] disabled:opacity-40"
             >
               <ArrowClockwise size={13} aria-hidden="true" />
               <span>{t.redo}</span>
@@ -1395,7 +1395,7 @@ export function GuelmaBorderEditorMap({
                 type="button"
                 onClick={handleClosePolygon}
                 data-testid="cad-close-poly-btn"
-                className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-[#4ade80]/40 bg-[#4ade80]/15 px-2.5 py-1.5 text-[11px] font-semibold text-[#4ade80] transition-[background-color,border-color] hover:bg-[#4ade80]/25"
+                className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-emerald-700/35 !bg-[var(--lg-accent-bg)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--lg-accent)] transition-[background-color,border-color] dark:border-[#4ade80]/40"
               >
                 <Polygon size={13} aria-hidden="true" />
                 <span>{t.closePoly}</span>
@@ -1405,7 +1405,7 @@ export function GuelmaBorderEditorMap({
               <button
                 type="button"
                 onClick={() => handleDeleteVertex(selectedIdx)}
-                className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-amber-600/35 bg-amber-500/15 px-2.5 py-1.5 text-[11px] font-semibold text-amber-300 transition-[background-color] hover:bg-amber-500/25"
+                className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-amber-700/35 !bg-[var(--lg-warn-bg)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--lg-warn)] transition-[background-color] dark:border-amber-600/35"
               >
                 <span>{t.deleteSelectedVertex}</span>
               </button>
@@ -1415,7 +1415,7 @@ export function GuelmaBorderEditorMap({
               onClick={handleClear}
               disabled={vertices.length === 0}
               data-testid="cad-clear-btn"
-              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-red-400/25 bg-red-500/15 px-2.5 py-1.5 text-[11px] font-semibold text-red-300 transition-[background-color,border-color] hover:border-red-400/35 hover:bg-red-500/25 disabled:opacity-40"
+              className="lg-capsule inline-flex min-h-9 items-center gap-1 rounded-xl border border-red-600/30 !bg-[var(--lg-danger-bg)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--lg-danger)] transition-[background-color,border-color] disabled:opacity-40 dark:border-red-400/25"
             >
               <Trash size={13} aria-hidden="true" />
               <span>{t.clear}</span>
@@ -1428,7 +1428,7 @@ export function GuelmaBorderEditorMap({
             disabled={!canSave}
             onClick={handleSaveBorders}
             data-testid="save-my-farm-btn"
-            className="fs-cta-primary mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:not-disabled:scale-[0.98] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none"
+            className="fs-cta-primary mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold active:not-disabled:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none"
           >
             <span>{mode === "edit" ? t.saveUpdatedBorders : t.saveMyFarm}</span>
           </button>

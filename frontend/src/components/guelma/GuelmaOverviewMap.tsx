@@ -604,7 +604,7 @@ export function GuelmaOverviewMap({
     <div className="relative" data-testid="guelma-overview-map">
       <div
         ref={mapFrameRef}
-        className="lg-map-frame lg-map-hud lg-specular relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] sm:h-[420px] md:h-[470px] lg:h-[500px]"
+        className="lg-map-frame lg-map-hud lg-specular relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#e4ede6] dark:bg-[#070d0a] sm:h-[420px] md:h-[470px] lg:h-[500px]"
       >
         {/* Full-bleed Satellite Map / SVG Spatial Fallback */}
         <div
@@ -820,7 +820,7 @@ export function GuelmaOverviewMap({
               onClick={handleZoomIn}
               aria-label={hudLabels?.zoomIn ?? "Zoom in"}
               title={hudLabels?.zoomIn ?? "Zoom in"}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-white/15 active:scale-[0.96]"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-[#0b3d2e]/10 dark:hover:bg-white/15 active:scale-[0.96]"
             >
               <Plus size={15} weight="bold" aria-hidden="true" />
             </button>
@@ -829,7 +829,7 @@ export function GuelmaOverviewMap({
               onClick={handleZoomOut}
               aria-label={hudLabels?.zoomOut ?? "Zoom out"}
               title={hudLabels?.zoomOut ?? "Zoom out"}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-white/15 active:scale-[0.96]"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-[#0b3d2e]/10 dark:hover:bg-white/15 active:scale-[0.96]"
             >
               <Minus size={15} weight="bold" aria-hidden="true" />
             </button>
@@ -855,7 +855,7 @@ export function GuelmaOverviewMap({
               data-testid="reopen-inspector-btn"
               className="lg-capsule pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3.5 pe-4 text-xs font-medium text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
             >
-              <Info size={15} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
+              <Info size={15} className="text-[var(--lg-accent)]" aria-hidden="true" />
               <span>{hudLabels?.openInspectorLabel ?? "Open parcel inspector"}</span>
             </button>
           </div>
