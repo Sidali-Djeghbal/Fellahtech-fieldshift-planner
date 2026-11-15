@@ -1,7 +1,0 @@
-indicator,n_years,period,mean_2016_2025,std_2016_2025,ols_slope,ols_intercept,ols_r2,theil_sen_slope,mann_kendall_S,mann_kendall_p_approx,slope_unit,statistical_note
-T2M_mean_C,10,2016-2025,17.5524,0.8503,0.219072,-425.0821,0.6084,0.212606,25,0.0318,C/year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.
-T2M_MAX_mean_C,10,2016-2025,24.8355,1.096,0.261815,-504.1627,0.5231,0.229673,27,0.02,C/year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.
-T2M_MIN_mean_C,10,2016-2025,11.8056,0.6761,0.182668,-357.2746,0.6692,0.197324,25,0.0318,C/year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.
-PRECTOTCORR_sum_mm,10,2016-2025,683.487,153.6836,-12.803033,26552.0152,0.0636,-8.573989,-7,0.5915,mm/year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.
-RH2M_mean_pct,10,2016-2025,64.4141,3.3641,-0.596319,1269.276,0.288,-0.573766,-17,0.1524,%/year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.
-ALLSKY_SFC_SW_DWN_mean_kwh_m2_day,10,2016-2025,4.8331,0.0718,0.006848,-9.0035,0.0834,0.006379,5,0.7205,kWh/m2/day per year,10-year exploratory series (n=10); low statistical power; not a 30-year WMO climate normal; regional grid scale.

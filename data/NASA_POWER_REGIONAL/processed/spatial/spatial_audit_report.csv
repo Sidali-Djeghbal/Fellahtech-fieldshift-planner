@@ -1,3 +1,0 @@
-community,source_model,nominal_resolution_deg,total_grid_cells,intersecting_cells,centers_inside_guelma,guelma_utm_area_km2,guelma_geodesic_area_km2,utm_vs_geodesic_diff_pct,sum_intersection_area_km2,union_intersection_area_km2,union_minus_guelma_km2,gap_area_m2,excess_area_m2,max_pairwise_overlap_m2,coverage_pct,official_cell_boundaries_available,grid_geometry_classification,audit_status
-AG,MERRA-2,0.5x0.625,25,5,1,3683.231118,3684.253606,-0.027753,3683.231118,3683.231118,0.0,2.01e-07,0.0,0.0,100.0,False,Approximate center-derived grid cells,PASS
-RE,CERES SYN1deg,1.0x1.0,4,2,1,3683.231118,3684.253606,-0.027753,3683.231118,3683.231118,-0.0,0.0,8e-08,0.0,100.0,False,Approximate center-derived grid cells,PASS

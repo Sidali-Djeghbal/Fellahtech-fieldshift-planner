@@ -1,3 +1,0 @@
-cell_id,longitude,latitude,elevation_m,cell_area_km2,intersection_area_km2,fraction_of_cell_in_guelma,fraction_of_guelma_area,fraction_of_guelma_area_pct,intersects_guelma
-RE_CELL_03,6.5,36.5,567.19,9945.871083474338,68.32821095437382,0.006870007702784851,0.018551160318110778,1.8551160318110778,True
-RE_CELL_04,7.5,36.5,427.02,9938.0096756297,3614.9029068139084,0.3637451587191032,0.9814488396818885,98.14488396818885,True

@@ -1,9 +1,0 @@
-test_case_id,description,area_ha,wilaya_overlap_pct,primary_commune,warnings_count,elapsed_ms,soil_clay_0_30,soil_clay_cov_pct,soil_clay_px,soil_soc_0_30,soil_soc_status,crop_freq_10m,crop_freq_cov_pct,s2_ndvi_10m,s2_ndvi_10m_px,s2_ndmi_20m,modis_ndvi_spring,gpm_annual_mm,nasa_power_annual_mm,nasa_power_winter_mm
-TINY_02HA_BOUMAHRA,Tiny parcel (~0.2 ha) cropland,0.1988,100.0,Boumahra Ahmed,0,6036.8,33.0333,100.0,1,12.8833,MODELED_SPATIAL_ESTIMATE,0.9931,100.0,0.7908,30,0.4278,0.5492,587.56,736.84,258.45
-MED_04HA_BOUMAHRA,Medium parcel (~4.0 ha) Boumahra cropland,3.9768,100.0,Boumahra Ahmed,0,3219.9,33.0333,100.0,1,12.8833,MODELED_SPATIAL_ESTIMATE,0.9479,100.0,0.5277,437,0.176,0.5492,587.56,736.84,258.45
-LARGE_1200HA_PLAIN,Large plain zone (~1200 ha) Heliopolis-Boumahra,1073.5183,100.0,Helliopolis,0,6394.1,35.3697,100.0,204,15.522,MODELED_SPATIAL_ESTIMATE,0.6651,100.0,0.6716,108028,0.265,0.5776,587.57,736.84,258.45
-DRY_SOUTH_TAMLOUKA,Semi-arid south (~9 ha) Tamlouka,8.8978,100.0,Tamlouka,0,3038.7,29.7904,100.0,4,13.2208,MODELED_SPATIAL_ESTIMATE,0.4255,100.0,0.3889,945,0.1305,0.4326,440.13,508.07,147.7
-WET_NORTH_BOUCHEKOUF,Humid plain (~9 ha) Bouchekouf,8.859,100.0,Djebala El Khemissi,0,3010.6,33.4344,100.0,4,16.8556,MODELED_SPATIAL_ESTIMATE,0.8803,100.0,0.6218,959,0.2224,0.5475,566.28,736.84,258.45
-BORDER_STRADDLE,Border-straddling ~25 ha box on Wilaya perimeter,25.0,52.6415,Roknia,1,3022.7,36.5611,63.5,6,17.8819,MODELED_SPATIAL_ESTIMATE,0.4434,53.32,0.691,1382,0.2208,0.5991,612.22,736.84,258.45
-SOILGRIDS_URBAN_MASKED,Urban masked ~2.56 ha box inside Guelma,1.0,100.0,Bouati Mahmoud,0,3083.0,,0.0,0,,UNAVAILABLE_MASKED_PIXEL,0.0,100.0,-0.634,121,0.232,0.3251,611.43,736.84,258.45
-SOILGRIDS_SOC_NAN,SoilGrids Clay-valid / SOC-NaN ~2.56 ha box,2.56,100.0,Bouati Mahmoud,0,2957.9,34.45,100.0,1,,UNAVAILABLE_MASKED_PIXEL,0.6163,100.0,0.5448,289,0.1072,0.5325,611.43,736.84,258.45
