@@ -1882,6 +1882,8 @@ export function createSiModelBridge(options: SiModelBridgeOptions = {}) {
         method: init?.method ?? "GET",
         headers: {
           Accept: "application/json",
+          // Bypass ngrok free-tier interstitial when the model is exposed via a tunnel.
+          "ngrok-skip-browser-warning": "true",
           ...(init?.body !== undefined ? { "Content-Type": "application/json" } : {}),
         },
         body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
