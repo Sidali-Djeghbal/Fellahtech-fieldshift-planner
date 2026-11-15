@@ -1,0 +1,218 @@
+{
+  "schema_version": "5.0",
+  "request_id": "550e8400-e29b-41d4-a716-446655440000",
+  "dataset_version_used": "2026.11-guelma-v1",
+  "generated_at": "2026-11-14T10:06:12Z",
+  "status": "ok",
+  "language": "en",
+  "ml_engine_version": "agro-ml-2.1.0",
+  "overall_summary": "Rotating spring chickpea and forage vetch into cereal-dominated parcel F1 reduces multi-year moisture depletion and breaks cereal disease cycles.",
+  "disclaimer": "Recommendations depend on the unverified demo parcel inputs supplied and dataset_version 2026.11-guelma-v1; verify soil chemistry locally prior to planting.",
+  "field_plans": [
+    {
+      "field_id": "F1",
+      "field_name": "Guelma Team Demo Parcel (Unstudied)",
+      "status": "ok",
+      "partial_reason": null,
+      "field_insights": {
+        "bare_field_periods": [
+          {
+            "start_month": 7,
+            "end_month": 10,
+            "evidence": "Summer fallow gap observed between cereal harvests."
+          }
+        ],
+        "stress_periods": [
+          {
+            "type": "drought",
+            "months": [6, 7, 8],
+            "severity": "medium",
+            "evidence": "Seasonal water deficit pattern in local dataset for zone F1."
+          }
+        ],
+        "climate_trend_summary": "Dataset zone 2026.11-guelma-v1 indicates recurring dry summer months with moderate spring variability."
+      },
+      "strategies": [
+        {
+          "strategy_id": "S1_baseline_cereal",
+          "name": "Existing Cereal Baseline",
+          "is_existing_rotation": true,
+          "description": "Continues historical autumn cereal dominance as the comparison baseline.",
+          "seasons": [
+            { "order": 1, "season": "spring", "year": 2027, "planting_month": 3, "crop_id": "fallow", "crop_name": "Bare Fallow", "category": "fallow", "role": "fallow", "selection_status": "suggested", "notes": null },
+            { "order": 2, "season": "autumn", "year": 2027, "planting_month": 11, "crop_id": "durum_wheat", "crop_name": "Durum Wheat", "category": "cereals", "role": "main_crop", "selection_status": "suggested", "notes": null },
+            { "order": 3, "season": "spring", "year": 2028, "planting_month": 3, "crop_id": "fallow", "crop_name": "Bare Fallow", "category": "fallow", "role": "fallow", "selection_status": "suggested", "notes": null },
+            { "order": 4, "season": "autumn", "year": 2028, "planting_month": 11, "crop_id": "barley", "crop_name": "Barley", "category": "cereals", "role": "main_crop", "selection_status": "suggested", "notes": null }
+          ],
+          "scores": {
+            "water_efficiency": 52,
+            "erosion_protection": 48,
+            "organic_matter_gain": 35,
+            "nitrogen_contribution": 25,
+            "pest_cycle_disruption": 30,
+            "income_forage_value": 58,
+            "priority_fit": 49,
+            "bare_field_days_per_year": 140
+          },
+          "confidence": "medium",
+          "explanation": {
+            "reasons": [
+              { "code": "BASELINE_CONTINUITY", "text": "Reflects prior autumn wheat/barley cropping history.", "params": { "prior_crops": 2 } }
+            ],
+            "evidence": [
+              {
+                "data_source": "farmer_input",
+                "parameter": "water_availability",
+                "observed_value": "moderate",
+                "unit": null,
+                "period": null,
+                "derived": false,
+                "interpretation": "Farmer-reported moderate well availability with drip irrigation."
+              }
+            ],
+            "benefits": [
+              { "benefit_id": "B0", "title": "Familiar machinery workflow", "description": "Requires no immediate equipment change." }
+            ],
+            "risks": [
+              { "risk_id": "R0", "title": "Cereal monoculture pathogen carryover", "description": "Consecutive cereals increase root disease pressure.", "severity": "high", "likelihood": "medium", "mitigation": "Introduce a legume break crop." }
+            ],
+            "assumptions": ["Parcel F1 field parameters remain unstudied until surveyed."],
+            "information_gaps": ["Missing laboratory soil pH and organic matter measurements."],
+            "needs_local_review": ["Verify soil texture and organic matter on parcel F1."]
+          }
+        },
+        {
+          "strategy_id": "S2_water_resilient",
+          "name": "Chickpea & Drip Forage Balanced Rotation",
+          "is_existing_rotation": false,
+          "description": "Introduces nitrogen-fixing chickpea and conserved forage vetch alongside durum wheat.",
+          "seasons": [
+            { "order": 1, "season": "spring", "year": 2027, "planting_month": 3, "crop_id": "chickpea", "crop_name": "Chickpea", "category": "legumes", "role": "nitrogen_fixer", "selection_status": "suggested", "notes": null },
+            { "order": 2, "season": "autumn", "year": 2027, "planting_month": 11, "crop_id": "durum_wheat", "crop_name": "Durum Wheat", "category": "cereals", "role": "cash_crop", "selection_status": "suggested", "notes": null },
+            { "order": 3, "season": "spring", "year": 2028, "planting_month": 3, "crop_id": "vetch_forage", "crop_name": "Vetch Forage", "category": "forage", "role": "forage", "selection_status": "suggested", "notes": null },
+            { "order": 4, "season": "autumn", "year": 2028, "planting_month": 11, "crop_id": "barley", "crop_name": "Barley", "category": "cereals", "role": "break_crop", "selection_status": "suggested", "notes": null }
+          ],
+          "scores": {
+            "water_efficiency": 82,
+            "erosion_protection": 76,
+            "organic_matter_gain": 74,
+            "nitrogen_contribution": 80,
+            "pest_cycle_disruption": 85,
+            "income_forage_value": 78,
+            "priority_fit": 84,
+            "bare_field_days_per_year": 55
+          },
+          "confidence": "medium",
+          "explanation": {
+            "reasons": [
+              { "code": "TARGET_CROP_MATCH", "text": "Includes farmer requested crop chickpea in season 1.", "params": { "crop_id": "chickpea" } }
+            ],
+            "evidence": [
+              {
+                "data_source": "dataset",
+                "parameter": "precipitation",
+                "observed_value": 312,
+                "unit": "mm/year",
+                "period": "dataset-zone-baseline",
+                "derived": true,
+                "interpretation": "Mean annual dataset precipitation aligns with spring chickpea establishment."
+              },
+              {
+                "data_source": "dataset",
+                "parameter": "precipitation_anomaly",
+                "observed_value": -18,
+                "unit": "% vs historical mean",
+                "period": "dataset-dry-quantile",
+                "derived": true,
+                "interpretation": "Drier years favor drought-tolerant legumes over fallow cereals."
+              }
+            ],
+            "benefits": [
+              { "benefit_id": "B1", "title": "Biological nitrogen fixation", "description": "Spring chickpea lowers synthetic nitrogen demand for autumn wheat." }
+            ],
+            "risks": [
+              { "risk_id": "R1", "title": "Soil chemistry uncertainty", "description": "Unstudied parcel soil pH could affect legume nodulation.", "severity": "medium", "likelihood": "medium", "mitigation": "Collect topsoil lab sample before spring sowing." }
+            ],
+            "assumptions": ["Drip irrigation system remains operational for supplemental spring moisture."],
+            "information_gaps": ["Parcel F1 awaits physical soil sampling (`is_unverified_demo_parcel: true`)."],
+            "needs_local_review": ["Confirm chickpea seed variety suitability with local extension service."]
+          }
+        },
+        {
+          "strategy_id": "S3_income_diversified",
+          "name": "Market Cereal & Legume Cash Focus",
+          "is_existing_rotation": false,
+          "description": "Prioritizes market revenue with alternating durum wheat and chickpea cycles.",
+          "seasons": [
+            { "order": 1, "season": "spring", "year": 2027, "planting_month": 3, "crop_id": "chickpea", "crop_name": "Chickpea", "category": "legumes", "role": "cash_crop", "selection_status": "suggested", "notes": null },
+            { "order": 2, "season": "autumn", "year": 2027, "planting_month": 11, "crop_id": "durum_wheat", "crop_name": "Durum Wheat", "category": "cereals", "role": "cash_crop", "selection_status": "suggested", "notes": null },
+            { "order": 3, "season": "spring", "year": 2028, "planting_month": 3, "crop_id": "sunflower", "crop_name": "Sunflower", "category": "oilseeds", "role": "break_crop", "selection_status": "suggested", "notes": null },
+            { "order": 4, "season": "autumn", "year": 2028, "planting_month": 11, "crop_id": "durum_wheat", "crop_name": "Durum Wheat", "category": "cereals", "role": "cash_crop", "selection_status": "suggested", "notes": null }
+          ],
+          "scores": {
+            "water_efficiency": 70,
+            "erosion_protection": 72,
+            "organic_matter_gain": 64,
+            "nitrogen_contribution": 68,
+            "pest_cycle_disruption": 79,
+            "income_forage_value": 88,
+            "priority_fit": 77,
+            "bare_field_days_per_year": 75
+          },
+          "confidence": "medium",
+          "explanation": {
+            "reasons": [
+              { "code": "MIXED_MARKET_REVENUE", "text": "Balances pulse and oilseed break crops around cash wheat.", "params": { "cash_seasons": 4 } }
+            ],
+            "evidence": [
+              {
+                "data_source": "farmer_input",
+                "parameter": "water_availability",
+                "observed_value": "moderate",
+                "unit": null,
+                "period": null,
+                "derived": false,
+                "interpretation": "Moderate well irrigation supports spring oilseed establishment."
+              }
+            ],
+            "benefits": [
+              { "benefit_id": "B2", "title": "High gross revenue potential", "description": "Maximize marketed crop share across 4 seasons." }
+            ],
+            "risks": [
+              { "risk_id": "R2", "title": "Higher irrigation demand in summer", "description": "Oilseed phase demands reliable mid-season watering.", "severity": "medium", "likelihood": "low", "mitigation": "Schedule drip irrigation during flowering." }
+            ],
+            "assumptions": ["No soil salinity issues on unstudied parcel F1."],
+            "information_gaps": ["Exact well summer yield rate not measured."],
+            "needs_local_review": ["Verify local buyer uptake for spring oilseed."]
+          }
+        }
+      ],
+      "suggested_strategy_id": "S2_water_resilient",
+      "requested_crop_results": [
+        {
+          "requested_crop_id": "chickpea",
+          "outcome": "included",
+          "included_in_strategy_ids": ["S2_water_resilient", "S3_income_diversified"],
+          "replaced_by_crop_id": null,
+          "explanation": "Chickpea fits spring 2027 well as a nitrogen-fixing legume breaking historical autumn cereal dominance.",
+          "comparison": [],
+          "evidence": []
+        }
+      ],
+      "data_quality": {
+        "completeness_score": 0.45,
+        "confidence_note": "Reduced completeness because parcel F1 is an unverified demo parcel with unknown soil chemistry.",
+        "missing_data": ["soil_ph", "organic_matter_percent", "elevation_m"],
+        "warnings": ["DEMO_PARCEL_UNVERIFIED: Parcel measurements have not yet been studied."],
+        "limitations": ["Predictions rely on dataset_version 2026.11-guelma-v1 regional signals rather than verified soil sampling on F1."]
+      }
+    }
+  ],
+  "data_quality": {
+    "completeness_score": 0.45,
+    "confidence_note": "Farm-level confidence reflects 1 unverified demo parcel.",
+    "missing_data": ["F1.soil_ph", "F1.organic_matter_percent"],
+    "warnings": ["DEMO_PARCEL_UNVERIFIED"],
+    "limitations": ["Awaiting field survey data for pre-designated parcel F1."]
+  }
+}

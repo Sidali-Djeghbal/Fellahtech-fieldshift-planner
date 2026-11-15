@@ -1,0 +1,63 @@
+"""External ML Adapter abstraction, HTTP client, Mock provider, and Provider Manager."""
+
+from app.ml_client.base import (
+    MLAdapter,
+    MLAuthError,
+    MLCatalogVersionMismatchError,
+    MLClientError,
+    MLContractError,
+    MLDatasetError,
+    MLDatasetVersionUnavailableError,
+    MLHealthResult,
+    MLInsufficientDataError,
+    MLInvalidPayloadError,
+    MLPayloadTooLargeError,
+    MLProviderSnapshot,
+    MLRateLimitError,
+    MLTimeoutError,
+    MLTransportError,
+    MLUpstreamServerError,
+    ProviderKind,
+    classify_ml_http_error,
+    parse_retry_after_header,
+    validate_contract_def,
+)
+from app.ml_client.manager import (
+    ML_ACTIVE_PROVIDER,
+    ML_PROVIDER_STATUS_REDIS_KEY,
+    MLProviderManager,
+    publish_provider_status,
+    read_provider_status,
+)
+from app.ml_client.mock_adapter import MockMLAdapter
+from app.ml_client.real_adapter import RealMLAdapter
+
+__all__ = [
+    "ML_ACTIVE_PROVIDER",
+    "ML_PROVIDER_STATUS_REDIS_KEY",
+    "MLAdapter",
+    "MLAuthError",
+    "MLCatalogVersionMismatchError",
+    "MLClientError",
+    "MLContractError",
+    "MLDatasetError",
+    "MLDatasetVersionUnavailableError",
+    "MLHealthResult",
+    "MLInsufficientDataError",
+    "MLInvalidPayloadError",
+    "MLPayloadTooLargeError",
+    "MLProviderManager",
+    "MLProviderSnapshot",
+    "MLRateLimitError",
+    "MLTimeoutError",
+    "MLTransportError",
+    "MLUpstreamServerError",
+    "MockMLAdapter",
+    "ProviderKind",
+    "RealMLAdapter",
+    "classify_ml_http_error",
+    "parse_retry_after_header",
+    "publish_provider_status",
+    "read_provider_status",
+    "validate_contract_def",
+]

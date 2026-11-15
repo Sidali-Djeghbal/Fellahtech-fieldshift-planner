@@ -34,7 +34,7 @@ sequenceDiagram
     participant DS as PostgreSQL (Schema: dataset)
 
     Guest->>API: POST /api/v1/auth/guest {demo_location_id: 1}
-    API-->>Guest: 201 Created (guest_token, Guelma demo_location, unstudied demo_parcel F1)
+    API-->>Guest: 201 Created (guest_token, Guelma demo_location; frontend supplies parcels)
     Guest->>API: POST /api/v1/farms -> 201 {farm_id: "farm_1"}
     Guest->>API: POST /api/v1/farms/farm_1/fields {field_id: "F1", 36.52, 7.52}
     API->>PubDB: ST_Covers(demo_locations.boundary, geom_point) -> true
@@ -60,7 +60,7 @@ sequenceDiagram
 1. **Zero External Environmental APIs:** Inline weather/satellite time-series objects were removed completely from `FarmAnalysisInput`. External ML reads local data directly from PostgreSQL `Schema: dataset` via read-only role `ml_reader`, pinned per request via `dataset_version` (`SEM-07`).
 2. **Single String ID Scheme:** Public REST payloads and ML wire inputs use `"farm_1"` (`farm_id`), `"F1"` (`field_id`), and Backend-generated `"analysis_4f9a8c120e3b"` (`^analysis_[0-9a-f]{12}$`). Surrogate bigint PKs never appear in API contracts.
 3. **`analysis_id` Ownership:** `AnalysisResult` (`§9.3`) omits `analysis_id`. Backend generates `analysis_4f9a8c120e3b` on every `analysis_results` insert (including invalid ML payloads saved with `validation_passed: false`).
-4. **Honest Pre-Designated Unstudied Demo Parcel (`is_unverified_demo_parcel`):** Team demo parcel `F1` starts with `soil.source: "unknown"`, `soil_type: "unknown"`, `elevation_m: null`, and notice `DEMO_PARCEL_UNVERIFIED` until surveyed (`OQ-D8`).
+4. **Frontend-Supplied Demo Parcels & Optional Unverified Flag (`is_unverified_demo_parcel`):** `POST /auth/guest` does not return a pre-designated parcel stub (`IMPL-023`). The frontend creates any parcel inside Guelma via `POST /farms/{farm_id}/fields`, and if `is_unverified_demo_parcel: true` is sent (with `soil.source: "unknown"`), Backend attaches notice `DEMO_PARCEL_UNVERIFIED` until surveyed (`OQ-D8`).
 5. **Tolerant Reader:** Minor `"5.x"` additions in ML responses (`AnalysisResult`, `Strategy`, `CropItem`, etc.) are logged as warnings and accepted (`additionalProperties: true`).
 
 ---
@@ -77,7 +77,7 @@ sequenceDiagram
 | `dataset_version` | `dataset_registry.dataset_version` | Unique row with `is_active = true` |
 | `farm.farm_id` | `"farm_" \|\| farms.id` | Never raw bigint |
 | `fields[].field_id` | `fields.external_field_id` | Per-farm string `"F1"` |
-| `fields[].is_unverified_demo_parcel` | `fields.is_unverified_demo_parcel` | `true` for pre-designated unstudied parcel |
+| `fields[].is_unverified_demo_parcel` | `fields.is_unverified_demo_parcel` | Optional boolean (`default: false`) submitted on fields needing survey |
 | `fields[].soil.source` | `fields.soil_source` | Strictly `"farmer"` or `"unknown"` |
 | `fields[].crop_history[]` | `field_crop_history` | `notes` never transmitted; `>= 1` of `crop_id` / `crop_name_raw` required |
 
@@ -104,21 +104,7 @@ sequenceDiagram
 {
   "guest_token": "gst_9b44f7c10a8e2130d5c89e4b",
   "expires_at": "2026-11-21T10:00:00Z",
-  "demo_location": { "id": 1, "code": "guelma", "name": "Guelma", "country": "Algeria", "region": "Guelma" },
-  "demo_parcel": {
-    "field_id": "F1",
-    "field_name": "Guelma Team Demo Parcel (Unstudied)",
-    "location": { "latitude": 36.52, "longitude": 7.52 },
-    "area_hectares": 12.5,
-    "is_unverified_demo_parcel": true,
-    "warnings": [
-      {
-        "code": "DEMO_PARCEL_UNVERIFIED",
-        "message": "This demo parcel is pre-designated by the project team; its real field measurements have not yet been studied and will be added later.",
-        "fields": ["F1"]
-      }
-    ]
-  }
+  "demo_location": { "id": 1, "code": "guelma", "name": "Guelma", "country": "Algeria", "region": "Guelma" }
 }
 ```
 
@@ -127,7 +113,7 @@ sequenceDiagram
 ## 5. Test 2: Create Farm & Field (`POST /farms`, `POST /farms/farm_1/fields`)
 
 1. `POST /api/v1/farms` returns `201 Created` with `"farm_id": "farm_1"`.
-2. `POST /api/v1/farms/farm_1/fields` for team demo parcel (`36.52° N, 7.52° E`, `is_unverified_demo_parcel: true`): PostGIS `ST_Covers(demo_locations.boundary, geom_point)` is `true` -> `201 Created` with `soil.source: "unknown"` and `warnings: [{"code": "DEMO_PARCEL_UNVERIFIED", ...}]`.
+2. `POST /api/v1/farms/farm_1/fields` for an unverified demo parcel (`36.52° N, 7.52° E`, `is_unverified_demo_parcel: true`): PostGIS `ST_Covers(demo_locations.boundary, geom_point)` is `true` -> `201 Created` with `soil.source: "unknown"` and `warnings: [{"code": "DEMO_PARCEL_UNVERIFIED", ...}]`.
 3. **Outside Boundary Check (Setif `36.19° N, 5.41° E`):**
    - For **Guest:** PostGIS `ST_Covers` is `false` -> `422 OUTSIDE_DEMO_BOUNDARY`.
    - For **Registered User:** saves `201 Created` with `warnings: [{"code": "MVP_OUTSIDE_COVERAGE", ...}]`.

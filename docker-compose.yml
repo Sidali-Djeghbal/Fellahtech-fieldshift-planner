@@ -86,6 +86,11 @@ services:
     command: ["uvicorn", "app.ml_client.mock_server:app", "--host", "0.0.0.0", "--port", "8090"]
     ports:
       - "127.0.0.1:8090:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H \"X-ML-API-Key: $${ML_SERVICE_API_KEY:-}\" http://localhost:8090/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:

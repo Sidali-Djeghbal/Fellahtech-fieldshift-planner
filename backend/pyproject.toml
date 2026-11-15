@@ -63,3 +63,7 @@ packages = ["app"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.coverage.run]
+source = ["app"]
+concurrency = ["greenlet", "thread"]

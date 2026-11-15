@@ -53,7 +53,7 @@ _CREATE_STATEMENTS: tuple[str, ...] = (
     )
     """,
     "CREATE INDEX idx_refresh_tokens_user_family ON public.refresh_tokens (user_id, family_id)",
-    # 3. demo_locations (Wilaya of Guelma boundary + pre-designated unstudied parcel metadata)
+    # 3. demo_locations (Wilaya of Guelma MVP boundary; demo parcels come from frontend)
     """
     CREATE TABLE public.demo_locations (
         id                     bigserial PRIMARY KEY,
@@ -62,11 +62,6 @@ _CREATE_STATEMENTS: tuple[str, ...] = (
         country                text NOT NULL,
         region                 text NOT NULL,
         boundary               geometry(MultiPolygon, 4326) NOT NULL,
-        default_parcel_id      text NOT NULL DEFAULT 'F1',
-        default_parcel_name    text NOT NULL,
-        default_parcel_lat     numeric(9, 6) NOT NULL,
-        default_parcel_lon     numeric(9, 6) NOT NULL,
-        default_parcel_area_ha numeric(10, 2) NOT NULL CHECK (default_parcel_area_ha > 0),
         is_active              boolean NOT NULL DEFAULT true,
         created_at             timestamptz NOT NULL DEFAULT now()
     )

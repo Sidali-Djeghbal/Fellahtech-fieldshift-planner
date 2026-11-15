@@ -41,7 +41,7 @@ paths:
                   minimum: 1
       responses:
         "201":
-          description: Guest session created with pre-designated unstudied demo parcel handle
+          description: Guest session created bound to demo location
           headers:
             X-Request-Id:
               $ref: "#/components/headers/XRequestId"
@@ -344,7 +344,7 @@ paths:
   /demo/session:
     get:
       tags: [Demo]
-      summary: Inspect current guest session limits, canonical quarter usage, and pre-designated parcel status
+      summary: Inspect current guest session limits, canonical quarter usage, and demo location
       operationId: getDemoSession
       security:
         - GuestTokenAuth: []
@@ -1315,37 +1315,10 @@ components:
         region:
           type: string
 
-    DemoParcelPreview:
-      type: object
-      additionalProperties: false
-      required: [field_id, field_name, location, area_hectares, is_unverified_demo_parcel, warnings]
-      properties:
-        field_id:
-          type: string
-        field_name:
-          type: string
-        location:
-          type: object
-          required: [latitude, longitude]
-          properties:
-            latitude:
-              type: number
-            longitude:
-              type: number
-        area_hectares:
-          type: number
-        is_unverified_demo_parcel:
-          type: boolean
-          const: true
-        warnings:
-          type: array
-          items:
-            $ref: "#/components/schemas/WarningNotice"
-
     GuestSessionStartResponse:
       type: object
       additionalProperties: false
-      required: [guest_token, expires_at, demo_location, demo_parcel]
+      required: [guest_token, expires_at, demo_location]
       properties:
         guest_token:
           type: string
@@ -1354,8 +1327,6 @@ components:
           format: date-time
         demo_location:
           $ref: "#/components/schemas/DemoLocationSummary"
-        demo_parcel:
-          $ref: "#/components/schemas/DemoParcelPreview"
 
     UserProfile:
       type: object
@@ -1441,12 +1412,10 @@ components:
     GuestSessionInfo:
       type: object
       additionalProperties: false
-      required: [demo_location, demo_parcel, created_at, expires_at, limits, usage]
+      required: [demo_location, created_at, expires_at, limits, usage]
       properties:
         demo_location:
           $ref: "#/components/schemas/DemoLocationSummary"
-        demo_parcel:
-          $ref: "#/components/schemas/DemoParcelPreview"
         created_at:
           type: string
           format: date-time
@@ -1830,7 +1799,7 @@ components:
         priorities:
           type: object
           additionalProperties: false
-          required: [weights, market_preference, target_crop_ids, excluded_crop_ids, equipment_constraints]
+          required: [weights, market_preference, target_crop_ids, excluded_crop_ids]
           properties:
             weights:
               $ref: "./schema-v5.0.json#/$defs/PriorityWeights"
@@ -1851,8 +1820,10 @@ components:
                 minLength: 1
                 maxLength: 64
             equipment_constraints:
-              type: array
+              type: ["array", "null"]
+              default: []
               maxItems: 20
+              description: "Optional constraints covering fertilizer availability and agricultural equipment/machinery limits. May be omitted, null, [], or a list of constraint strings."
               items:
                 type: string
                 minLength: 1

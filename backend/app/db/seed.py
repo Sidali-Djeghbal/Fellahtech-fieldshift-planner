@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import Connection, text
@@ -9,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 # TODO(OQ-D7): Replace simplified 10-vertex Guelma Wilaya polygon with official surveyed
 # administrative GIS boundary once provided by GIS/ML teams.
-# TODO(OQ-9): Confirm exact regional & demo parcel coordinates with project/GIS owners.
+# TODO(OQ-9): Confirm exact Guelma regional polygon boundaries with project/GIS owners.
 GUELMA_LOCATION_ID = 1
 GUELMA_CODE = "guelma"
 GUELMA_NAME = "Guelma"
@@ -34,14 +33,6 @@ GUELMA_BOUNDARY_GEOJSON: dict[str, Any] = {
         ]
     ],
 }
-
-# TODO(OQ-D8): Real agronomic/soil/history measurements for pre-designated team demo parcel F1
-# have not yet been studied and will be supplied later.
-DEFAULT_PARCEL_ID = "F1"
-DEFAULT_PARCEL_NAME = "Guelma Team Demo Parcel (Unstudied)"
-DEFAULT_PARCEL_LAT = Decimal("36.520000")
-DEFAULT_PARCEL_LON = Decimal("7.520000")
-DEFAULT_PARCEL_AREA_HA = Decimal("12.50")
 
 # TODO(OQ-D1): Exact `Schema: dataset` tables/columns/units remain TBD by ML team.
 DEFAULT_DATASET_VERSION = "2026.11-guelma-v1"
@@ -68,11 +59,6 @@ def seed_reference_data_sync(conn: Connection) -> None:
                 country,
                 region,
                 boundary,
-                default_parcel_id,
-                default_parcel_name,
-                default_parcel_lat,
-                default_parcel_lon,
-                default_parcel_area_ha,
                 is_active
             )
             VALUES (
@@ -82,11 +68,6 @@ def seed_reference_data_sync(conn: Connection) -> None:
                 :country,
                 :region,
                 ST_SetSRID(ST_GeomFromGeoJSON(:boundary_geojson), 4326),
-                :default_parcel_id,
-                :default_parcel_name,
-                :default_parcel_lat,
-                :default_parcel_lon,
-                :default_parcel_area_ha,
                 true
             )
             ON CONFLICT (code) DO NOTHING
@@ -99,11 +80,6 @@ def seed_reference_data_sync(conn: Connection) -> None:
             "country": GUELMA_COUNTRY,
             "region": GUELMA_REGION,
             "boundary_geojson": json.dumps(GUELMA_BOUNDARY_GEOJSON),
-            "default_parcel_id": DEFAULT_PARCEL_ID,
-            "default_parcel_name": DEFAULT_PARCEL_NAME,
-            "default_parcel_lat": DEFAULT_PARCEL_LAT,
-            "default_parcel_lon": DEFAULT_PARCEL_LON,
-            "default_parcel_area_ha": DEFAULT_PARCEL_AREA_HA,
         },
     )
 

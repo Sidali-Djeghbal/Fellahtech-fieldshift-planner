@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from geoalchemy2 import Geometry, WKBElement
@@ -12,7 +11,6 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
-    Numeric,
     Text,
     func,
     text,
@@ -26,14 +24,10 @@ if TYPE_CHECKING:
 
 
 class DemoLocation(Base):
-    """MVP geographic zone & pre-designated unstudied parcel metadata (`public.demo_locations`)."""
+    """MVP geographic zone boundary metadata (`public.demo_locations`)."""
 
     __tablename__ = "demo_locations"
     __table_args__ = (
-        CheckConstraint(
-            "default_parcel_area_ha > 0",
-            name="demo_locations_default_parcel_area_ha_check",
-        ),
         Index("idx_demo_locations_boundary", "boundary", postgresql_using="gist"),
     )
 
@@ -46,15 +40,6 @@ class DemoLocation(Base):
         Geometry("MULTIPOLYGON", srid=4326, spatial_index=False),
         nullable=False,
     )
-    default_parcel_id: Mapped[str] = mapped_column(
-        Text,
-        nullable=False,
-        server_default=text("'F1'"),
-    )
-    default_parcel_name: Mapped[str] = mapped_column(Text, nullable=False)
-    default_parcel_lat: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
-    default_parcel_lon: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
-    default_parcel_area_ha: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
