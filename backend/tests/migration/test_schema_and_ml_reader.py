@@ -190,11 +190,7 @@ async def test_minimal_seeds_and_empty_crop_catalog() -> None:
         demo = await conn.fetchrow("SELECT * FROM public.demo_locations WHERE id = 1")
         assert demo is not None
         assert demo["code"] == "guelma"
-        assert demo["default_parcel_id"] == "F1"
-        assert demo["default_parcel_name"] == "Guelma Team Demo Parcel (Unstudied)"
-        assert float(demo["default_parcel_lat"]) == pytest.approx(36.52)
-        assert float(demo["default_parcel_lon"]) == pytest.approx(7.52)
-        assert float(demo["default_parcel_area_ha"]) == pytest.approx(12.5)
+        assert "default_parcel_id" not in demo
         assert demo["is_active"] is True
 
         # Verify (lon=7.52, lat=36.52) is inside Guelma boundary while Algiers fails.
@@ -222,14 +218,11 @@ async def test_minimal_seeds_and_empty_crop_catalog() -> None:
             next_id = await conn.fetchval(
                 """
                 INSERT INTO public.demo_locations (
-                    code, name, country, region, boundary,
-                    default_parcel_name, default_parcel_lat, default_parcel_lon,
-                    default_parcel_area_ha
+                    code, name, country, region, boundary
                 )
                 VALUES (
                     'seq_probe', 'Probe', 'Algeria', 'Guelma',
-                    ST_Multi(ST_SetSRID(ST_MakeEnvelope(7.1, 36.1, 7.2, 36.2, 4326), 4326)),
-                    'Probe Parcel', 36.15, 7.15, 5.0
+                    ST_Multi(ST_SetSRID(ST_MakeEnvelope(7.1, 36.1, 7.2, 36.2, 4326), 4326))
                 )
                 RETURNING id
                 """

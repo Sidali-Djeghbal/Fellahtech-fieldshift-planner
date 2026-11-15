@@ -62,11 +62,6 @@ erDiagram
         text country
         text region
         geometry boundary "MultiPolygon, SRID 4326 (PostGIS)"
-        text default_parcel_id "pre-designated unstudied parcel id, e.g. F1"
-        text default_parcel_name
-        numeric default_parcel_lat "e.g. 36.52"
-        numeric default_parcel_lon "e.g. 7.52"
-        numeric default_parcel_area_ha
         boolean is_active
         timestamptz created_at
     }
@@ -224,7 +219,7 @@ erDiagram
 | Rule |
 | --- |
 | **Ownership XOR (`farms`):** Exactly one of `user_id` or `guest_session_token` is non-null. Surrogate `bigint id` is never exposed on `/farms` or `/fields` endpoints; public string IDs are `"farm_" || farms.id` and `fields.external_field_id` (`"F1"`). |
-| **Guelma MVP Boundary & Pre-Designated Unstudied Demo Parcel (`demo_locations`):** Holds the Wilaya of Guelma PostGIS `MultiPolygon` (`boundary`) plus coordinates/metadata for the project team's pre-designated demo parcel (`F1` at `36.52° N, 7.52° E`). Real agronomic/field measurements for that parcel have **not yet been studied** (`OQ-D8`) and will be inserted later; `is_unverified_demo_parcel = true` surfaces warning `DEMO_PARCEL_UNVERIFIED`. Guests can also test any custom coordinate inside Guelma (`ST_Covers(boundary, geom_point)`). |
+| **Guelma MVP Boundary (`demo_locations`):** Holds the Wilaya of Guelma PostGIS `MultiPolygon` (`boundary`). No default demo parcel is stored on the backend (`IMPL-023`); the frontend creates and edits any farm/parcel payload inside Guelma via `POST /farms` and `POST /farms/{farm_id}/fields` (`ST_Covers(boundary, geom_point)`). Fields optionally marked `is_unverified_demo_parcel = true` surface `DEMO_PARCEL_UNVERIFIED`. |
 | **Refresh Token Family Rotation (`refresh_tokens`):** Refreshing a token marks the presented row `used_at = now()` and issues a successor in the same `family_id`. Presenting any row with `used_at IS NOT NULL` or `revoked_at IS NOT NULL` revokes the entire `family_id` and returns `401 UNAUTHORIZED`. |
 | **Catalog History Integrity (`crop_catalog`, `field_crop_history`):** No FK exists between `field_crop_history.crop_id` and `crop_catalog`. Historical rows record `catalog_version` active at save time and retain optional `crop_name_raw` fallback so catalog upgrades never invalidate historical plots. |
 | **Dataset Pinned Versioning (`dataset_registry`, `analysis_requests`, `analysis_results`):** Worker resolves the single active `dataset_version` in `dataset_registry` (`is_active = true`), stores it on `analysis_requests.dataset_version`, sends it in `FarmAnalysisInput.dataset_version`, and verifies `AnalysisResult.dataset_version_used == dataset_version` (`SEM-07`). |
@@ -260,7 +255,7 @@ CREATE TABLE public.refresh_tokens (
 );
 CREATE INDEX idx_refresh_tokens_user_family ON public.refresh_tokens (user_id, family_id);
 
--- 3. demo_locations (Wilaya of Guelma boundary + pre-designated unstudied parcel metadata)
+-- 3. demo_locations (Wilaya of Guelma boundary; demo parcels supplied by frontend)
 CREATE TABLE public.demo_locations (
   id                     bigserial PRIMARY KEY,
   code                   text NOT NULL UNIQUE,
@@ -268,11 +263,6 @@ CREATE TABLE public.demo_locations (
   country                text NOT NULL,
   region                 text NOT NULL,
   boundary               geometry(MultiPolygon, 4326) NOT NULL,
-  default_parcel_id      text NOT NULL DEFAULT 'F1',
-  default_parcel_name    text NOT NULL,
-  default_parcel_lat     numeric(9, 6) NOT NULL,
-  default_parcel_lon     numeric(9, 6) NOT NULL,
-  default_parcel_area_ha numeric(10, 2) NOT NULL CHECK (default_parcel_area_ha > 0),
   is_active              boolean NOT NULL DEFAULT true,
   created_at             timestamptz NOT NULL DEFAULT now()
 );
@@ -535,7 +525,7 @@ ALTER ROLE ml_reader SET statement_timeout = '5000ms'; -- exact ML_DB_STATEMENT_
 
 | Code | Emitted When | Message |
 | --- | --- | --- |
-| `DEMO_PARCEL_UNVERIFIED` | Field has `is_unverified_demo_parcel: true` or inside `POST /auth/guest` & `GET /demo/session` | `"This demo parcel is pre-designated by the project team; its real field measurements have not yet been studied and will be added later."` |
+| `DEMO_PARCEL_UNVERIFIED` | Field has `is_unverified_demo_parcel: true` | `"This demo parcel is marked unverified; its real field measurements have not yet been studied and may need verification."` |
 | `MVP_OUTSIDE_COVERAGE` | Registered user creates/updates a field outside Wilaya of Guelma `boundary` | `"Field coordinates fall outside the Guelma MVP boundary. Saved under registered account; dataset coverage for this zone is unverified."` |
 
 ### Enums (`CropCategory` Unified `forage` Definition)
@@ -624,7 +614,7 @@ System (2)
 
 | Item | Value |
 | --- | --- |
-| **Purpose** | Create an anonymous 7-day guest session bound to Guelma and return the pre-designated unstudied demo parcel preview |
+| **Purpose** | Create an anonymous 7-day guest session bound to Guelma (`demo_location`); frontend supplies custom demo parcels via `/farms` & `/fields` (`IMPL-023`) |
 | **Auth** | 🌐 Public (`GUEST_CREATE_PER_IP_HOUR=5`) |
 | **Request** | `{ "demo_location_id": 1 }` (`1` = Guelma MVP zone) |
 
@@ -634,21 +624,7 @@ System (2)
 {
   "guest_token": "gst_9b44f7c10a8e2130d5c89e4b",
   "expires_at": "2026-11-21T10:00:00Z",
-  "demo_location": { "id": 1, "code": "guelma", "name": "Guelma", "country": "Algeria", "region": "Guelma" },
-  "demo_parcel": {
-    "field_id": "F1",
-    "field_name": "Guelma Team Demo Parcel (Unstudied)",
-    "location": { "latitude": 36.52, "longitude": 7.52 },
-    "area_hectares": 12.5,
-    "is_unverified_demo_parcel": true,
-    "warnings": [
-      {
-        "code": "DEMO_PARCEL_UNVERIFIED",
-        "message": "This demo parcel is pre-designated by the project team; its real field measurements have not yet been studied and will be added later.",
-        "fields": ["F1"]
-      }
-    ]
-  }
+  "demo_location": { "id": 1, "code": "guelma", "name": "Guelma", "country": "Algeria", "region": "Guelma" }
 }
 ```
 
@@ -763,7 +739,7 @@ System (2)
 
 | Item | Value |
 | --- | --- |
-| **Purpose** | Return guest expiry, Guelma binding, unstudied demo parcel preview, limits, and canonical quarter usage |
+| **Purpose** | Return guest expiry, Guelma binding, limits, and canonical quarter usage (demo parcels created via `/farms` & `/fields`) |
 | **Auth** | 🎭 Guest (`X-Guest-Token`) |
 
 **Success** `200 OK`:
@@ -771,20 +747,6 @@ System (2)
 ```json
 {
   "demo_location": { "id": 1, "code": "guelma", "name": "Guelma", "country": "Algeria", "region": "Guelma" },
-  "demo_parcel": {
-    "field_id": "F1",
-    "field_name": "Guelma Team Demo Parcel (Unstudied)",
-    "location": { "latitude": 36.52, "longitude": 7.52 },
-    "area_hectares": 12.5,
-    "is_unverified_demo_parcel": true,
-    "warnings": [
-      {
-        "code": "DEMO_PARCEL_UNVERIFIED",
-        "message": "This demo parcel is pre-designated by the project team; its real field measurements have not yet been studied and will be added later.",
-        "fields": ["F1"]
-      }
-    ]
-  },
   "created_at": "2026-11-14T10:00:00Z",
   "expires_at": "2026-11-21T10:00:00Z",
   "limits": { "max_farms": 3, "max_fields_per_farm": 5, "max_analyses": 10, "max_analysis_quarters": 40 },

@@ -108,8 +108,8 @@ flowchart LR
 The MVP demo targets Wilaya of Guelma, Algeria (`~36.46° N, 7.43° E`; team demo parcel centroid `36.52° N, 7.52° E` — see `OQ-9`), while allowing registered farmers outside Guelma to store farms without blocking them, and never falsely presenting unstudied demo plots as surveyed ground truth.
 
 ### Decision
-1. **100% PostGIS Boundary Enforcement:** `public.demo_locations.boundary` stores Guelma's `MultiPolygon` (`SRID 4326`, seeded by `seed_demo_locations.py` — shapefile verification tracked in `OQ-D7`). No external NASA or geocoding API is called.
-2. **Pre-Designated Unstudied Demo Parcel:** `POST /auth/guest` provides the team's pre-designated parcel (`F1` at `36.52° N, 7.52° E`, `is_unverified_demo_parcel: true`) carrying warning `DEMO_PARCEL_UNVERIFIED` stating real field measurements have **not yet been studied** (`OQ-D8`).
+1. **100% PostGIS Boundary Enforcement:** `public.demo_locations.boundary` stores Guelma's `MultiPolygon` (`SRID 4326`, seeded by `seed.py` — shapefile verification tracked in `OQ-D7`). No external NASA or geocoding API is called.
+2. **Frontend-Defined Demo Parcels (`IMPL-023`):** `POST /auth/guest` binds the guest session to `demo_location_id=1` without returning any backend `demo_parcel` stub; the frontend sends any custom parcel inside Guelma via `POST /farms` + `POST /farms/{farm_id}/fields` (and optional `is_unverified_demo_parcel: true` triggers `DEMO_PARCEL_UNVERIFIED`, `OQ-D8`).
 3. **Guest vs Registered Enforcement:**
    - **Guests** creating fields inside Guelma (`ST_Covers(boundary, geom_point)`) succeed; coordinates outside Guelma return **`422 OUTSIDE_DEMO_BOUNDARY`** (*"The current MVP version supports the Wilaya of Guelma only..."*).
    - **Registered Users** outside Guelma succeed with non-blocking warning `MVP_OUTSIDE_COVERAGE`.
@@ -117,12 +117,12 @@ The MVP demo targets Wilaya of Guelma, Algeria (`~36.46° N, 7.43° E`; team dem
 ![](files/01a1d55a-bd6f-7074-a4f9-7d1c5b155301/image.png)
 
 > [!WARNING]
-> **Diagram Note:** The legacy PNG above implies global coordinates are uniformly accepted and depicts external data APIs. It must be redrawn to show PostGIS-only `ST_Covers`, guest `422 OUTSIDE_DEMO_BOUNDARY` rejection, and `DEMO_PARCEL_UNVERIFIED` on the unstudied demo parcel:
+> **Diagram Note:** The legacy PNG above implies global coordinates are uniformly accepted and depicts external data APIs. It must be redrawn to show PostGIS-only `ST_Covers`, guest `422 OUTSIDE_DEMO_BOUNDARY` rejection, and optional `DEMO_PARCEL_UNVERIFIED` when a field marks `is_unverified_demo_parcel: true`:
 
 ```mermaid
 flowchart TD
     Write["POST/PUT/PATCH Field Coordinates"] --> CheckInside{"PostGIS ST_Covers(\ndemo_locations.boundary, geom_point)"}
-    CheckInside -- True --> SaveOK["201/200 Save Field\n(+ DEMO_PARCEL_UNVERIFIED if pre-designated parcel)"]
+    CheckInside -- True --> SaveOK["201/200 Save Field\n(+ DEMO_PARCEL_UNVERIFIED if marked unverified)"]
     CheckInside -- False --> CallerType{"Caller Type?"}
     CallerType -- Guest --> Reject["422 OUTSIDE_DEMO_BOUNDARY\n(MVP supports Wilaya of Guelma only)"]
     CallerType -- Registered User --> SaveWarn["201/200 Save Field\n(+ warning: MVP_OUTSIDE_COVERAGE)"]

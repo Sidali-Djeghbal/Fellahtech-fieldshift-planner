@@ -47,7 +47,7 @@ Smallholder and medium farmers in Mediterranean/semi-arid regions (MVP centered 
 | 1 | Async submit & end-to-end latency | `POST /api/v1/analysis` returns `202 Accepted` in `< 300 ms` p95; end-to-end result ready in `<= X s` (`X = TBD`, pending ML SLA) | `OQ-1` |
 | 2 | Output structural integrity | `100%` of stored valid responses pass `schema-v5.0.json` + `SEM-01..SEM-07` (`dataset_version_used` exact match) | Automated tests |
 | 3 | Evidence truthfulness & traceability | `0%` fabricated sources; raw farmer values in `evidence[]` match `FarmAnalysisInput` within `±TBD` tolerance and computed summaries carry `"derived": true` | `OQ-3`, `OQ-D5` |
-| 4 | Geo-isolation & Demo honesty | `100%` of guest parcels outside Guelma PostGIS polygon rejected (`422 OUTSIDE_DEMO_BOUNDARY`); demo parcel consistently carries `DEMO_PARCEL_UNVERIFIED` until surveyed | `OQ-D8` |
+| 4 | Geo-isolation & Demo honesty | `100%` of guest parcels outside Guelma PostGIS polygon rejected (`422 OUTSIDE_DEMO_BOUNDARY`); parcels flagged `is_unverified_demo_parcel: true` carry `DEMO_PARCEL_UNVERIFIED` until surveyed | `OQ-D8` |
 | 5 | ML resilience under failure | Fault-injected ML outages trip PostgreSQL `ml_breaker_state`, protect latency via `ML_MAX_CONCURRENT_REQUESTS=8`, and transparently flag `last_good_replay` (`stale: true`) when eligible | `OQ-8` |
 | 6 | Agronomic acceptance gate | `>= TBD%` pass rate across the 15-scenario golden benchmark reviewed by the Agronomy Owner | `OQ-6` |
 
@@ -207,32 +207,32 @@ Automated quality tests verify monotonic directional sensitivity between contras
 
 ---
 
-## 5. Guest Demo Mode, Guelma MVP Boundary & Pre-Designated Unstudied Parcel
+## 5. Guest Demo Mode & Guelma MVP Boundary
 
 ### 5.1 Principle & Honest Degraded Mode
 
 1. **Zero Pretend Precision:** All guest demo capabilities operate on local PostgreSQL/PostGIS data only. When the External ML Service is unreachable or `ml_breaker_state` is `open`, Backend never fabricates strategies; it only replays a prior validated result (`degraded_mode.kind = "last_good_replay"`, `stale = true`) if an identical `full_input_hash` exists within `DEGRADED_MODE_MAX_AGE_HOURS` (`OQ-8`).
-2. **Pre-Designated Unstudied Demo Parcel (`is_unverified_demo_parcel: true`):** Starting a guest session via `POST /auth/guest` provides the project team's pre-designated parcel (`F1` at `36.52° N, 7.52° E`). Because field soil and historical measurements for that demo plot have **not yet been studied**, the system must **never** claim the parcel's data is surveyed or real; every response attaches `DEMO_PARCEL_UNVERIFIED` until real field data is added and verified (`OQ-D8`).
+2. **Frontend-Supplied Demo Parcels (`IMPL-023`):** Starting a guest session via `POST /auth/guest` binds the session to `demo_location_id=1` (Guelma boundary) without returning or seeding any pre-designated parcel in the database. The frontend sends any demo farm and parcel data directly via `POST /farms` and `POST /farms/{farm_id}/fields` (and if `is_unverified_demo_parcel: true` is sent on a field, Backend attaches `DEMO_PARCEL_UNVERIFIED` until surveyed — `OQ-D8`).
 
 ### 5.2 Guest vs Registered User
 
 | Aspect | 🎭 Guest Session (`X-Guest-Token`) | 🔐 Registered User (`Bearer JWT`) |
 | --- | --- | --- |
 | **Geographic Scope** | Strictly limited to Wilaya of Guelma (`PostGIS ST_Covers(demo_locations.boundary, geom_point)`). Outside -> **`422 OUTSIDE_DEMO_BOUNDARY`**. | Any valid Earth coordinate allowed. Outside Guelma -> saves cleanly with non-blocking `MVP_OUTSIDE_COVERAGE` notice. |
-| **Demo Parcel** | Receives pre-designated unstudied parcel (`DEMO_PARCEL_UNVERIFIED`) + can inspect/test other custom plots inside Guelma. | Starts empty; can import guest data anytime via `POST /auth/claim-guest`. |
+| **Demo Parcel** | Frontend sends custom farms/fields freely inside Guelma (`POST /farms`, `POST /farms/{farm_id}/fields`). | Starts empty; can import guest data anytime via `POST /auth/claim-guest`. |
 | **Quotas & Expiry** | `3` farms, `5` fields/farm, `10` analyses (`40` canonical quarters), `7`-day expiry (`GUEST_SESSION_DAYS=7`). | Unlimited farms/fields; rate-limited (`RATE_LIMIT_ANALYSIS_PER_HOUR=10` = `40` quarters/h). |
 
 ### 5.3 Demo Locations & PostGIS Boundary (`demo_locations`)
 
-- Seeded with Guelma (`id = 1`, `code = "guelma"`, `bbox: [7.00, 36.05, 7.90, 36.65]`, Wilaya reference `~36.46° N, 7.43° E`, unstudied team parcel centroid `36.52° N, 7.52° E`; official shapefile provenance confirmation tracked in `OQ-D7`).
+- Seeded with Guelma (`id = 1`, `code = "guelma"`, `bbox: [7.00, 36.05, 7.90, 36.65]`, Wilaya reference `~36.46° N, 7.43° E`; official shapefile provenance confirmation tracked in `OQ-D7`).
 - Boundary enforcement happens **100% locally in PostGIS** (`ST_Covers(demo_locations.boundary, geom_point)`). No external API is ever consulted for geocoding or boundary validation.
 
 ### 5.4 Guest Journey
 
 ```mermaid
 flowchart LR
-    G1["POST /auth/guest\n(demo_location_id=1)"] --> G2["Receives guest_token +\npre-designated unstudied parcel (F1)\nwith DEMO_PARCEL_UNVERIFIED"]
-    G2 --> G3["Create/inspect parcel in Guelma\nPostGIS ST_Covers check"]
+    G1["POST /auth/guest\n(demo_location_id=1)"] --> G2["Receives guest_token +\nGuelma demo_location metadata"]
+    G2 --> G3["Frontend creates farm & parcel in Guelma\nPostGIS ST_Covers check"]
     G3 -->|Inside Guelma| G4["201 Created -> Submit POST /analysis\nusing internal Schema: dataset"]
     G3 -->|Outside Guelma| G5["422 OUTSIDE_DEMO_BOUNDARY\n(MVP supports Wilaya of Guelma only)"]
     G4 --> G6["Optional: POST /auth/claim-guest\nConvert guest farms to permanent account"]
@@ -422,7 +422,7 @@ Unverified domain, ML, geospatial, and operational targets remain explicitly `TB
 | `OQ-6` | Golden Suite & Pass Gate | Agronomy Reviewer name (`TBD`) and numeric pass thresholds (`>= TBD%`) for the 15 scenarios in `backend/tests/golden/`? | Agronomy Lead | Blueprint §1.1, §4.5 |
 | `OQ-7` | Backups, RPO/RTO & Retention | `pg_dump` schedule, RPO (`TBD`), RTO (`TBD`), `input_snapshot_gz` archival TTL (`TBD`), and audit log retention (`TBD`)? | Infra / Security Lead | Blueprint §6.1, §12.1 |
 | `OQ-8` | Degraded Replay Age & Deprecation Window (`ADR-7`) | `DEGRADED_MODE_MAX_AGE_HOURS` (`TBD`) for `last_good_replay` and minimum `Deprecation`/`Sunset` notice window (`TBD`)? | Backend Lead / Product Owner | ENDPOINTS C, ADR-7, ADR-8 |
-| `OQ-9` | Guelma Coordinates | Confirm whether Guelma regional reference (`36.46° N, 7.43° E`) and demo parcel centroid (`36.52° N, 7.52° E`) update after parcel surveying? | Geospatial / Agronomy Team | Blueprint §1.1, §5.3 |
+| `OQ-9` | Guelma Coordinates | Confirm authoritative Wilaya of Guelma boundary polygon coordinates (`demo_locations.boundary`)? | Geospatial / Agronomy Team | Blueprint §1.1, §5.3 |
 | `OQ-10` | Protected/Greenhouse `INPUT-03` Override | Should irrigated greenhouse crops bypass hemisphere/`start_season`/`planting_month` bounds in `INPUT-03`? | Agronomy Lead | Blueprint §4 W4 |
 | `OQ-11` | Strategy Tie-Breaking | Minimum `priority_fit` separation threshold and deterministic tie-breaker between top strategies? | ML + Agronomy Leads | Blueprint §4.5 |
 | `OQ-D1` | `Schema: dataset` Structure | Exact table names, columns, spatial keys, units, and update cadence inside PostgreSQL `Schema: dataset`? | ML Team | ENDPOINTS A.5, ADR-9 |
@@ -432,4 +432,4 @@ Unverified domain, ML, geospatial, and operational targets remain explicitly `TB
 | `OQ-D5` | `SEM-04` Dataset Evidence Verification | Mechanism for Backend `SEM-04` to cross-verify ML `evidence[]` items claiming `"data_source": "dataset"`? | Backend + ML Leads | Blueprint §4 W4 |
 | `OQ-D6` | Minimum Parcel History Threshold | Minimum dataset/history richness below which ML returns `422 INSUFFICIENT_DATA`? | ML + Agronomy Leads | ENDPOINTS B.10 |
 | `OQ-D7` | Guelma Polygon Shapefile Source | Authoritative administrative shapefile source loaded into `demo_locations.boundary`? | Geospatial Owner | Blueprint §5.3 |
-| `OQ-D8` | Unstudied Demo Parcel Field Survey | Target timeline and real surveyed values (`soil_ph`, organic matter, crop history) for `default_parcel_id`? | Project / Agronomy Team | Blueprint §5.1, ENDPOINTS A.3 |
+| `OQ-D8` | Unstudied Demo Parcel Field Survey | Optional frontend-flagged `is_unverified_demo_parcel` parcels await surveyed soil/history values (no backend `default_parcel_*` per `IMPL-023`)? | Project / Agronomy Team | Blueprint §5.1, ENDPOINTS A.3 |

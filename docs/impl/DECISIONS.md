@@ -71,9 +71,9 @@ Engineering decisions made for ambiguities, gaps (`G1`–`G21`), and contract nu
     4. **Consistent Cross-Container Provider Reporting (`api` vs `worker`):** `worker`'s health-probe loop writes the active provider snapshot (`ml:provider_status` key with `2 * ML_HEALTH_CHECK_INTERVAL_SECONDS` TTL) in Redis so `GET /health` in `api` reports consistent `ml_service` status across containers without in-memory split-brain.
 
 ## `IMPL-009` — Dev/Test Seeds, Cold-Start Catalog Safety & Container Tooling
-- **Status:** Accepted (User Approved, `G8` & `G9`; Revised per First Audit `D2`, `E2`)
+- **Status:** Accepted (User Approved, `G8` & `G9`; Revised per First Audit `D2`, `E2` & `IMPL-023`)
 - **Decision:**
-  1. Alembic `002_seed_reference_data.py` idempotently seeds **only**: `demo_locations` (`id=1, code='guelma'`, 10-vertex non-authoritative `MultiPolygon` `# TODO(OQ-D7)`, unstudied parcel `F1` at `36.52° N, 7.52° E` `# TODO(OQ-D8)`), `dataset_registry` (`2026.11-guelma-v1`, `is_active=true`), and `ml_breaker_state` (`id=1`).
+  1. Alembic `002_seed_reference_data.py` idempotently seeds **only**: `demo_locations` (`id=1, code='guelma'`, 10-vertex non-authoritative `MultiPolygon` `# TODO(OQ-D7)`, without any backend default parcel per `IMPL-023`), `dataset_registry` (`2026.11-guelma-v1`, `is_active=true`), and `ml_breaker_state` (`id=1`).
   2. Do **NOT** unconditionally seed `public.crop_catalog` in Alembic migration `002`, so `GET /api/v1/catalog` preserves authentic empty-catalog bootstrap (`502 ML_UNAVAILABLE` if upstream `/v1/catalog` is unreachable — `ENDPOINTS B.8`). During `api`/`worker` lifespan startup (or first `GET /catalog` miss), `MLProviderManager.get_catalog()` populates `crop_catalog` (using `MockMLAdapter` returning Fixture `9.4` only when `APP_ENV in ('development','test')` and mode permits).
   3. Include `curl` in `Dockerfile`, implement `python -m app.worker.healthcheck`, and provide both fast in-process `MockMLAdapter` AND an optional `mock-ml` ASGI container under Compose `profiles: ["dev", "test"]` (specifically to test `RealMLAdapter`'s HTTP/gzip/`X-ML-API-Key`/timeout wire transport end-to-end).
 
@@ -98,8 +98,8 @@ Engineering decisions made for ambiguities, gaps (`G1`–`G21`), and contract nu
 - **Decision:** Embed `"fid": str(family_id)` in every issued HS256 access JWT payload. `POST /auth/logout` revokes `family_id` matching body `refresh_token` if provided, or `fid` from the verified access JWT otherwise.
 
 ## `IMPL-015` — Pre-Designated Demo Parcel Preview Lifecycle (`POST /auth/guest`)
-- **Status:** Accepted (Implementation Clarifying Decision)
-- **Decision:** `POST /auth/guest` reads `default_parcel_*` directly from `public.demo_locations` to return `demo_parcel` (`DEMO_PARCEL_UNVERIFIED`) without silently creating a farm row, preserving full `usage.farms = 0` (`GUEST_MAX_FARMS=3`) until the guest calls `POST /farms`.
+- **Status:** Superseded by `IMPL-023` (User Requested Frontend-Only Demo Parcels)
+- **Original Decision:** `POST /auth/guest` read `default_parcel_*` from `public.demo_locations` to return `demo_parcel`. Removed in `IMPL-023` so frontend supplies all demo farms/parcels freely inside `demo_locations.boundary`.
 
 ## `IMPL-016` — `?lang` Display Projection on `GET /catalog`
 - **Status:** Accepted (Implementation Clarifying Decision)
@@ -148,3 +148,11 @@ Engineering decisions made for ambiguities, gaps (`G1`–`G21`), and contract nu
   1. Remove `equipment_constraints` from `required` in `AnalysisSubmitRequest.priorities` (`openapi.yaml`) and `FarmAnalysisInput.priorities` (`schema-v5.0.json`, kept byte-identical with `SYSTEM DESGIN/.../System Architecture Blueprint/`).
   2. Type `equipment_constraints` as `["array", "null"]` with `default: []`, keeping `maxItems: 20` and `items: {type: "string", minLength: 1, maxLength: 160}`, and document that it covers both fertilizer availability and equipment constraints.
   3. When assembling `FarmAnalysisInput` on `POST /analysis` (`M7`), normalize omitted or `null` values to `[]` while keeping `schema-v5.0.json` permissive for optional/nullable inputs.
+
+## `IMPL-023` — Frontend-Defined Demo Parcels (`demo_locations.boundary` Retained, `default_parcel_*` / `demo_parcel` Removed)
+- **Status:** Accepted (User Requested; Supersedes `IMPL-015`)
+- **Context:** Keeping a backend-stored `default_parcel_*` (`F1` at `36.52° N, 7.52° E`) and returning `demo_parcel` (`DemoParcelPreview`) from `POST /auth/guest` and `GET /demo/session` tied demo workflows to a static server-side parcel stub.
+- **Decision:**
+  1. Remove `default_parcel_id`, `default_parcel_name`, `default_parcel_lat`, `default_parcel_lon`, and `default_parcel_area_ha` from `public.demo_locations`, ORM model `DemoLocation`, and `seed.py`, while **keeping** `demo_locations.boundary` (`MultiPolygon`, `SRID 4326`, Wilaya of Guelma) for `GET /demo/locations/{id}/boundary` and PostGIS `ST_Covers` (`422 OUTSIDE_DEMO_BOUNDARY`) enforcement.
+  2. Remove `DemoParcelPreview` and `demo_parcel` from `GuestSessionStartResponse` (`POST /auth/guest`) and `GuestSessionInfo` (`GET /demo/session`) in `openapi.yaml` and backend DTOs/services. Frontend sends all demo farm/field payloads freely via `POST /farms`, `POST /farms/{farm_id}/fields`, and `POST /analysis`.
+  3. Keep optional `FieldWriteRequest.is_unverified_demo_parcel` (`default: false`) and warning `DEMO_PARCEL_UNVERIFIED` so the frontend can still explicitly flag an unverified demo parcel on a field when desired without breaking `schema-v5.0.json` or ML fixtures.
