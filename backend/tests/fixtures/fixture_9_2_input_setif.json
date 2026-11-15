@@ -1,0 +1,76 @@
+{
+  "schema_version": "5.0",
+  "request_id": "660e8400-e29b-41d4-a716-446655440099",
+  "catalog_version": "2026.11",
+  "dataset_version": "2026.11-guelma-v1",
+  "language": "fr",
+  "farm": {
+    "farm_id": "farm_2",
+    "farm_name": "Exploitation Hauts Plateaux Setif",
+    "country": "Algeria",
+    "region": "Setif",
+    "commune": "Ain Arnat"
+  },
+  "planning": {
+    "start_season": "autumn",
+    "start_year": 2027,
+    "horizon_seasons": 4,
+    "cycle_mode": "annual_rotation",
+    "planting_month": 11,
+    "scenario_overrides": {
+      "temp_delta_c": 1.0,
+      "precip_pct_delta": -10.0
+    }
+  },
+  "priorities": {
+    "weights": {
+      "water_saving": 40,
+      "soil_improvement": 20,
+      "income": 20,
+      "risk_reduction": 10,
+      "forage_value": 10
+    },
+    "market_preference": "local_market",
+    "target_crop_ids": ["durum_wheat"],
+    "excluded_crop_ids": [],
+    "equipment_constraints": []
+  },
+  "fields": [
+    {
+      "field_id": "F1",
+      "field_name": "Parcelle Sud",
+      "is_unverified_demo_parcel": false,
+      "location": {
+        "latitude": 36.19,
+        "longitude": 5.41,
+        "boundary": null
+      },
+      "area_hectares": 18.0,
+      "elevation_m": 980.0,
+      "crop_history": [
+        {
+          "season": "autumn",
+          "year": 2025,
+          "planting_month": 11,
+          "crop_id": null,
+          "crop_name_raw": "Ble dur local",
+          "catalog_version": null,
+          "yield_tons_per_hectare": 2.6
+        }
+      ],
+      "soil": {
+        "soil_type": "clay",
+        "source": "farmer",
+        "soil_ph": 7.6,
+        "organic_matter_percent": 1.4,
+        "soil_test_date": "2026-08-20"
+      },
+      "water": {
+        "availability": "limited",
+        "source": "groundwater",
+        "source_other": null,
+        "irrigation_system": "sprinkler"
+      }
+    }
+  ]
+}

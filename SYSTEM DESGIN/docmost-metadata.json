@@ -1,0 +1,52 @@
+{
+  "exportedAt": "2026-11-13T22:30:02.514Z",
+  "source": "docmost",
+  "version": "0.95.0",
+  "pages": {
+    "SYSTEM%20DESGIN.md": {
+      "pageId": "01a1d565-5546-7f75-a8c2-b84d4d718dd1",
+      "slugId": "MN6kVm1mXF",
+      "icon": null,
+      "position": "a94iR",
+      "parentPath": null,
+      "createdAt": "2026-11-13T14:52:30.385Z",
+      "updatedAt": "2026-11-14T10:05:00.000Z"
+    },
+    "SYSTEM%20DESGIN/System%20Architecture%20Blueprint.md": {
+      "pageId": "01a1d25d-8218-7887-84a9-0085266a34cc",
+      "slugId": "9fK87PCiyf",
+      "icon": null,
+      "position": "a12ax",
+      "parentPath": "SYSTEM%20DESGIN.md",
+      "createdAt": "2026-11-13T00:45:05.922Z",
+      "updatedAt": "2026-11-14T10:05:00.000Z"
+    },
+    "SYSTEM%20DESGIN/Architecture%20Decision%20Records%20(ADR).md": {
+      "pageId": "01a1d272-34d6-7daa-a51d-cbf9a4fa012e",
+      "slugId": "KEF2BXflRr",
+      "icon": null,
+      "position": "a08Yj",
+      "parentPath": "SYSTEM%20DESGIN.md",
+      "createdAt": "2026-11-13T01:07:42.400Z",
+      "updatedAt": "2026-11-14T10:05:00.000Z"
+    },
+    "SYSTEM%20DESGIN/System%20Architecture%20Blueprint/Visual%20Input%20%20Output%20Specification.md": {
+      "pageId": "01a1d50a-d1f1-7ed5-b3a1-c641f6e237dc",
+      "slugId": "j8RKvqB2Yb",
+      "icon": null,
+      "position": "a12KU",
+      "parentPath": "SYSTEM%20DESGIN/System%20Architecture%20Blueprint.md",
+      "createdAt": "2026-11-13T13:13:38.507Z",
+      "updatedAt": "2026-11-14T10:05:00.000Z"
+    },
+    "SYSTEM%20DESGIN/System%20Architecture%20Blueprint/FieldShift%20Planner%20%E2%80%94%20ENDPOINTS%20api%20%26%20Database%20Specification.md": {
+      "pageId": "01a1d663-3c6a-75db-8221-2e3b4bb61488",
+      "slugId": "Eqdxpu8Dxf",
+      "icon": null,
+      "position": "a03rw",
+      "parentPath": "SYSTEM%20DESGIN/System%20Architecture%20Blueprint.md",
+      "createdAt": "2026-11-13T19:29:50.162Z",
+      "updatedAt": "2026-11-14T10:05:00.000Z"
+    }
+  }
+}
