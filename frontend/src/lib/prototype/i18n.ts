@@ -239,12 +239,12 @@ export interface LocaleDict {
 
 export const I18N: Record<Lang, LocaleDict> = {
   en: {
-    pageTitle: "FieldShift — Algeria",
-    bootSub: "FieldShift · Algeria",
+    pageTitle: "FieldShift — Guelma Province",
+    bootSub: "FieldShift · Guelma Wilaya",
     bootConnect: "Connecting satellite & terrain",
-    bootSlowTiles: "Loading regional tiles…",
+    bootSlowTiles: "Loading Guelma province tiles…",
     bootSlowNet: "Slow network — streaming regional imagery",
-    brandRegion: "Algeria",
+    brandRegion: "Guelma",
     layerTruecolor: "Imagery",
     layerNdvi: "Canopy",
     layerSm: "Soil Water",
@@ -337,35 +337,35 @@ export const I18N: Record<Lang, LocaleDict> = {
     soilMetaFmt: (s) =>
       `Est. SOC ${s.soc}% · pH ${s.ph} · ${s.omTrend} · Lab core missing`,
     soils: {
-      tidjelabine: {
-        texture: "Clay-loam cambisol",
-        omTrend: "Depleting under bare tillage",
-      },
-      guelma: {
+      seybouse: {
         texture: "Silty clay alluvial",
         omTrend: "Moderate OM · High fertility",
       },
-      constantine: {
-        texture: "Calcareous clay-loam",
-        omTrend: "Vulnerable to crusting",
-      },
-      mila: {
-        texture: "Marl-clay hillside",
+      heliopolis: {
+        texture: "Loam-clay foothill",
         omTrend: "Slope sheet-wash risk",
       },
-      biskra: {
-        texture: "Sandy loam gypsic",
-        omTrend: "Low OM · Heat oxidation risk",
+      bouchegouf: {
+        texture: "Clay-loam alluvial",
+        omTrend: "Depleting under bare tillage",
+      },
+      oz: {
+        texture: "Calcareous clay-loam",
+        omTrend: "Vulnerable to autumn crusting",
+      },
+      tamlouka: {
+        texture: "Sandy clay-loam plateau",
+        omTrend: "Low OM · Dry spring moisture risk",
       },
     },
     guideTitle: "Science, Resolution Fusion & Local Validation Guide",
     guideSub:
-      "Plain-language terms, scale harmonization across satellite Earth observation & local Algeria verification gaps",
+      "Plain-language terms, scale harmonization across satellite Earth observation & local Guelma verification gaps",
     guideGlossaryH: "1. Plain-Language Agronomic Glossary",
     guideFusionH: "2. Satellite Scale Harmonization & Data Confidence",
     guideMathH: "3. Active Scoring Weights & Water Balance Audit",
     guideValidationNote:
-      "Judgment & Local Review: Satellite pixels span 250 m to 55 km while rainfall, market prices, soil organic carbon, and salinity vary per field. Verify fertilizer, cultivar, and irrigation timing with your commune DSA (Direction des Services Agricoles), ITGC / ITAFV technicians, or a certified soil laboratory.",
+      "Judgment & Local Review: Satellite pixels span 250 m to 55 km while rainfall, market prices, soil organic carbon, and salinity vary per field. Verify fertilizer, cultivar, and irrigation timing with your Guelma DSA (Direction des Services Agricoles), ITGC / ITAFV technicians, or a certified soil laboratory.",
     glossaryItems: [
       {
         term: "Canopy Greenness (NDVI · MODIS 250 m)",
@@ -373,7 +373,7 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "Reference Evapotranspiration (ET₀ · mm/yr)",
-        def: "Total atmosphere water demand driven by heat and sunlight (1,312–1,479 mm/yr across these sites). Compare Rain vs ET₀ to see irrigation pressure.",
+        def: "Total atmosphere water demand driven by heat and sunlight (1,335–1,390 mm/yr across Guelma). Compare Rain vs ET₀ to see irrigation pressure.",
       },
       {
         term: "Soil Moisture Anomaly (GLDAS / SMAP)",
@@ -381,11 +381,11 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "Bare · Wet Runoff Days (d/yr)",
-        def: "Estimated rainy days occurring while ground cover is sparse. Steep parcels (Tidjelabine 13.8%, Mila 12.9%) lose topsoil fast on those days.",
+        def: "Estimated rainy days occurring while ground cover is sparse. Sloping foothills (Héliopolis 9.4%, Oued Zenati 8.2%) lose topsoil fast on those days.",
       },
       {
         term: "Heat Spike (>=35°C) & Frost (<=0°C)",
-        def: "30-yr POWER counts show +19 to +26 extra hot days/yr in the last 5 years—harming faba/chickpea pod set; Constantine averages 19.5 frost d/yr.",
+        def: "30-yr POWER counts show +19 to +26 extra hot days/yr in the last 5 years—harming faba/chickpea pod set; Tamlouka & Oued Zenati average 11.4–15.8 frost d/yr.",
       },
       {
         term: "Biological N₂ Fixation (kg N/ha)",
@@ -455,7 +455,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     uMm: "mm",
     ovTitle: "Rain vs bare soil overlap",
     zoomDetail: "Zoom to parcel detail",
-    showRegion: "Show Algeria overview",
+    showRegion: "Show Guelma overview",
     provLine1: "DEM · AWS Terrarium (SRTM 30 m grid)",
     provLine2: "Climate · POWER 1996–2025 daily climatology",
     backField: "← Back to field profile",
@@ -507,8 +507,8 @@ export const I18N: Record<Lang, LocaleDict> = {
       d > 0 ? `−${d} fewer exposed days` : `+${Math.abs(d)} more exposed days`,
     skyAlts: (ha, place) => [
       "ORBIT · ~1,300 KM",
-      "ALGERIA · ~120 KM",
-      `${String(place || "ALGERIA").toUpperCase()} · ~11 KM`,
+      "GUELMA WILAYA · ~45 KM",
+      `${String(place || "GUELMA").toUpperCase()} · ~8 KM`,
       `PARCEL LOCK · ${ha} HA`,
     ],
     scenActive: (r, tm) => {
@@ -550,21 +550,21 @@ export const I18N: Record<Lang, LocaleDict> = {
     probeElev: (h) => `${h} m elevation`,
     probeLoading: "Elevation loading…",
     climates: {
-      inland: "647 mm/yr · CV 0.23 · 3.6 frost d/yr",
-      guelma: "790 mm/yr · CV 0.21 · 3.9 frost d/yr",
-      constantine: "590 mm/yr · CV 0.22 · 19.5 frost d/yr",
-      mila: "683 mm/yr · CV 0.20 · 3.4 frost d/yr",
-      biskra: "241 mm/yr · CV 0.39 · 3.5 frost d/yr",
+      seybouse_valley: "790 mm/yr · CV 0.21 · 3.9 frost d/yr",
+      heliopolis_hills: "745 mm/yr · CV 0.22 · 5.1 frost d/yr",
+      bouchegouf_basin: "710 mm/yr · CV 0.20 · 3.4 frost d/yr",
+      oued_zenati: "585 mm/yr · CV 0.23 · 11.4 frost d/yr",
+      tamlouka_plains: "470 mm/yr · CV 0.26 · 15.8 frost d/yr",
     },
     legends: LEGENDS,
   },
   fr: {
-    pageTitle: "FieldShift — Algérie",
-    bootSub: "Rotation des cultures · Algérie",
+    pageTitle: "FieldShift — Wilaya de Guelma",
+    bootSub: "Rotation des cultures · Guelma",
     bootConnect: "Connexion satellite et relief",
-    bootSlowTiles: "Chargement des tuiles régionales…",
+    bootSlowTiles: "Chargement des tuiles de Guelma…",
     bootSlowNet: "Réseau lent — flux d'imagerie régionale",
-    brandRegion: "Algérie",
+    brandRegion: "Guelma",
     layerTruecolor: "Imagerie",
     layerNdvi: "Végétation",
     layerSm: "Eau du sol",
@@ -657,35 +657,35 @@ export const I18N: Record<Lang, LocaleDict> = {
     soilMetaFmt: (s) =>
       `Est. COS ${s.soc}% · pH ${s.ph} · ${s.omTrend} · Sans analyse labo`,
     soils: {
-      tidjelabine: {
-        texture: "Argilo-limoneux",
-        omTrend: "Baisse sous labour nu",
-      },
-      guelma: {
+      seybouse: {
         texture: "Limon argileux alluvial",
         omTrend: "MO modérée · Sol fertile",
       },
-      constantine: {
-        texture: "Argilo-calcaire",
-        omTrend: "Risque de battance",
+      heliopolis: {
+        texture: "Limon argileux de piémont",
+        omTrend: "Risque de ruissellement en pente",
       },
-      mila: {
-        texture: "Marno-argileux en pente",
-        omTrend: "Érosion hydrique forte",
+      bouchegouf: {
+        texture: "Argilo-limoneux alluvial",
+        omTrend: "Baisse sous labour nu",
       },
-      biskra: {
-        texture: "Sablo-limoneux gypseux",
-        omTrend: "MO faible · Oxydation",
+      oz: {
+        texture: "Limon argilo-calcaire",
+        omTrend: "Risque de battance automnale",
+      },
+      tamlouka: {
+        texture: "Sablo-argilo-limoneux",
+        omTrend: "MO faible · Déficit printanier",
       },
     },
     guideTitle: "Guide scientifique, fusion d'échelles & validation locale",
     guideSub:
-      "Définitions simples, harmonisation multi-résolutions satellite et lacunes locales en Algérie",
+      "Définitions simples, harmonisation multi-résolutions satellite et validation locale à Guelma",
     guideGlossaryH: "1. Glossaire agronomique simplifié",
     guideFusionH: "2. Harmonisation des résolutions & niveaux de confiance",
     guideMathH: "3. Pondération active & bilan hydrique",
     guideValidationNote:
-      "Jugement et validation locale : les pixels satellites couvrent de 250 m à 55 km alors que pluies locales, prix, carbone du sol et salinité varient par parcelle. Validez doses, variétés et irrigation auprès de la DSA, l'ITGC/ITAFV ou un laboratoire agronomique.",
+      "Jugement et validation locale : les pixels satellites couvrent de 250 m à 55 km alors que pluies locales, prix, carbone du sol et salinité varient par parcelle. Validez doses, variétés et irrigation auprès de la DSA de Guelma, l'ITGC/ITAFV ou un laboratoire agronomique.",
     glossaryItems: [
       {
         term: "Indice de végétation (NDVI · MODIS 250 m)",
@@ -693,7 +693,7 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "Évapotranspiration ET₀ (mm/an)",
-        def: "Demande en eau de l'atmosphère (1 312–1 479 mm/an ici). Comparer Pluie et ET₀ montre le déficit hydrique.",
+        def: "Demande en eau de l'atmosphère (1 335–1 390 mm/an à Guelma). Comparer Pluie et ET₀ montre le déficit hydrique.",
       },
       {
         term: "Humidité du sol (GLDAS / SMAP)",
@@ -701,11 +701,11 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "Jours nu·humide (j/an)",
-        def: "Jours de pluie tombant sur sol peu couvert. Critique sur les versants en pente (Tidjelabine 13,8 %, Mila 12,9 %).",
+        def: "Jours de pluie tombant sur sol peu couvert. Critique sur les coteaux en pente (Héliopolis 9,4 %, Oued Zenati 8,2 %).",
       },
       {
         term: "Pics chaleur (>=35°C) & Gel (<=0°C)",
-        def: "POWER montre +19 à +26 jours chauds en plus sur 5 ans ; Constantine subit 19,5 j de gel/an pénalisant le pois chiche.",
+        def: "POWER montre +19 à +26 jours chauds en plus sur 5 ans ; Tamlouka et Oued Zenati subissent 11,4–15,8 j de gel/an.",
       },
       {
         term: "Fixation symbiotique N₂ (kg N/ha)",
@@ -775,7 +775,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     uMm: "mm",
     ovTitle: "Pluie vs sol nu",
     zoomDetail: "Zoomer sur la parcelle",
-    showRegion: "Vue nationale Algérie",
+    showRegion: "Vue Wilaya de Guelma",
     provLine1: "MNT · AWS Terrarium (grille SRTM 30 m)",
     provLine2: "Climat · POWER climatologie 1996–2025",
     backField: "← Retour au profil",
@@ -827,8 +827,8 @@ export const I18N: Record<Lang, LocaleDict> = {
       d > 0 ? `−${d} j d'exposition en moins` : `+${Math.abs(d)} j d'exposition en plus`,
     skyAlts: (ha, place) => [
       "ORBITE · ~1 300 KM",
-      "ALGÉRIE · ~120 KM",
-      `${String(place || "ALGÉRIE").toUpperCase()} · ~11 KM`,
+      "WILAYA GUELMA · ~45 KM",
+      `${String(place || "GUELMA").toUpperCase()} · ~8 KM`,
       `PARCELLE · ${ha} HA`,
     ],
     scenActive: (r, tm) => {
@@ -870,11 +870,11 @@ export const I18N: Record<Lang, LocaleDict> = {
     probeElev: (h) => `${h} m d'altitude`,
     probeLoading: "Chargement altitude…",
     climates: {
-      inland: "647 mm/an · CV 0.23 · 3,6 j gel/an",
-      guelma: "790 mm/an · CV 0.21 · 3,9 j gel/an",
-      constantine: "590 mm/an · CV 0.22 · 19,5 j gel/an",
-      mila: "683 mm/an · CV 0.20 · 3,4 j gel/an",
-      biskra: "241 mm/an · CV 0.39 · 3,5 j gel/an",
+      seybouse_valley: "790 mm/an · CV 0,21 · 3,9 j gel/an",
+      heliopolis_hills: "745 mm/an · CV 0,22 · 5,1 j gel/an",
+      bouchegouf_basin: "710 mm/an · CV 0,20 · 3,4 j gel/an",
+      oued_zenati: "585 mm/an · CV 0,23 · 11,4 j gel/an",
+      tamlouka_plains: "470 mm/an · CV 0,26 · 15,8 j gel/an",
     },
     legends: {
       ndvi: { ...LEGENDS.ndvi, title: "Couvert végétal", lo: "nu", hi: "dense" },
@@ -883,35 +883,35 @@ export const I18N: Record<Lang, LocaleDict> = {
       lst: { ...LEGENDS.lst, title: "Temp. de surface", lo: "frais", hi: "chaud" },
     },
     presets: {
-      tidjelabine: {
-        short: "Tidjelabine",
-        name: "Coteau de Tidjelabine",
-        zone: "Coteau céréalier pluvial · Argilo-limoneux",
-        note: "Versant céréalier en pente au sud de Boumerdès. Le sol labouré nu perd rapidement humidité et terre lors des averses de nov.–jan.",
-      },
-      guelma: {
-        short: "Guelma",
-        name: "Plaine alluviale de la Seybouse",
+      seybouse: {
+        short: "Seybouse",
+        name: "Terrasse de la Seybouse · Guelma",
         zone: "Terrasse alluviale plane · Limon argileux humide",
-        note: "Parcelle alluviale nivelée (2,0 %) au cœur du bassin humide de Guelma (790 mm/an). Faible érosion : la fertilisation azotée et l'intensification priment.",
+        note: "Parcelle alluviale nivelée (2,0 %) au cœur du bassin de la Seybouse (790 mm/an). Faible érosion : la fertilisation azotée et l'intensification priment.",
       },
-      constantine: {
-        short: "Constantine",
-        name: "Hautes Plaines d'El Khroub",
-        zone: "Plateau céréalier d'altitude · Argilo-calcaire",
-        note: "Grand ruban céréalier sur les Hauts Plateaux à 673 m (19,5 j de gel/an). L'orge et la féverole tolèrent mieux l'hiver rigoureux que le pois chiche.",
+      heliopolis: {
+        short: "Héliopolis",
+        name: "Coteau d'Héliopolis · Guelma",
+        zone: "Piémont sub-humide · Limon argileux en pente",
+        note: "Versant nord près d'Héliopolis (745 mm/an, pente 9,4 %). Un couvert d'hiver freine nettement l'érosion des averses de nov.–jan.",
       },
-      mila: {
-        short: "Mila",
-        name: "Versant Tellien de Beni Haroun",
-        zone: "Versant marno-argileux en pente · Tête de bassin",
-        note: "Parcelle en forte pente (12,9 %) dominant l'oued et le barrage de Beni Haroun à 504 m. Un couvert permanent d'automne est vital contre l'érosion.",
+      bouchegouf: {
+        short: "Bouchegouf",
+        name: "Bassin de Bouchegouf · Est Guelma",
+        zone: "Corridor alluvial est · Argilo-limoneux",
+        note: "Parcelle du bassin oriental à Bouchegouf (710 mm/an). Printemps doux favorable aux rotations blé dur – féverole – orge.",
       },
-      biskra: {
-        short: "Biskra",
-        name: "Périmètre des Ziban · Biskra",
-        zone: "Piémont aride irrigué · Sablo-limoneux",
-        note: "Îlot agricole irrigué en bordure saharienne (241 mm/an, CV 0,39). Orge et pois chiche économisent l'eau face au stress thermique et hydrique.",
+      oz: {
+        short: "Oued Zenati",
+        name: "Versant d'Oued Zenati · Ouest Guelma",
+        zone: "Hautes plaines ouest · Limon argilo-calcaire",
+        note: "Zone céréalière en pente (8,2 %) vers Oued Zenati (585 mm/an, 11,4 j gel/an). Féverole et orge résistent mieux au gel que la jachère travaillée.",
+      },
+      tamlouka: {
+        short: "Tamlouka",
+        name: "Plateau de Tamlouka · Sud Guelma",
+        zone: "Plateau céréalier semi-aride · Sablo-argileux",
+        note: "Haut plateau sud de Guelma à Tamlouka (470 mm/an, 15,8 j gel/an). L'orge et le fourrage vesce-avoine sécurisent les printemps secs.",
       },
     },
     strats: {
@@ -974,12 +974,12 @@ export const I18N: Record<Lang, LocaleDict> = {
     },
   },
   ar: {
-    pageTitle: "FieldShift · تحول الحقول — الجزائر",
-    bootSub: "تناوب المحاصيل · الجزائر",
+    pageTitle: "FieldShift · تحول الحقول — ولاية قالمة",
+    bootSub: "تناوب المحاصيل · ولاية قالمة",
     bootConnect: "جاري الاتصال بالأقمار والتضاريس",
-    bootSlowTiles: "جاري تحميل الخرائط الإقليمية…",
+    bootSlowTiles: "جاري تحميل خرائط ولاية قالمة…",
     bootSlowNet: "شبكة بطيئة — بث الصور الإقليمية",
-    brandRegion: "الجزائر",
+    brandRegion: "قالمة",
     layerTruecolor: "صور حقيقية",
     layerNdvi: "الغطاء النباتي",
     layerSm: "رطوبة التربة",
@@ -1072,35 +1072,35 @@ export const I18N: Record<Lang, LocaleDict> = {
     soilMetaFmt: (s) =>
       `تقدير كربون ${s.soc}% · pH ${s.ph} · ${s.omTrend} · بدون تحليل مخبري`,
     soils: {
-      tidjelabine: {
-        texture: "طينية طمية",
-        omTrend: "استنزاف مع الحرث العاري",
-      },
-      guelma: {
+      seybouse: {
         texture: "طمي طيني رسوبي",
         omTrend: "خصوبة جيدة ومتوازنة",
       },
-      constantine: {
-        texture: "كلسية طينية",
-        omTrend: "حساسة لتقشر السطح",
+      heliopolis: {
+        texture: "طمية طينية سفحية",
+        omTrend: "خطر جريان التربة على المنحدر",
       },
-      mila: {
-        texture: "طينية مارنية منحدِرة",
-        omTrend: "خطر انجراف مرتفع",
+      bouchegouf: {
+        texture: "طينية طمية رسوبية",
+        omTrend: "استنزاف مع الحرث العاري",
       },
-      biskra: {
-        texture: "رملية طمية جبسية",
-        omTrend: "مادة عضوية منخفضة",
+      oz: {
+        texture: "طمية كلسية طينية",
+        omTrend: "حساسة لتقشر السطح خريفاً",
+      },
+      tamlouka: {
+        texture: "طينية رملية هضبية",
+        omTrend: "مادة عضوية منخفضة وعجز ربيعي",
       },
     },
     guideTitle: "الدليل العلمي ودمج الدقة والتحقق الميداني",
     guideSub:
-      "شروح مبسطة للفلاحين، مواءمة دقة بيانات الأقمار الصناعية، وفجوات التحقق المحلي بالجزائر",
+      "شروح مبسطة للفلاحين، مواءمة دقة بيانات الأقمار الصناعية، وفجوات التحقق المحلي بولاية قالمة",
     guideGlossaryH: "1. قاموس فلاحي مبسط للمؤشرات",
     guideFusionH: "2. دمج دقة الأقمار الصناعية ومستوى الثقة",
     guideMathH: "3. الأوزان النشطة والميزان المائي للقطعة",
     guideValidationNote:
-      "تذكير الحكم المحلي: تتراوح دقة الأقمار بين 250 م و55 كم بينما تختلف الملوحة والأسعار والكربون العضوي من قطعة لأخرى. يجب تأكيد البذور والأسمدة ومواعيد السقي مع مديرية المصالح الفلاحية DSA أو معهد ITGC أو مخبر تحاليل التربة.",
+      "تذكير الحكم المحلي: تتراوح دقة الأقمار بين 250 م و55 كم بينما تختلف الملوحة والأسعار والكربون العضوي من قطعة لأخرى. يجب تأكيد البذور والأسمدة ومواعيد السقي مع مديرية المصالح الفلاحية DSA بقالمة أو معهد ITGC أو مخبر تحاليل التربة.",
     glossaryItems: [
       {
         term: "خضرة الغطاء النباتي (NDVI · 250 م)",
@@ -1108,7 +1108,7 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "الطلب المناخي للماء ET₀ (مم/سنة)",
-        def: "مجموع تبخر التربة ونتح النبات (1312–1479 مم/سنة هنا). مقارنة المطر بـ ET₀ تُظهر العجز المائي الحقيقي.",
+        def: "مجموع تبخر التربة ونتح النبات (1335–1390 مم/سنة عبر قالمة). مقارنة المطر بـ ET₀ تُظهر العجز المائي الحقيقي.",
       },
       {
         term: "شذوذ رطوبة التربة (GLDAS / SMAP)",
@@ -1116,11 +1116,11 @@ export const I18N: Record<Lang, LocaleDict> = {
       },
       {
         term: "أيام مكشوف·ممطر (ي/سنة)",
-        def: "عدد الأيام الممطرة والتربة عارية. أشد خطورة في المنحدرات (تيجلابين 13.8%، ميلة 12.9%).",
+        def: "عدد الأيام الممطرة والتربة عارية. أشد خطورة في المنحدرات (هيليوبوليس 9.4%، وادي الزناتي 8.2%).",
       },
       {
         term: "موجات الحر (>=35°م) والصقيع (<=0°م)",
-        def: "تظهر بيانات 30 سنة قفزة +19 إلى +26 يوم حر إضافي آخر 5 سنوات، مع 19.5 يوم صقيع سنوياً بقسنطينة.",
+        def: "تظهر بيانات 30 سنة قفزة +19 إلى +26 يوم حر إضافي آخر 5 سنوات، مع 11.4–15.8 يوم صقيع بوادي الزناتي وتاملوكة.",
       },
       {
         term: "تثبيت الآزوت الحيوي N₂ (كغ/هكتار)",
@@ -1185,7 +1185,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     uMm: "مم",
     ovTitle: "المطر مقابل التربة المكشوفة",
     zoomDetail: "تكبير القطعة",
-    showRegion: "عرض خريطة الجزائر",
+    showRegion: "عرض ولاية قالمة",
     provLine1: "التضاريس · AWS Terrarium (دقة 30 م)",
     provLine2: "المناخ · أرصاد POWER 1996–2025",
     backField: "← العودة لملف القطعة",
@@ -1250,8 +1250,8 @@ export const I18N: Record<Lang, LocaleDict> = {
       d > 0 ? `${d} يوم انكشاف أقل` : `${Math.abs(d)} يوم انكشاف إضافي`,
     skyAlts: (ha, place) => [
       "المدار · 1300 كم",
-      "الجزائر · 120 كم",
-      `${place || "الجزائر"} · 11 كم`,
+      "ولاية قالمة · 45 كم",
+      `${place || "قالمة"} · 8 كم`,
       `تحديد القطعة · ${ha} هـ`,
     ],
     scenActive: (r, tm) => {
@@ -1293,11 +1293,11 @@ export const I18N: Record<Lang, LocaleDict> = {
     probeElev: (h) => `${h} م ارتفاع`,
     probeLoading: "جاري تحميل الارتفاع…",
     climates: {
-      inland: "647 مم/سنة · تشتت 0.23 · 3.6 يوم صقيع",
-      guelma: "790 مم/سنة · تشتت 0.21 · 3.9 يوم صقيع",
-      constantine: "590 مم/سنة · تشتت 0.22 · 19.5 يوم صقيع",
-      mila: "683 مم/سنة · تشتت 0.20 · 3.4 يوم صقيع",
-      biskra: "241 مم/سنة · تشتت 0.39 · 3.5 يوم صقيع",
+      seybouse_valley: "790 مم/سنة · تشتت 0.21 · 3.9 يوم صقيع",
+      heliopolis_hills: "745 مم/سنة · تشتت 0.22 · 5.1 يوم صقيع",
+      bouchegouf_basin: "710 مم/سنة · تشتت 0.20 · 3.4 يوم صقيع",
+      oued_zenati: "585 مم/سنة · تشتت 0.23 · 11.4 يوم صقيع",
+      tamlouka_plains: "470 مم/سنة · تشتت 0.26 · 15.8 يوم صقيع",
     },
     legends: {
       ndvi: { ...LEGENDS.ndvi, title: "الغطاء النباتي", lo: "عارية", hi: "كثيف" },
@@ -1306,35 +1306,35 @@ export const I18N: Record<Lang, LocaleDict> = {
       lst: { ...LEGENDS.lst, title: "حرارة السطح", lo: "معتدل", hi: "حار" },
     },
     presets: {
-      tidjelabine: {
-        short: "تيجلابين",
-        name: "مرتفعات تيجلابين · بومرداس",
-        zone: "منحدر حبوب مطرية · تربة طينية طمية",
-        note: "منحدر زراعي للحبوب جنوب بومرداس. تفقد التربة المحروثة المكشوفة الرطوبة والتربة السطحية بسرعة خلال عواصف نوفمبر–جانفي.",
-      },
-      guelma: {
-        short: "قالمة",
+      seybouse: {
+        short: "سيبوس",
         name: "سهل سيبوس الرسوبي · قالمة",
         zone: "مدرج نهري مستوٍ · طمي طيني رطب",
         note: "قطعة زراعية مستوية (2.0%) في حوض وادي سيبوس الرطب (790 مم/سنة). خطر التعرية ضئيل للغاية فتتصدر خصوبة الآزوت والعائد الاقتصادي الأولوية.",
       },
-      constantine: {
-        short: "قسنطينة",
-        name: "الهضاب العليا الخروب · قسنطينة",
-        zone: "هضبة حبوب مرتفعة · تربة كلسية طينية",
-        note: "شريط حبوب مفتوح بالهضاب العليا على ارتفاع 673 م مع 19.5 يوم صقيع سنوياً. يتفوق الشعير والفول شتاءً بينما يتأثر الحمص ببرد الربيع.",
+      heliopolis: {
+        short: "هيليوبوليس",
+        name: "سفوح هيليوبوليس · قالمة",
+        zone: "سفح شبه رطب · تربة طمية طينية منحدِرة",
+        note: "منحدر شمالي قرب هيليوبوليس (745 مم/سنة، انحدار 9.4%). يقلل الغطاء النباتي الشتوي من انجراف التربة خلال أمطار نوفمبر–جانفي.",
       },
-      mila: {
-        short: "ميلة",
-        name: "سفوح بني هارون التلية · ميلة",
-        zone: "منحدر تلي شديد الميل · طين مارني",
-        note: "منحدر تلي بنسبة انحدار 12.9% على ارتفاع 504 م بحوض بني هارون. الغطاء النباتي الخريفي المستمر ضروري لوقف انجراف التربة السطحية.",
+      bouchegouf: {
+        short: "بوشقوف",
+        name: "حوض بوشقوف · شرق قالمة",
+        zone: "رواق رسوبي شرقي · تربة طينية طمية",
+        note: "قطعة بالحوض الشرقي لوادي سيبوس ببوشقوف (710 مم/سنة). الربيع الدافئ يدعم تناوب القمح الصلب والفول والشعير.",
       },
-      biskra: {
-        short: "بسكرة",
-        name: "محيط الزيبان المسقي · بسكرة",
-        zone: "واحة هامشية جافة · تربة رملية طمية",
-        note: "قطعة فلاحية مسقية في حزام الزيبان الجاف (241 مم/سنة وتذبذب مطري مرتفع 0.39). الشعير والحمص والغطاء الحافظ للرطوبة يقللون استهلاك مياه السقي.",
+      oz: {
+        short: "وادي الزناتي",
+        name: "مرتفعات وادي الزناتي · غرب قالمة",
+        zone: "مرتفعات غربية · تربة كلسية طمية منحدِرة",
+        note: "حزام الحبوب المرتفع بوادي الزناتي (585 مم/سنة، 11.4 يوم صقيع). الفول والشعير أكثر مقاومة للصقيع من البور المكشوف.",
+      },
+      tamlouka: {
+        short: "تاملوكة",
+        name: "هضبة تاملوكة العليا · جنوب قالمة",
+        zone: "هضبة شبه جافة · تربة طينية رملية",
+        note: "هضبة عليا جنوب قالمة بتاملوكة (470 مم/سنة، 15.8 يوم صقيع). الشعير وأعلاف البيقية والشوفان تحمي المحصول في الربيع الجاف.",
       },
     },
     strats: {

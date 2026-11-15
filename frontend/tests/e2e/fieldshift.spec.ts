@@ -191,7 +191,7 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     expect(consoleErrors, "Console errors detected").toEqual([]);
   });
 
-  test("renders the TSX FieldShift workspace at the root route with full interactivity and zero ARD branding", async ({
+  test("completes full Guelma farmer workflow: empty dashboard -> draw borders -> save farm info -> persist -> edit -> simulate -> remove & RTL", async ({
     page,
   }) => {
     const pageErrors: string[] = [];
@@ -204,7 +204,11 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     page.on("console", (msg) => {
       if (msg.type() === "error") {
         const text = msg.text();
-        if (!/webgl|Failed to initialize WebGL|maplibre|ERR_NAME_NOT_RESOLVED|Failed to fetch|terrarium|arcgisonline|gibs/i.test(text)) {
+        if (
+          !/webgl|Failed to initialize WebGL|maplibre|ERR_NAME_NOT_RESOLVED|Failed to fetch|terrarium|arcgisonline|gibs|demotiles/i.test(
+            text
+          )
+        ) {
           consoleErrors.push(text);
         }
       }
@@ -215,62 +219,109 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
       }
     });
 
-    await page.goto("/#still");
-    await expect(page.getByTestId("fieldshift-prototype-root")).toBeVisible();
-    await expect(page).toHaveTitle("FieldShift — Algeria");
-    await expect(page.locator(".brand-title")).toContainText("FieldShift");
-    await expect(page.locator("#map")).toBeVisible();
+    // Clear workspace storage so we always verify clean initial landing state
+    await page.addInitScript(() => {
+      try {
+        if (!sessionStorage.getItem("__e2e_reset_done")) {
+          localStorage.removeItem("fieldshift.guelma.workspace.v1");
+          sessionStorage.setItem("__e2e_reset_done", "1");
+        }
+      } catch {
+        /* ignore */
+      }
+    });
 
-    const bodyText = await page.locator("body").innerText();
-    expect(bodyText).not.toContain("ARD");
+    await page.goto("/");
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+    await expect(page.getByTestId("empty-workspace-card")).toBeVisible();
+    await expect(page.getByTestId("kpi-farms")).toHaveText("0");
+    await expect(page.getByTestId("kpi-fields")).toHaveText("0");
+    await assertNoHorizontalOverflow(page, "/ (dashboard empty)");
 
-    // Open mobile Field drawer if viewport is mobile
-    const mobFieldBtn = page.locator('[data-mob="field"]');
-    if (await mobFieldBtn.isVisible()) {
-      await mobFieldBtn.click();
-    }
-    await expect(page.locator("#f-name")).toContainText("Tidjelabine");
+    // Trilingual RTL check on Dashboard (EN -> AR -> EN)
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await page.getByTestId("dash-lang-en").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 
-    // Switch preset to Guelma
-    const guelmaPill = page.locator('[data-preset="guelma"]');
-    if (await guelmaPill.isVisible()) {
-      await guelmaPill.click();
+    // 1. Open interactive border selection map
+    await page.getByTestId("empty-add-farm-btn").click();
+    await expect(page.getByTestId("guelma-border-editor")).toBeVisible();
+
+    // 2. Search & jump to Bouchegouf across 34 Guelma communes
+    await page.getByTestId("commune-search-input").fill("Bouchegouf");
+    await page.getByTestId("commune-dropdown").getByRole("button", { name: /Bouchegouf/i }).first().click();
+
+    // 3. Draw 4 corners interactively on canvas (SVG fallback or MapLibre canvas)
+    const svgCanvas = page.getByTestId("border-editor-svg-canvas");
+    if (await svgCanvas.isVisible()) {
+      const box = await svgCanvas.boundingBox();
+      if (box) {
+        await page.mouse.click(box.x + box.width * 0.35, box.y + box.height * 0.35);
+        await page.mouse.click(box.x + box.width * 0.55, box.y + box.height * 0.35);
+        await page.mouse.click(box.x + box.width * 0.55, box.y + box.height * 0.58);
+        await page.mouse.click(box.x + box.width * 0.35, box.y + box.height * 0.58);
+      }
+      await page.getByTestId("cad-close-poly-btn").click();
     } else {
-      await page.locator("#preset-select").selectOption("guelma");
+      await page.getByTestId("quick-border-bouchegouf").click();
     }
-    await expect(page.locator("#f-name")).toContainText("Seybouse");
 
-    // Switch to Rotation Lab (on mobile via dock), change priority & open Compare + Audit
+    await expect(page.getByTestId("save-my-farm-btn")).toBeEnabled();
+    await page.getByTestId("save-my-farm-btn").click();
+
+    // 4. Complete Farm & Field Info Onboarding Modal
+    await expect(page.getByTestId("farm-field-info-modal")).toBeVisible();
+    await page.getByTestId("input-farm-name").fill("Domaine Bouchegouf E2E");
+    await page.getByTestId("input-field-name").fill("Parcelle Nord A1");
+    await page.getByTestId("soil-mode-known").click();
+    await page.getByTestId("submit-farm-field-form").click();
+
+    // 5. Verify farm & field rendered cleanly on Dashboard and persist across reload
+    await expect(page.getByTestId("kpi-farms")).toHaveText("1");
+    await expect(page.getByTestId("kpi-fields")).toHaveText("1");
+    await expect(page.getByTestId("field-card-F-1")).toContainText("Parcelle Nord A1");
+
+    await page.reload();
+    await expect(page.getByTestId("field-card-F-1")).toContainText("Parcelle Nord A1");
+    await assertNoHorizontalOverflow(page, "/ (dashboard populated)");
+
+    // 6. Edit Field Info
+    await page.getByTestId("edit-info-F-1").click();
+    await expect(page.getByTestId("farm-field-info-modal")).toBeVisible();
+    await page.getByTestId("input-field-name").fill("Parcelle Nord A1 Amended");
+    await page.getByTestId("submit-farm-field-form").click();
+    await expect(page.getByTestId("field-card-F-1")).toContainText("Parcelle Nord A1 Amended");
+
+    // 7. Add a second field to the existing farm
+    await page.getByTestId("add-field-farm-farm_1").click();
+    await expect(page.getByTestId("guelma-border-editor")).toBeVisible();
+    await page.getByTestId("quick-border-heliopolis").click();
+    await page.getByTestId("save-my-farm-btn").click();
+    await page.getByTestId("input-field-name").fill("Coteau Sud B2");
+    await page.getByTestId("submit-farm-field-form").click();
+    await expect(page.getByTestId("kpi-fields")).toHaveText("2");
+
+    // 8. Inspect & Simulate saved parcel in FieldShift 3D GIBS studio, then return
+    await page.getByTestId("inspect-field-F-1").click();
+    await expect(page.getByTestId("fieldshift-prototype-root")).toBeVisible();
     const mobLabBtn = page.locator('[data-mob="lab"]');
     if (await mobLabBtn.isVisible()) {
       await mobLabBtn.click();
     }
     await page.locator('[data-prio="water"]').click();
     await expect(page.locator('[data-prio="water"]')).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("proto-back-dashboard").click();
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
 
-    const mobCompareBtn = page.locator('[data-mob="compare"]');
-    if (await mobCompareBtn.isVisible()) {
-      await mobCompareBtn.click();
-    } else {
-      await page.locator("#tab-compare").click();
-    }
-    await expect(page.locator("#cmp-title")).toContainText("Guelma");
+    // 9. Remove second field and confirm KPI drops back to 1
+    await page.getByTestId("remove-field-F-2").click();
+    await expect(page.getByTestId("confirm-delete-modal")).toBeVisible();
+    await page.getByTestId("confirm-delete-btn").click();
+    await expect(page.getByTestId("kpi-fields")).toHaveText("1");
 
-    // Open & close Guide modal
-    await page.locator("#guide-btn").click();
-    await expect(page.locator("#guide-modal")).toHaveClass(/open/);
-    await page.locator("#guide-close").click();
-    await expect(page.locator("#guide-modal")).not.toHaveClass(/open/);
-
-    // Trilingual RTL switch check
-    await page.locator('[data-lang="ar"]').click();
-    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
-    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await page.locator('[data-lang="en"]').click();
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-
-    await assertNoHorizontalOverflow(page, "/");
     expect(pageErrors, "Uncaught page errors on /").toEqual([]);
     expect(consoleErrors, "Console errors on /").toEqual([]);
     expect(failedLocalRequests, "Failed local asset requests on /").toEqual([]);

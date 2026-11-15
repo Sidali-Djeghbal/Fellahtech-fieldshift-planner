@@ -1,5 +1,5 @@
-import { FieldShiftPrototypeApp } from "@/components/prototype/FieldShiftPrototypeApp";
+import { FieldShiftWorkspaceRoot } from "@/components/guelma/FieldShiftWorkspaceRoot";
 
 export default function HomePage() {
-  return <FieldShiftPrototypeApp />;
+  return <FieldShiftWorkspaceRoot />;
 }
