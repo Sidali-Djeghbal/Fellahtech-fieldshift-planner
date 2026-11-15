@@ -86,6 +86,14 @@
 
   --fs-hud-bg: oklch(0.99 0.005 148 / 0.92);
 
+  --lg-fg: var(--text-primary);
+  --lg-fg-muted: var(--text-secondary);
+  --lg-fg-subtle: var(--text-tertiary);
+  --lg-tile-bg: rgba(17, 24, 19, 0.04);
+  --lg-tile-border: rgba(17, 24, 19, 0.06);
+  --lg-btn-bg: var(--fs-hud-bg);
+  --lg-btn-border: var(--fs-card-border);
+
   --fs-cta-bg: #0b3d2e;
   --fs-cta-fg: #ffffff;
   --fs-cta-hover: #14533e;
@@ -186,6 +194,14 @@
 
   --fs-hud-bg: oklch(0.11 0.014 148 / 0.80);
 
+  --lg-fg: #f5f7f5;
+  --lg-fg-muted: #9ca89e;
+  --lg-fg-subtle: #7d8b80;
+  --lg-tile-bg: rgba(255, 255, 255, 0.05);
+  --lg-tile-border: rgba(255, 255, 255, 0.08);
+  --lg-btn-bg: var(--fs-hud-bg);
+  --lg-btn-border: var(--fs-card-border);
+
   --fs-cta-bg: #ffffff;
   --fs-cta-fg: #111713;
   --fs-cta-hover: #eff5f0;
@@ -256,226 +272,369 @@ body {
    Interactive Map — Liquid Glass UI Primitive Suite (from Prototype)
    ========================================================================= */
 
-/* Atmospheric Map Frame with Specular Highlight Rim */
-.lg-map-frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 24px;
-  background-color: #0a1310;
-  box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 60px -12px rgba(0, 0, 0, 0.38);
-  outline: 1px solid rgba(255, 255, 255, 0.12);
-  outline-offset: -1px;
-}
-
-:root:not([data-theme="dark"]) .lg-map-frame {
-  background-color: #0d1a14;
-  outline-color: rgba(17, 24, 19, 0.14);
-}
-
-/* Cinematic Atmospheric Map Vignette */
-.lg-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-  background:
-    radial-gradient(120% 95% at 50% 48%, transparent 52%, rgba(4, 9, 7, 0.44) 100%),
-    linear-gradient(180deg, rgba(4, 9, 7, 0.34) 0%, transparent 14%, transparent 84%, rgba(4, 9, 7, 0.45) 100%);
-}
-
-:root:not([data-theme="dark"]) .lg-vignette {
-  background:
-    radial-gradient(120% 95% at 50% 48%, transparent 58%, rgba(11, 61, 46, 0.24) 100%),
-    linear-gradient(180deg, rgba(11, 61, 46, 0.20) 0%, transparent 14%, transparent 86%, rgba(11, 61, 46, 0.24) 100%);
-}
-
-/* Liquid Glass Floating Capsule HUD Primitive */
-.lg-capsule {
-  position: relative;
-  border-radius: 9999px;
-  background: var(--fs-hud-bg);
-  backdrop-filter: blur(28px) saturate(185%);
-  -webkit-backdrop-filter: blur(28px) saturate(185%);
-  box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 32px rgba(0, 0, 0, 0.24),
-    0 2px 8px rgba(0, 0, 0, 0.14);
-  border: 1px solid var(--fs-card-border);
-  color: var(--text-primary);
-  transition:
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.22s ease;
-}
-
-.lg-capsule:hover {
-  background: var(--fs-pill-hover-bg);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.lg-capsule:active {
-  transform: scale(0.96);
-}
-
-/* Active High-Contrast State for Glass Capsule */
-.lg-capsule-active {
-  background: #0b3d2e;
-  color: #ffffff;
-  box-shadow:
-    0 4px 14px -2px rgba(11, 61, 46, 0.45),
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.35);
-  border-color: rgba(74, 222, 128, 0.4);
-}
-
-:root[data-theme="dark"] .lg-capsule-active {
-  background: #ffffff;
-  color: #111713;
-  box-shadow:
-    0 4px 14px -2px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.8);
-}
-
-/* Liquid Glass Elevated Surface Primitive */
-.lg-surface {
-  position: relative;
-  background: var(--fs-hud-bg);
-  backdrop-filter: blur(28px) saturate(185%);
-  -webkit-backdrop-filter: blur(28px) saturate(185%);
-  box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 60px -12px rgba(0, 0, 0, 0.32),
-    0 4px 14px rgba(0, 0, 0, 0.16);
-  border: 1px solid var(--fs-card-border);
-  color: var(--text-primary);
-  transition:
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.24s ease,
-    box-shadow 0.28s ease;
-}
-
-/* Specular Outer Reflection Sheen */
-.lg-specular::after,
-.lg-capsule::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  pointer-events: none;
-  z-index: 2;
-  background: linear-gradient(
-    142deg,
-    rgba(255, 255, 255, 0.36) 0%,
-    rgba(215, 245, 228, 0.16) 28%,
-    rgba(255, 255, 255, 0.04) 62%,
-    rgba(255, 255, 255, 0.18) 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-
-.lg-surface > *,
-.lg-capsule > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* MapLibre Liquid Glass HUD Integration from Prototype */
-.maplibregl-popup-content {
-  background: var(--fs-hud-bg) !important;
-  color: var(--text-primary) !important;
-  backdrop-filter: blur(28px) saturate(185%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
-  border: 1px solid var(--fs-card-border) !important;
-  border-radius: 16px !important;
-  padding: 10px 14px !important;
-  font-family: var(--font-sans) !important;
-  font-size: 12px !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
-}
-
-.maplibregl-popup-tip {
-  display: none !important;
-}
-
-.maplibregl-ctrl-group {
-  background: var(--fs-hud-bg) !important;
-  backdrop-filter: blur(28px) saturate(185%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
-  border: 1px solid var(--fs-card-border) !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24) !important;
-  overflow: hidden !important;
-}
-
-/* Map Pin & Pulse Animation from Prototype */
-@keyframes fsPinPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.28), 0 0 14px rgba(74, 222, 128, 0.75);
+@layer components {
+  /* Atmospheric Map Frame with Specular Highlight Rim */
+  .lg-map-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background-color: #0a1310;
+    box-shadow:
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 24px 60px -12px rgba(0, 0, 0, 0.38);
+    outline: 1px solid rgba(255, 255, 255, 0.12);
+    outline-offset: -1px;
   }
-  50% {
-    box-shadow: 0 0 0 10px rgba(74, 222, 128, 0.04), 0 0 22px rgba(74, 222, 128, 0.95);
+
+  :root:not([data-theme="dark"]) .lg-map-frame {
+    background-color: #0d1a14;
+    outline-color: rgba(17, 24, 19, 0.14);
   }
-}
 
-.lg-pin {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-}
+  /* Cinematic Atmospheric Map Vignette */
+  .lg-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    background:
+      radial-gradient(120% 95% at 50% 48%, transparent 52%, rgba(4, 9, 7, 0.44) 100%),
+      linear-gradient(180deg, rgba(4, 9, 7, 0.34) 0%, transparent 14%, transparent 84%, rgba(4, 9, 7, 0.45) 100%);
+  }
 
-.lg-pin-dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: #eab34d;
-  border: 2px solid #ffffff;
-  flex: 0 0 auto;
-  animation: fsPinPulse 2.6s ease-in-out infinite;
-}
+  :root:not([data-theme="dark"]) .lg-vignette {
+    background:
+      radial-gradient(120% 95% at 50% 48%, transparent 58%, rgba(11, 61, 46, 0.24) 100%),
+      linear-gradient(180deg, rgba(11, 61, 46, 0.20) 0%, transparent 14%, transparent 86%, rgba(11, 61, 46, 0.24) 100%);
+  }
 
-.lg-pin-lbl {
-  padding: 4px 10px;
-  border-radius: 9999px;
-  background: var(--fs-hud-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--fs-card-border);
-  color: var(--text-primary);
-  font-size: 11.5px;
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  white-space: nowrap;
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .lg-surface,
+  /* Liquid Glass Floating Capsule HUD Primitive */
   .lg-capsule {
-    background: rgba(12, 19, 16, 0.94);
+    position: relative;
+    border-radius: 9999px;
+    background: var(--fs-hud-bg);
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    box-shadow:
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 12px 32px rgba(0, 0, 0, 0.24),
+      0 2px 8px rgba(0, 0, 0, 0.14);
+    border: 1px solid var(--fs-card-border);
+    color: var(--lg-fg, var(--text-primary));
+    transition:
+      transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease,
+      box-shadow 0.22s ease;
   }
-  :root:not([data-theme="dark"]) .lg-surface,
-  :root:not([data-theme="dark"]) .lg-capsule {
-    background: rgba(240, 246, 242, 0.96);
-  }
-}
 
-@media (prefers-reduced-transparency: reduce) {
-  .lg-surface,
-  .lg-capsule {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+  .lg-capsule:hover {
+    background: var(--fs-pill-hover-bg);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  .lg-capsule:active {
+    transform: scale(0.96);
+  }
+
+  /* Active High-Contrast State for Glass Capsule */
+  .lg-capsule-active {
+    background: #0b3d2e;
+    color: #ffffff;
+    box-shadow:
+      0 4px 14px -2px rgba(11, 61, 46, 0.45),
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.35);
+    border-color: rgba(74, 222, 128, 0.4);
+  }
+
+  :root[data-theme="dark"] .lg-capsule-active {
+    background: #ffffff;
+    color: #111713;
+    box-shadow:
+      0 4px 14px -2px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Liquid Glass Elevated Surface Primitive */
+  .lg-surface {
+    position: relative;
+    background: var(--fs-hud-bg);
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    box-shadow:
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 24px 60px -12px rgba(0, 0, 0, 0.32),
+      0 4px 14px rgba(0, 0, 0, 0.16);
+    border: 1px solid var(--fs-card-border);
+    color: var(--lg-fg, var(--text-primary));
+    transition:
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.24s ease,
+      box-shadow 0.28s ease;
+  }
+
+  /* Liquid Glass Inner Telemetry Tile Primitive */
+  .lg-tile {
+    background: var(--lg-tile-bg);
+    border: 1px solid var(--lg-tile-border);
+  }
+
+  /* Specular Outer Reflection Sheen */
+  .lg-specular::after,
+  .lg-capsule::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      142deg,
+      rgba(255, 255, 255, 0.36) 0%,
+      rgba(215, 245, 228, 0.16) 28%,
+      rgba(255, 255, 255, 0.04) 62%,
+      rgba(255, 255, 255, 0.18) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+
+  .lg-surface > *,
+  .lg-capsule > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Dark-Adaptive Optical Liquid Glass Scoped HUD Over Satellite Maps */
+  .lg-map-hud {
+    --fs-hud-bg: rgba(13, 20, 17, 0.64);
+    --fs-pill-bg: rgba(15, 23, 19, 0.60);
+    --fs-card-border: rgba(255, 255, 255, 0.14);
+    --text-primary: #f4f7f4;
+    --text-secondary: rgba(235, 243, 238, 0.78);
+    --text-tertiary: rgba(205, 220, 212, 0.56);
+    --lg-fg: #f4f7f4;
+    --lg-fg-muted: rgba(235, 243, 238, 0.78);
+    --lg-fg-subtle: rgba(205, 220, 212, 0.56);
+    --lg-tile-bg: rgba(255, 255, 255, 0.055);
+    --lg-tile-border: rgba(255, 255, 255, 0.08);
+    --lg-btn-bg: rgba(15, 23, 19, 0.60);
+    --lg-btn-border: rgba(255, 255, 255, 0.16);
+    color: var(--lg-fg);
+  }
+
+  .lg-map-hud .lg-capsule {
+    background: rgba(15, 23, 19, 0.60);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f4f7f4;
+    box-shadow:
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+      0 12px 32px rgba(0, 0, 0, 0.42);
+  }
+
+  .lg-map-hud .lg-capsule:hover {
+    background: rgba(255, 255, 255, 0.095);
+    border-color: rgba(255, 255, 255, 0.24);
+    color: #ffffff;
+  }
+
+  .lg-map-hud .lg-surface {
+    background: rgba(13, 20, 17, 0.64);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f4f7f4;
+    box-shadow:
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.20),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+      0 20px 50px rgba(0, 0, 0, 0.48),
+      0 4px 14px rgba(0, 0, 0, 0.28);
+  }
+
+  .lg-map-hud .lg-capsule-active {
+    background: rgba(234, 179, 77, 0.18) !important;
+    color: #f4f7f4 !important;
+    border-color: rgba(234, 179, 77, 0.50) !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(234, 179, 77, 0.50),
+      0 4px 14px -2px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  /* Scoped Floating Inspector inside satellite map on desktop md+ */
+  @media (min-width: 768px) {
+    .lg-floating-inspector {
+      --fs-hud-bg: rgba(13, 20, 17, 0.64);
+      --fs-pill-bg: rgba(15, 23, 19, 0.60);
+      --fs-card-border: rgba(255, 255, 255, 0.14);
+      --text-primary: #f4f7f4;
+      --text-secondary: rgba(235, 243, 238, 0.78);
+      --text-tertiary: rgba(205, 220, 212, 0.56);
+      --lg-fg: #f4f7f4;
+      --lg-fg-muted: rgba(235, 243, 238, 0.78);
+      --lg-fg-subtle: rgba(205, 220, 212, 0.56);
+      --lg-tile-bg: rgba(255, 255, 255, 0.055);
+      --lg-tile-border: rgba(255, 255, 255, 0.08);
+      --lg-btn-bg: rgba(15, 23, 19, 0.60);
+      --lg-btn-border: rgba(255, 255, 255, 0.16);
+      color: var(--lg-fg);
+    }
+
+    .lg-floating-inspector .lg-surface {
+      background: rgba(13, 20, 17, 0.64) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #f4f7f4 !important;
+      box-shadow:
+        inset 0 1px 0.5px rgba(255, 255, 255, 0.20),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+        0 20px 50px rgba(0, 0, 0, 0.48),
+        0 4px 14px rgba(0, 0, 0, 0.28) !important;
+    }
+
+    .lg-floating-inspector .lg-capsule {
+      background: rgba(15, 23, 19, 0.60);
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #f4f7f4;
+    }
+
+    .lg-floating-inspector .lg-capsule:hover {
+      background: rgba(255, 255, 255, 0.095);
+      border-color: rgba(255, 255, 255, 0.24);
+      color: #ffffff;
+    }
+
+    .lg-floating-inspector .lg-capsule-active {
+      background: rgba(234, 179, 77, 0.18) !important;
+      color: #f4f7f4 !important;
+      border-color: rgba(234, 179, 77, 0.50) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(234, 179, 77, 0.50),
+        0 4px 14px -2px rgba(0, 0, 0, 0.45) !important;
+    }
+  }
+
+  /* MapLibre Liquid Glass HUD Integration from Prototype */
+  .maplibregl-popup-content {
+    background: var(--fs-hud-bg) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: blur(28px) saturate(185%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
+    border: 1px solid var(--fs-card-border) !important;
+    border-radius: 16px !important;
+    padding: 10px 14px !important;
+    font-family: var(--font-sans) !important;
+    font-size: 12px !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .maplibregl-popup-tip {
+    display: none !important;
+  }
+
+  .maplibregl-ctrl-group {
+    background: var(--fs-hud-bg) !important;
+    backdrop-filter: blur(28px) saturate(185%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
+    border: 1px solid var(--fs-card-border) !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24) !important;
+    overflow: hidden !important;
+  }
+
+  .maplibregl-ctrl-group button {
+    background-color: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--fs-card-border) !important;
+    color: var(--text-primary) !important;
+    transition: background-color 0.18s ease;
+  }
+
+  .maplibregl-ctrl-group button:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .maplibregl-ctrl-group button:hover {
+    background-color: var(--fs-pill-hover-bg) !important;
+  }
+
+  .lg-map-hud .maplibregl-ctrl-group button {
+    border-bottom-color: rgba(255, 255, 255, 0.10) !important;
+  }
+
+  .lg-map-hud .maplibregl-ctrl-group button:hover {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .lg-map-hud .maplibregl-ctrl-group .maplibregl-ctrl-icon {
+    filter: brightness(0) invert(1) opacity(0.85);
+  }
+
+  /* Map Pin & Pulse Animation from Prototype */
+  @keyframes fsPinPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px rgba(234, 179, 77, 0.28), 0 0 14px rgba(234, 179, 77, 0.75);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(234, 179, 77, 0.04), 0 0 22px rgba(234, 179, 77, 0.95);
+    }
+  }
+
+  .lg-pin {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .lg-pin-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #eab34d;
+    border: 2px solid #ffffff;
+    flex: 0 0 auto;
+    animation: fsPinPulse 2.6s ease-in-out infinite;
+  }
+
+  .lg-pin-lbl {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background: rgba(12, 19, 16, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .lg-surface,
+    .lg-capsule {
+      background: rgba(12, 19, 16, 0.94);
+    }
+    :root:not([data-theme="dark"]) .lg-surface,
+    :root:not([data-theme="dark"]) .lg-capsule {
+      background: rgba(240, 246, 242, 0.96);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .lg-surface,
+    .lg-capsule {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 }
 

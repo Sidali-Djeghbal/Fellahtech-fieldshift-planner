@@ -86,6 +86,8 @@ export function GuelmaOverviewMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapFrameRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
+  const pinLabelRef = useRef<HTMLSpanElement | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
   const [highContrastLayers, setHighContrastLayers] = useState(false);
   const [calloutPin, setCalloutPin] = useState<{ x: number; y: number } | null>(null);
@@ -134,6 +136,70 @@ export function GuelmaOverviewMap({
     });
   }, [selectedField, inspectorOpen, webglFailed]);
 
+  const computeDockedPadding = useCallback(() => {
+    if (typeof window === "undefined") {
+      return { top: 68, bottom: 32, left: 392, right: 56 };
+    }
+    const isDesktop = window.innerWidth >= 768;
+    const isRtl = document.documentElement.dir === "rtl";
+
+    if (!isDesktop || !inspectorOpen) {
+      return { top: 56, bottom: 48, left: 48, right: 48 };
+    }
+
+    return {
+      top: 68,
+      bottom: 32,
+      left: isRtl ? 56 : 392,
+      right: isRtl ? 392 : 56,
+    };
+  }, [inspectorOpen]);
+
+  const fitCurrentView = useCallback(
+    (animate = true) => {
+      const map = mapRef.current;
+      if (!map || !map.isStyleLoaded()) return;
+
+      const pad = computeDockedPadding();
+      const dur = animate ? 600 : 0;
+
+      if (selectedField) {
+        const ring = extractRingFromBoundary(selectedField.location.boundary);
+        const bbox = ring.length >= 3 ? computePolygonBbox(ring) : null;
+        if (bbox) {
+          map.fitBounds(
+            [
+              [bbox[0], bbox[1]],
+              [bbox[2], bbox[3]],
+            ],
+            { padding: pad, maxZoom: 15.2, duration: dur }
+          );
+        } else {
+          map.flyTo({
+            center: [selectedField.location.longitude, selectedField.location.latitude],
+            zoom: 14.2,
+            padding: pad,
+            duration: dur,
+          });
+        }
+      } else if (fields.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        fields.forEach((f) => {
+          const ring = extractRingFromBoundary(f.location.boundary);
+          if (ring && ring.length >= 3) {
+            ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
+          } else {
+            bounds.extend([f.location.longitude, f.location.latitude]);
+          }
+        });
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, { padding: pad, maxZoom: 13.5, duration: dur });
+        }
+      }
+    },
+    [computeDockedPadding, fields, selectedField]
+  );
+
   const handleZoomIn = () => {
     mapRef.current?.zoomIn({ duration: 220 });
   };
@@ -159,7 +225,7 @@ export function GuelmaOverviewMap({
       }
     });
     if (!bounds.isEmpty()) {
-      map.fitBounds(bounds, { padding: 64, maxZoom: 14, duration: 320 });
+      map.fitBounds(bounds, { padding: computeDockedPadding(), maxZoom: 14, duration: 320 });
     }
   };
 
@@ -167,11 +233,24 @@ export function GuelmaOverviewMap({
     const map = mapRef.current;
     if (!map) return;
     if (selectedField) {
-      map.flyTo({
-        center: [selectedField.location.longitude, selectedField.location.latitude],
-        zoom: 13.8,
-        duration: 420,
-      });
+      const ring = extractRingFromBoundary(selectedField.location.boundary);
+      const bbox = ring.length >= 3 ? computePolygonBbox(ring) : null;
+      if (bbox) {
+        map.fitBounds(
+          [
+            [bbox[0], bbox[1]],
+            [bbox[2], bbox[3]],
+          ],
+          { padding: computeDockedPadding(), maxZoom: 15.2, duration: 420 }
+        );
+      } else {
+        map.flyTo({
+          center: [selectedField.location.longitude, selectedField.location.latitude],
+          zoom: 14.2,
+          padding: computeDockedPadding(),
+          duration: 420,
+        });
+      }
     } else {
       handleFitExtent();
     }
@@ -270,7 +349,17 @@ export function GuelmaOverviewMap({
             maxzoom: 19,
           },
         },
-        layers: [{ id: "esri-sat", type: "raster", source: "esri" }],
+        layers: [
+          {
+            id: "esri-sat",
+            type: "raster",
+            source: "esri",
+            paint: {
+              "raster-saturation": -0.06,
+              "raster-contrast": 0.04,
+            },
+          },
+        ],
       };
 
       map = new maplibregl.Map({
@@ -374,6 +463,26 @@ export function GuelmaOverviewMap({
           if (map) map.getCanvas().style.cursor = "";
         });
 
+        if (selectedField) {
+          const pinEl = document.createElement("div");
+          pinEl.className = "lg-pin";
+          const dotEl = document.createElement("span");
+          dotEl.className = "lg-pin-dot";
+          const lblEl = document.createElement("span");
+          lblEl.className = "lg-pin-lbl";
+          lblEl.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+          pinLabelRef.current = lblEl;
+          pinEl.append(dotEl, lblEl);
+
+          markerRef.current = new maplibregl.Marker({
+            element: pinEl,
+            anchor: "left",
+          })
+            .setLngLat([selectedField.location.longitude, selectedField.location.latitude])
+            .addTo(map);
+        }
+
+        fitCurrentView(false);
         updateCalloutPin();
       });
 
@@ -392,6 +501,10 @@ export function GuelmaOverviewMap({
     }
 
     return () => {
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
       if (map) {
         map.remove();
         mapRef.current = null;
@@ -400,7 +513,7 @@ export function GuelmaOverviewMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [webglFailed]);
 
-  // Sync GeoJSON data & camera focus when saved fields or selection changes
+  // Sync GeoJSON data, marker & camera focus when saved fields or selection changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) {
@@ -415,37 +528,44 @@ export function GuelmaOverviewMap({
     if (ptSrc) ptSrc.setData(pointsGeoJson);
 
     if (selectedField) {
-      const ring = extractRingFromBoundary(selectedField.location.boundary);
-      const bbox = ring.length >= 3 ? computePolygonBbox(ring) : null;
-      if (bbox) {
-        map.fitBounds(
-          [
-            [bbox[0], bbox[1]],
-            [bbox[2], bbox[3]],
-          ],
-          { padding: 70, maxZoom: 15, duration: 600 }
-        );
+      if (markerRef.current) {
+        markerRef.current.setLngLat([
+          selectedField.location.longitude,
+          selectedField.location.latitude,
+        ]);
+        if (pinLabelRef.current) {
+          pinLabelRef.current.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+        }
       } else {
-        map.flyTo({
-          center: [selectedField.location.longitude, selectedField.location.latitude],
-          zoom: 13.8,
-          duration: 600,
-        });
+        const pinEl = document.createElement("div");
+        pinEl.className = "lg-pin";
+        const dotEl = document.createElement("span");
+        dotEl.className = "lg-pin-dot";
+        const lblEl = document.createElement("span");
+        lblEl.className = "lg-pin-lbl";
+        lblEl.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+        pinLabelRef.current = lblEl;
+        pinEl.append(dotEl, lblEl);
+
+        markerRef.current = new maplibregl.Marker({
+          element: pinEl,
+          anchor: "left",
+        })
+          .setLngLat([selectedField.location.longitude, selectedField.location.latitude])
+          .addTo(map);
       }
-    } else if (fields.length > 0) {
-      const lons = fields.map((f) => f.location.longitude);
-      const lats = fields.map((f) => f.location.latitude);
-      map.fitBounds(
-        [
-          [Math.min(...lons) - 0.08, Math.min(...lats) - 0.06],
-          [Math.max(...lons) + 0.08, Math.max(...lats) + 0.06],
-        ],
-        { padding: 60, maxZoom: 12.2, duration: 550 }
-      );
+    } else if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
     }
 
+    fitCurrentView(true);
     updateCalloutPin();
-  }, [fields, fieldsGeoJson, pointsGeoJson, selectedField, updateCalloutPin]);
+  }, [fields, fieldsGeoJson, pointsGeoJson, selectedField, fitCurrentView, updateCalloutPin]);
+
+  useEffect(() => {
+    fitCurrentView(true);
+  }, [fitCurrentView, inspectorOpen]);
 
   useEffect(() => {
     updateCalloutPin();
@@ -471,7 +591,7 @@ export function GuelmaOverviewMap({
     <div className="relative" data-testid="guelma-overview-map">
       <div
         ref={mapFrameRef}
-        className="lg-map-frame lg-specular relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] sm:h-[420px] md:h-[470px] lg:h-[500px]"
+        className="lg-map-frame lg-map-hud lg-specular relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] sm:h-[420px] md:h-[470px] lg:h-[500px]"
       >
         {/* Full-bleed Satellite Map / SVG Spatial Fallback */}
         <div
@@ -567,8 +687,8 @@ export function GuelmaOverviewMap({
         {/* Liquid Glass Atmospheric Vignette overlay from Prototype */}
         <div className="lg-vignette" />
 
-        {/* Callout Vector Leader Line + Pin Connector (Desktop/Tablet md+) */}
-        {calloutPin && selectedField && inspectorOpen ? (
+        {/* Callout Vector Leader Line + Pin Connector (Fallback SVG mode on Desktop/Tablet md+) */}
+        {webglFailed && calloutPin && selectedField && inspectorOpen ? (
           <svg
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full md:block"
@@ -617,7 +737,7 @@ export function GuelmaOverviewMap({
             className={`pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
               highContrastLayers
                 ? "lg-capsule lg-capsule-active"
-                : "lg-capsule text-[#111813] dark:text-[#F5F7F5]"
+                : "lg-capsule text-[var(--lg-fg)]"
             }`}
           >
             <Stack size={17} aria-hidden="true" />
@@ -629,7 +749,7 @@ export function GuelmaOverviewMap({
               onClick={onStartAddFarm}
               aria-label={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
               title={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
-              className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
+              className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
             >
               <PencilLine size={17} aria-hidden="true" />
             </button>
@@ -643,7 +763,7 @@ export function GuelmaOverviewMap({
             disabled={fields.length < 2}
             onClick={() => handleStepField(-1)}
             aria-label={hudLabels?.prevFieldLabel ?? "Previous parcel"}
-            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40 dark:text-[#F5F7F5]"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
           >
             <CaretLeft size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
           </button>
@@ -659,7 +779,7 @@ export function GuelmaOverviewMap({
             disabled={fields.length < 2}
             onClick={() => handleStepField(1)}
             aria-label={hudLabels?.nextFieldLabel ?? "Next parcel"}
-            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40 dark:text-[#F5F7F5]"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40"
           >
             <CaretRight size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
           </button>
@@ -673,7 +793,7 @@ export function GuelmaOverviewMap({
             aria-label={hudLabels?.fitExtent ?? "Fit extent"}
             title={hudLabels?.fitExtent ?? "Fit extent"}
             data-testid="map-fit-extent-btn"
-            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
           >
             <CornersOut size={16} aria-hidden="true" />
           </button>
@@ -687,7 +807,7 @@ export function GuelmaOverviewMap({
               onClick={handleZoomIn}
               aria-label={hudLabels?.zoomIn ?? "Zoom in"}
               title={hudLabels?.zoomIn ?? "Zoom in"}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-white/15 active:scale-[0.96]"
             >
               <Plus size={15} weight="bold" aria-hidden="true" />
             </button>
@@ -696,7 +816,7 @@ export function GuelmaOverviewMap({
               onClick={handleZoomOut}
               aria-label={hudLabels?.zoomOut ?? "Zoom out"}
               title={hudLabels?.zoomOut ?? "Zoom out"}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out hover:bg-white/15 active:scale-[0.96]"
             >
               <Minus size={15} weight="bold" aria-hidden="true" />
             </button>
@@ -707,7 +827,7 @@ export function GuelmaOverviewMap({
             onClick={handleCenterSelected}
             aria-label={hudLabels?.fitExtent ?? "Fit extent"}
             title={hudLabels?.fitExtent ?? "Fit extent"}
-            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
           >
             <Crosshair size={16} aria-hidden="true" />
           </button>
@@ -720,7 +840,7 @@ export function GuelmaOverviewMap({
               type="button"
               onClick={onReopenInspector}
               data-testid="reopen-inspector-btn"
-              className="lg-capsule pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3.5 pe-4 text-xs font-medium text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
+              className="lg-capsule pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3.5 pe-4 text-xs font-medium text-[var(--lg-fg)] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96]"
             >
               <Info size={15} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
               <span>{hudLabels?.openInspectorLabel ?? "Open parcel inspector"}</span>
@@ -731,7 +851,7 @@ export function GuelmaOverviewMap({
 
       {/* Single DOM Inspector Card: flows below map on <md mobile, floats inside lower-leading corner on md+ */}
       {children && inspectorOpen ? (
-        <div className="mt-3 md:pointer-events-none md:absolute md:bottom-3 md:start-3 md:z-20 md:mt-0 md:w-[336px] md:max-w-[calc(100%-84px)] lg:w-[356px]">
+        <div className="lg-floating-inspector mt-3 md:pointer-events-none md:absolute md:bottom-3 md:start-3 md:z-20 md:mt-0 md:w-[336px] md:max-w-[calc(100%-84px)] lg:w-[356px]">
           <div className="md:pointer-events-auto">{children}</div>
         </div>
       ) : null}

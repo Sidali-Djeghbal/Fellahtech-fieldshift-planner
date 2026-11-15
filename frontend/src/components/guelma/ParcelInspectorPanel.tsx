@@ -65,7 +65,7 @@ export function ParcelInspectorPanel({
     return (
       <aside
         data-testid="empty-workspace-card"
-        className="lg-surface lg-specular flex flex-col justify-between rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5] sm:p-5"
+        className="lg-surface lg-specular flex flex-col justify-between rounded-2xl p-4 text-[var(--lg-fg)] sm:p-5"
       >
         <div>
           <div className="flex items-start gap-3">
@@ -76,13 +76,13 @@ export function ParcelInspectorPanel({
               <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#15803D] dark:text-[#4ADE80]">
                 {dict.provinceBadge}
               </p>
-              <h2 className="mt-1 font-heading text-base font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
+              <h2 className="mt-1 font-heading text-base font-semibold tracking-tight text-[var(--lg-fg)]">
                 {dict.emptyTitle}
               </h2>
             </div>
           </div>
 
-          <p className="mt-2.5 max-w-[65ch] text-xs leading-relaxed text-[#4A5A4E] dark:text-[#9CA89E]">
+          <p className="mt-2.5 max-w-[65ch] text-xs leading-relaxed text-[var(--lg-fg-muted)]">
             {dict.emptyDesc}
           </p>
 
@@ -90,7 +90,7 @@ export function ParcelInspectorPanel({
             {steps.map((stepText, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2.5 rounded-xl bg-[#111813]/[0.04] px-3 py-2 text-xs text-[#243227] dark:bg-white/[0.05] dark:text-[#E5EAE6]"
+                className="flex items-start gap-2.5 rounded-xl bg-[#111813]/[0.04] px-3 py-2 text-xs text-[var(--lg-fg)] dark:bg-white/[0.05]"
               >
                 <span className="shrink-0 font-mono text-[11px] font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
                   {String(idx + 1).padStart(2, "0")}
@@ -116,7 +116,7 @@ export function ParcelInspectorPanel({
             type="button"
             onClick={onLoadSamples}
             data-testid="load-samples-btn"
-            className="lg-capsule inline-flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+            className="lg-capsule inline-flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-medium text-[var(--lg-fg)] active:not-disabled:scale-[0.96]"
           >
             <Compass size={14} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{dict.loadSamplesBtn}</span>
@@ -130,17 +130,17 @@ export function ParcelInspectorPanel({
     return (
       <aside
         data-testid="parcel-inspector-panel"
-        className="lg-surface lg-specular flex flex-col justify-center rounded-2xl p-5 text-[#111813] dark:text-[#F5F7F5]"
+        className="lg-surface lg-specular flex flex-col justify-center rounded-2xl p-5 text-[var(--lg-fg)]"
       >
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111813]/[0.06] text-[#15803D] dark:bg-white/[0.08] dark:text-[#4ADE80]">
             <Compass size={20} aria-hidden="true" />
           </div>
           <div>
-            <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#4A5A4E] dark:text-[#9CA89E]">
+            <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[var(--lg-fg-muted)]">
               {insp.headerTitle}
             </p>
-            <p className="mt-1.5 max-w-[65ch] text-xs leading-relaxed text-[#4A5A4E] dark:text-[#9CA89E]">
+            <p className="mt-1.5 max-w-[65ch] text-xs leading-relaxed text-[var(--lg-fg-muted)]">
               {insp.noSelection}
             </p>
           </div>
@@ -184,23 +184,23 @@ export function ParcelInspectorPanel({
   return (
     <aside
       data-testid="parcel-inspector-panel"
-      className="lg-surface lg-specular rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5]"
+      className="lg-surface lg-specular rounded-2xl p-4 text-[var(--lg-fg)]"
     >
       {/* Header: Parcel Name + Crop / Hectares + Dismiss */}
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#4A5A4E] dark:text-[#9CA89E]">
+            <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-[var(--lg-fg-muted)]">
               {insp.headerTitle}
             </span>
             <span className="rounded-md bg-[#15803D]/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#15803D] dark:bg-white/10 dark:text-[#4ADE80]">
               {selectedField.field_id}
             </span>
           </div>
-          <h3 className="mt-1 truncate font-heading text-base font-semibold text-[#111813] dark:text-[#F5F7F5]">
+          <h3 className="mt-1 truncate font-heading text-base font-semibold text-[var(--lg-fg)]">
             {selectedField.field_name}
           </h3>
-          <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+          <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--lg-fg-muted)]">
             <span>{commune.name[lang] || commune.name.en}</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
@@ -214,7 +214,7 @@ export function ParcelInspectorPanel({
             type="button"
             onClick={onCloseInspector}
             aria-label={hud.closeInspectorLabel}
-            className="lg-capsule flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:text-[#F5F7F5]"
+            className="lg-capsule flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--lg-fg-muted)] transition-[transform,background-color,color] duration-150 ease-out hover:text-[var(--lg-fg)] active:scale-[0.96]"
           >
             <X size={14} aria-hidden="true" />
           </button>
@@ -224,7 +224,7 @@ export function ParcelInspectorPanel({
       {/* Growth / Agronomic Readiness Bar */}
       <div className="mt-3">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-[#4A5A4E] dark:text-[#9CA89E]">{hud.readinessLabel}</span>
+          <span className="text-[var(--lg-fg-muted)]">{hud.readinessLabel}</span>
           <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
             {readinessScore}%
           </span>
@@ -238,37 +238,37 @@ export function ParcelInspectorPanel({
       </div>
 
       {/* Compact Liquid-Glass Key Telemetry Rows */}
-      <dl className="mt-3 space-y-1.5 rounded-xl bg-[#111813]/[0.04] px-3 py-2.5 text-xs dark:bg-white/[0.05]">
+      <dl className="lg-tile mt-3 space-y-1.5 rounded-xl px-3 py-2.5 text-xs text-[var(--lg-fg)]">
         <div className="flex items-center justify-between gap-2">
-          <dt className="flex items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+          <dt className="flex items-center gap-1.5 text-[11px] text-[var(--lg-fg-muted)]">
             <Leaf size={13} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{insp.soil}</span>
           </dt>
-          <dd className="truncate font-medium text-[#111813] dark:text-[#F5F7F5]">{soilSummary}</dd>
+          <dd className="truncate font-medium text-[var(--lg-fg)]">{soilSummary}</dd>
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <dt className="flex items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+          <dt className="flex items-center gap-1.5 text-[11px] text-[var(--lg-fg-muted)]">
             <Drop size={13} className="text-sky-600 dark:text-sky-400" aria-hidden="true" />
             <span>{insp.water}</span>
           </dt>
-          <dd className="truncate font-medium text-[#111813] dark:text-[#F5F7F5]">
+          <dd className="truncate font-medium text-[var(--lg-fg)]">
             {WATER_AVAILABILITY_LABELS[lang][selectedField.water.availability]} ·{" "}
             {IRRIGATION_SYSTEM_LABELS[lang][selectedField.water.irrigation_system]}
           </dd>
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <dt className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">{insp.coordinates}</dt>
-          <dd className="font-mono text-[11px] tabular-nums text-[#243227] dark:text-[#E5EAE6]" dir="ltr">
+          <dt className="text-[11px] text-[var(--lg-fg-muted)]">{insp.coordinates}</dt>
+          <dd className="font-mono text-[11px] tabular-nums text-[var(--lg-fg)]" dir="ltr">
             {selectedField.location.latitude.toFixed(4)}°N,{" "}
             {selectedField.location.longitude.toFixed(4)}°E
           </dd>
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <dt className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">{insp.elevation}</dt>
-          <dd className="font-mono text-[11px] tabular-nums text-[#243227] dark:text-[#E5EAE6]">
+          <dt className="text-[11px] text-[var(--lg-fg-muted)]">{insp.elevation}</dt>
+          <dd className="font-mono text-[11px] tabular-nums text-[var(--lg-fg)]">
             {selectedField.elevation_m !== null && selectedField.elevation_m !== undefined
               ? `${selectedField.elevation_m} m`
               : dict.elevNotProvided}
@@ -276,12 +276,12 @@ export function ParcelInspectorPanel({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <dt className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">{insp.latestCrop}</dt>
-          <dd className="truncate font-medium text-[#111813] dark:text-[#F5F7F5]">{latestCropLabel}</dd>
+          <dt className="text-[11px] text-[var(--lg-fg-muted)]">{insp.latestCrop}</dt>
+          <dd className="truncate font-medium text-[var(--lg-fg)]">{latestCropLabel}</dd>
         </div>
 
         <div className="flex items-center justify-between gap-2 pt-0.5">
-          <dt className="flex items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+          <dt className="flex items-center gap-1.5 text-[11px] text-[var(--lg-fg-muted)]">
             <Brain size={13} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{insp.aiStatus}</span>
           </dt>
@@ -332,7 +332,7 @@ export function ParcelInspectorPanel({
         <button
           type="button"
           onClick={() => onInspect3d(selectedField.farm_id, selectedField.field_id)}
-          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[var(--lg-fg)] active:not-disabled:scale-[0.96]"
           title={insp.sim3dBtn}
         >
           <Play size={12} weight="fill" className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
@@ -343,7 +343,7 @@ export function ParcelInspectorPanel({
           <button
             type="button"
             onClick={() => onEditBorders(selectedField)}
-            className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+            className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[var(--lg-fg)] active:not-disabled:scale-[0.96]"
             title={dict.editBordersBtn}
             data-testid="inspector-edit-borders-btn"
           >
@@ -355,7 +355,7 @@ export function ParcelInspectorPanel({
         <button
           type="button"
           onClick={() => onEditInfo(selectedField)}
-          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[var(--lg-fg)] active:not-disabled:scale-[0.96]"
           title={dict.editInfoBtn}
           data-testid="inspector-edit-info-btn"
         >
@@ -369,7 +369,7 @@ export function ParcelInspectorPanel({
             onClick={() => onDeleteField(selectedField)}
             aria-label={dict.removeFieldBtn}
             title={dict.removeFieldBtn}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 transition-[transform,background-color] duration-150 ease-out hover:bg-red-100 active:scale-[0.96] dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-red-500/20 active:scale-[0.96] dark:border-red-400/25 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
           >
             <Trash size={13} aria-hidden="true" />
           </button>

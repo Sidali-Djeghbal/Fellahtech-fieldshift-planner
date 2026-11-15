@@ -30,6 +30,8 @@ export function OrbitalFieldMap({
 }: OrbitalFieldMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
+  const pinLabelRef = useRef<HTMLSpanElement | null>(null);
   const drawModeRef = useRef(drawMode);
   const onAddVertexRef = useRef(onAddVertex);
   const [webglFallback, setWebglFallback] = useState(false);
@@ -62,6 +64,11 @@ export function OrbitalFieldMap({
             id: "satellite-base",
             type: "raster",
             source: "esri-satellite",
+            paint: {
+              "raster-saturation": -0.06,
+              "raster-contrast": 0.04,
+              "raster-fade-duration": 200,
+            },
           },
         ],
       };
@@ -150,6 +157,23 @@ export function OrbitalFieldMap({
           },
         });
 
+        const pinEl = document.createElement("div");
+        pinEl.className = "lg-pin";
+        const dotEl = document.createElement("span");
+        dotEl.className = "lg-pin-dot";
+        const lblEl = document.createElement("span");
+        lblEl.className = "lg-pin-lbl";
+        lblEl.textContent = `${targetCenter[1].toFixed(4)}°N, ${targetCenter[0].toFixed(4)}°E`;
+        pinLabelRef.current = lblEl;
+        pinEl.append(dotEl, lblEl);
+
+        markerRef.current = new maplibregl.Marker({
+          element: pinEl,
+          anchor: "left",
+        })
+          .setLngLat(targetCenter)
+          .addTo(map);
+
         const reducedMotion =
           typeof window !== "undefined" &&
           window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -212,6 +236,10 @@ export function OrbitalFieldMap({
     }
 
     return () => {
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
       if (map) {
         try {
           map.remove();
@@ -276,6 +304,12 @@ export function OrbitalFieldMap({
 
   const prevCenterRef = useRef<[number, number]>(targetCenter);
   useEffect(() => {
+    if (markerRef.current) {
+      markerRef.current.setLngLat(targetCenter);
+      if (pinLabelRef.current) {
+        pinLabelRef.current.textContent = `${targetCenter[1].toFixed(4)}°N, ${targetCenter[0].toFixed(4)}°E`;
+      }
+    }
     const map = mapRef.current;
     if (!map) return;
     const [prevLon, prevLat] = prevCenterRef.current;
@@ -315,7 +349,7 @@ export function OrbitalFieldMap({
   }
 
   return (
-    <div className="lg-map-frame lg-specular relative h-[420px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] lg:h-[560px]">
+    <div className="lg-map-frame lg-map-hud lg-specular relative h-[420px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] lg:h-[560px]">
       {!webglFallback ? (
         <div
           ref={containerRef}
@@ -387,7 +421,7 @@ export function OrbitalFieldMap({
 
       {/* Top Overlay Controls */}
       <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2">
-        <div className="lg-capsule pointer-events-auto rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-[#111813] dark:text-[#F5F7F5]">
+        <div className="lg-capsule pointer-events-auto rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-[#f4f7f4]">
           <span dir="ltr" className="font-mono tabular-nums">
             {targetCenter[1].toFixed(5)}°N, {targetCenter[0].toFixed(5)}°E
           </span>
@@ -403,7 +437,7 @@ export function OrbitalFieldMap({
       </div>
 
       {/* Mandatory Map Attribution Pill */}
-      <div className="lg-capsule pointer-events-none absolute bottom-3 start-3 z-20 rounded-full px-3 py-1.5 text-[11px] text-[#3E4C42] dark:text-[#D1DDD3]">
+      <div className="lg-capsule pointer-events-none absolute bottom-3 start-3 z-20 rounded-full px-3 py-1 text-[10px] text-white/60">
         {attributionText}
       </div>
     </div>
