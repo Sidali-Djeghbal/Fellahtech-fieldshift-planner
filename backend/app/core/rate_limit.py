@@ -646,6 +646,26 @@ async def sync_guest_quota_after_refund(
         )
 
 
+async def clear_guest_quota_cache(
+    redis_client: AsyncRedisLike | None,
+    *,
+    guest_token_hash: str,
+) -> None:
+    """Remove cached guest quarter key after `DELETE /demo/session` or `POST /auth/claim-guest`."""
+    if redis_client is None:
+        return
+    key = guest_quota_key(guest_token_hash)
+    logger = structlog.get_logger("app.rate_limit")
+    try:
+        await redis_client.delete(key)
+    except RedisError as exc:
+        REDIS_ERRORS_TOTAL.labels(operation="guest_quota_cleanup").inc()
+        await logger.awarning(
+            "redis_guest_quota_cleanup_failed",
+            error_type=type(exc).__name__,
+        )
+
+
 def create_redis_client(settings: Settings) -> redis_async.Redis:
     """Create lazy async Redis client bound to configured REDIS_URL."""
     return cast(

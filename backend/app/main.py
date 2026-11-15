@@ -10,12 +10,15 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.api.v1 import api_v1_router
 from app.core.config import Settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.rate_limit import AsyncRedisLike, create_redis_client
+from app.db.session import create_db_engine, create_sessionmaker
 
 _REQUEST_ID_HEADER = b"x-request-id"
 _DEPRECATION_HEADER = b"deprecation"
@@ -129,6 +132,13 @@ def create_app(
             owned_redis = create_redis_client(resolved)
             fastapi_app.state.redis = owned_redis
 
+        owned_engine: AsyncEngine | None = None
+        if getattr(fastapi_app.state, "db_engine", None) is None:
+            owned_engine = create_db_engine(resolved, role="api")
+            fastapi_app.state.db_engine = owned_engine
+        if getattr(fastapi_app.state, "db_sessionmaker", None) is None:
+            fastapi_app.state.db_sessionmaker = create_sessionmaker(fastapi_app.state.db_engine)
+
         logger = structlog.get_logger("app.startup")
         await logger.ainfo(
             "backend_initialized",
@@ -140,6 +150,8 @@ def create_app(
         finally:
             if owned_redis is not None:
                 await owned_redis.aclose()
+            if owned_engine is not None:
+                await owned_engine.dispose()
 
     fastapi_app = FastAPI(
         title="FieldShift Planner API",
@@ -160,6 +172,8 @@ def create_app(
     )
     fastapi_app.add_middleware(DeprecationHeadersMiddleware)
     fastapi_app.add_middleware(RequestIdMiddleware)
+
+    fastapi_app.include_router(api_v1_router)
 
     # M0 scaffold liveness stub; replaced in M11 with full PG/Redis/dataset/breaker probe.
     @fastapi_app.get("/api/v1/health", tags=["System"])
