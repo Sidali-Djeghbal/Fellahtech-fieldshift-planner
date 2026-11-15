@@ -21,7 +21,7 @@ COPY contracts ./contracts
 COPY tools ./tools
 COPY app ./app
 
-RUN pip install --no-deps --no-build-isolation -e . \
+RUN pip install --no-deps --no-build-isolation . \
     && chown -R appuser:appuser /app
 USER appuser
 

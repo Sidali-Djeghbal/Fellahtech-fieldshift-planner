@@ -69,31 +69,31 @@
 | `DB-11` | `public.analysis_results` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_verification.py` | `M1, M9` | `M1 Verified (DDL + ORM; M9 pending)` |
 | `DB-12` | `public.analysis_selections` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_analysis.py` | `M1, M7` | `M1 Verified (DDL + ORM; M7 pending)` |
 | `DB-13` | `public.ml_breaker_state` | `ENDPOINTS A.4` | `db/migrations/`, `models/breaker.py`, `worker/breaker.py`, `db/seed.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_breaker.py` | `M1, M10` | `M1 Verified (DDL + ORM; M10 pending)` |
-| `DB-14` | `Schema: dataset` & Role `ml_reader` | `ENDPOINTS A.5`, `ADR-9` | `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M1` | `M1 Verified (PG 18.7/PostGIS 3.7; Docker 16-3.4 blocked on host IPv6 pull)` |
+| `DB-14` | `Schema: dataset` & Role `ml_reader` | `ENDPOINTS A.5`, `ADR-9` | `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M1` | `M1 Verified (Docker postgis/postgis:16-3.4 roundtrip + alembic check + ml_reader)` |
 
 ## 4. Error Codes (`19 / 19`) & Warning Notices (`2 / 2`)
 
 | ID | Symbol & HTTP Status | Target Module(s) | Target Test(s) | Milestone | Status |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| `ERR-01` | `INVALID_INPUT` (`400`) | `core/errors.py`, `services/validation.py` | `tests/contract/test_errors.py`, `tests/unit/test_input_rules.py` | `M2, M7` | `Pending` |
-| `ERR-02` | `UNAUTHORIZED` (`401`) | `core/errors.py`, `api/deps.py`, `services/auth.py` | `tests/contract/test_errors.py`, `tests/integration/test_auth.py` | `M2, M3` | `Pending` |
-| `ERR-03` | `GUEST_LIMIT_REACHED` (`403`) | `core/errors.py`, `services/farms.py`, `services/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_quotas.py` | `M2, M5, M7` | `Pending` |
-| `ERR-04` | `NOT_FOUND` (`404`) | `core/errors.py`, all owner-scoped repos/services | `tests/contract/test_errors.py`, `tests/integration/test_security.py` | `M2, M4, M5` | `Pending` |
-| `ERR-05` | `CONFLICT` (`409`) | `core/errors.py`, `services/auth.py`, `services/fields.py`, `services/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M3, M5, M7` | `Pending` |
-| `ERR-06` | `CATALOG_VERSION_MISMATCH` (`409`) | `core/errors.py`, `services/catalog.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/integration/test_worker.py` | `M2, M6, M8` | `Pending` |
-| `ERR-07` | `OUTSIDE_DEMO_BOUNDARY` (`422`) | `core/errors.py`, `services/geo.py` | `tests/contract/test_errors.py`, `tests/integration/test_fields.py` | `M2, M4, M5` | `Pending` |
-| `ERR-08` | `INSUFFICIENT_DATA` (`422`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `Pending` |
-| `ERR-09` | `RATE_LIMIT_EXCEEDED` (`429` + `Retry-After`) | `core/errors.py`, `core/rate_limit.py` | `tests/contract/test_errors.py`, `tests/integration/test_rate_limit.py` | `M2, M3, M7` | `Pending` |
-| `ERR-10` | `INTERNAL_ERROR` (`500`) | `core/errors.py`, `main.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `Pending` |
-| `ERR-11` | `ML_UNAVAILABLE` (`502`) | `core/errors.py`, `worker/{breaker,runner}.py` | `tests/contract/test_errors.py`, `tests/integration/test_breaker.py` | `M2, M8, M10` | `Pending` |
-| `ERR-12` | `ML_INVALID_RESPONSE` (`502`) | `core/errors.py`, `services/verification.py` | `tests/contract/test_errors.py`, `tests/unit/test_sem_rules.py` | `M2, M9` | `Pending` |
-| `ERR-13` | `ML_CONTRACT_ERROR` (`502`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `Pending` |
-| `ERR-14` | `DATASET_VERSION_UNAVAILABLE` (`502`) | `core/errors.py`, `services/verification.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_sem_rules.py` | `M2, M8, M9` | `Pending` |
-| `ERR-15` | `ML_DATASET_ERROR` (`502`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `Pending` |
-| `ERR-16` | `SERVICE_UNAVAILABLE` (`503`) | `core/errors.py`, `services/health.py` | `tests/contract/test_errors.py`, `tests/integration/test_system.py` | `M2, M11` | `Pending` |
-| `ERR-17` | `DATASET_UNAVAILABLE` (`503`) | `core/errors.py`, `repositories/dataset.py`, `services/health.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M6, M7, M11` | `Pending` |
-| `ERR-18` | `ML_TIMEOUT` (`504`) | `core/errors.py`, `ml_client/`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/integration/test_worker.py` | `M2, M8` | `Pending` |
-| `ERR-19` | `JOB_TIMEOUT` (`504`) | `core/errors.py`, `api/v1/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M7` | `Pending` |
+| `ERR-01` | `INVALID_INPUT` (`400`) | `core/errors.py`, `services/validation.py` | `tests/contract/test_errors.py`, `tests/unit/test_input_rules.py` | `M2, M7` | `M2 Verified (400 + 422 override); M7 INPUT-01..03 pending` |
+| `ERR-02` | `UNAUTHORIZED` (`401`) | `core/errors.py`, `api/deps.py`, `services/auth.py` | `tests/contract/test_errors.py`, `tests/integration/test_auth.py` | `M2, M3` | `M2 Verified (ErrorCode + Envelope); M3 pending` |
+| `ERR-03` | `GUEST_LIMIT_REACHED` (`403`) | `core/errors.py`, `services/farms.py`, `services/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_quotas.py` | `M2, M5, M7` | `M2 Verified (ErrorCode + Envelope); M5, M7 pending` |
+| `ERR-04` | `NOT_FOUND` (`404`) | `core/errors.py`, all owner-scoped repos/services | `tests/contract/test_errors.py`, `tests/integration/test_security.py` | `M2, M4, M5` | `M2 Verified (ErrorCode + Envelope); M4, M5 pending` |
+| `ERR-05` | `CONFLICT` (`409`) | `core/errors.py`, `services/auth.py`, `services/fields.py`, `services/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M3, M5, M7` | `M2 Verified (ErrorCode + Envelope); M3, M5, M7 pending` |
+| `ERR-06` | `CATALOG_VERSION_MISMATCH` (`409`) | `core/errors.py`, `services/catalog.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/integration/test_worker.py` | `M2, M6, M8` | `M2 Verified (ErrorCode + Envelope); M6, M8 pending` |
+| `ERR-07` | `OUTSIDE_DEMO_BOUNDARY` (`422`) | `core/errors.py`, `services/geo.py` | `tests/contract/test_errors.py`, `tests/integration/test_fields.py` | `M2, M4, M5` | `M2 Verified (ErrorCode + Envelope); M4, M5 pending` |
+| `ERR-08` | `INSUFFICIENT_DATA` (`422`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `M2 Verified (ErrorCode + Envelope); M8 pending` |
+| `ERR-09` | `RATE_LIMIT_EXCEEDED` (`429` + `Retry-After`) | `core/errors.py`, `core/rate_limit.py` | `tests/contract/test_errors.py`, `tests/integration/test_rate_limit.py` | `M2, M3, M7` | `M2 Verified (live Redis 7-alpine 429 + Retry-After); M3, M7 pending` |
+| `ERR-10` | `INTERNAL_ERROR` (`500`) | `core/errors.py`, `main.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `M2 Verified (500 masking + X-Request-Id); M8 pending` |
+| `ERR-11` | `ML_UNAVAILABLE` (`502`) | `core/errors.py`, `worker/{breaker,runner}.py` | `tests/contract/test_errors.py`, `tests/integration/test_breaker.py` | `M2, M8, M10` | `M2 Verified (ErrorCode + Envelope); M8, M10 pending` |
+| `ERR-12` | `ML_INVALID_RESPONSE` (`502`) | `core/errors.py`, `services/verification.py` | `tests/contract/test_errors.py`, `tests/unit/test_sem_rules.py` | `M2, M9` | `M2 Verified (ErrorCode + Envelope); M9 pending` |
+| `ERR-13` | `ML_CONTRACT_ERROR` (`502`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `M2 Verified (ErrorCode + Envelope); M8 pending` |
+| `ERR-14` | `DATASET_VERSION_UNAVAILABLE` (`502`) | `core/errors.py`, `services/verification.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_sem_rules.py` | `M2, M8, M9` | `M2 Verified (ErrorCode + Envelope); M8, M9 pending` |
+| `ERR-15` | `ML_DATASET_ERROR` (`502`) | `core/errors.py`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/unit/test_ml_error_map.py` | `M2, M8` | `M2 Verified (ErrorCode + Envelope); M8 pending` |
+| `ERR-16` | `SERVICE_UNAVAILABLE` (`503`) | `core/errors.py`, `services/health.py` | `tests/contract/test_errors.py`, `tests/integration/test_system.py` | `M2, M11` | `M2 Verified (503 fail-closed Redis outage); M11 /health pending` |
+| `ERR-17` | `DATASET_UNAVAILABLE` (`503`) | `core/errors.py`, `repositories/dataset.py`, `services/health.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M6, M7, M11` | `M2 Verified (ErrorCode + Envelope); M6, M7, M11 pending` |
+| `ERR-18` | `ML_TIMEOUT` (`504`) | `core/errors.py`, `ml_client/`, `worker/runner.py` | `tests/contract/test_errors.py`, `tests/integration/test_worker.py` | `M2, M8` | `M2 Verified (ErrorCode + Envelope); M8 pending` |
+| `ERR-19` | `JOB_TIMEOUT` (`504`) | `core/errors.py`, `api/v1/analysis.py` | `tests/contract/test_errors.py`, `tests/integration/test_analysis.py` | `M2, M7` | `M2 Verified (ErrorCode + Envelope); M7 pending` |
 | `NTC-01` | `DEMO_PARCEL_UNVERIFIED` | `services/{auth,demo,fields,analysis}.py` | `tests/integration/test_demo.py`, `tests/integration/test_fields.py` | `M3, M4, M5, M7` | `Pending` |
 | `NTC-02` | `MVP_OUTSIDE_COVERAGE` | `services/geo.py`, `services/{fields,analysis}.py` | `tests/integration/test_fields.py`, `tests/integration/test_analysis.py` | `M4, M5, M7` | `Pending` |
 
@@ -128,7 +128,7 @@
 | `KPI-05` | ML outages trip `ml_breaker_state`, cap 8 bulkhead, label `last_good_replay` | `Blueprint §1.1` | `worker/{breaker,runner}.py` | `tests/concurrency/test_fault_injection.py` | `M8, M10, M12` | `Pending` |
 | `KPI-06` | Golden 15-scenario harness (`>= TBD%` `OQ-6` pending Agronomy Owner) | `Blueprint §1.1, §4.5` | `tests/golden/` | `tests/golden/test_golden_harness.py` | `M12` | `Pending` |
 | `ADR-1..9` | All Active Architecture Decisions (`ADR-0` superseded) | `ADR.md` | System-wide | Full suite + `verify_contracts.py` | `M0–M13` | `Pending` |
-| `IMPL-001` | Interpolated two-bucket Redis sliding-window Lua throttles (`6` buckets incl. `120/min` poll), clamped `EXISTS`-guarded `DECRBY >= 0`/`DEL` refunds, hashed keys, `TRUSTED_PROXY_CIDRS`, PG->Redis hydration, non-burning W1 admission (incl. Step 2 `403`), `worker -> redis` dep, `503` fail-closed | `DECISIONS.md` | `core/rate_limit.py`, `services/analysis.py`, `docker-compose.yml` | `tests/integration/test_rate_limit.py`, `tests/integration/test_quotas.py` | `M0, M2, M3, M7, M8` | `Pending` |
+| `IMPL-001` | Interpolated two-bucket Redis sliding-window Lua throttles (`6` buckets incl. `120/min` poll), clamped `EXISTS`-guarded `DECRBY >= 0`/`DEL` refunds, hashed keys, `TRUSTED_PROXY_CIDRS`, PG->Redis hydration, non-burning W1 admission (incl. Step 2 `403`), `worker -> redis` dep, `503` fail-closed | `DECISIONS.md` | `core/rate_limit.py`, `services/analysis.py`, `docker-compose.yml` | `tests/integration/test_rate_limit.py`, `tests/integration/test_quotas.py` | `M0, M2, M3, M7, M8` | `M2 Verified (live Redis 7-alpine + PostGIS 16-3.4 integration); M3/M7/M8 pending` |
 | `IMPL-002..016` | Resolved design & resilience decisions (`G2–G16`: 24h idempotency savepoint, canonical hashes, `ml_reader` `FOR ROLE`, cooperative backoff/stream + `cancelled_at IS NULL` final cascade guard, `MockMLAdapter`/`RealMLAdapter`, cold-start `GET /catalog`, reaper, refunds, SHA-256 tokens, `input_snapshot_gz`, JWT `fid`, demo parcel preview, `?lang`) | `DECISIONS.md` | Corresponding `core/`, `ml_client/`, `services/`, `worker/`, `db/` modules | `tests/unit/`, `tests/migration/`, `tests/integration/`, `tests/concurrency/` | `M1–M11` | `Pending` |
 | `IMPL-017` | 13-table `last_good_replay` persistence (`res_new` copy + `req.received_at=NULL` + `error_code='last_good_replay:' \|\| id`), non-chaining filter, read-time reconstruction, `half_open -> open` failure reset & `half_open -> closed` valid-`4xx` transition | `DECISIONS.md` | `worker/breaker.py`, `services/analysis.py`, `repositories/analysis.py` | `tests/integration/test_breaker.py`, `tests/concurrency/test_fault_injection.py` | `M7, M10` | `Pending` |
 | `IMPL-018` | Strict separation of `40` normative `.env` vars vs `7` fail-safe Companion Settings (`APP_ENV=production` default, `ValueError` on `production` + `ML_PROVIDER_MODE=mock`) | `DECISIONS.md` | `core/config.py`, `.env.example`, `tools/verify_contracts.py` | `tests/unit/test_config.py`, `verify_contracts.py` | `M0` | `M0 Verified` |
@@ -142,7 +142,7 @@
 | :--- | :--- | :--- | :--- | :--- | :---: | :--- |
 | `ENV-01` | `DATABASE_URL` | `postgresql+asyncpg://...` | `core/config.py`, `db/session.py` | `tests/unit/test_config.py`, `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 | `ENV-02` | `DB_PASSWORD` | required in `.env` | `docker-compose.yml`, `.env.example` | `tools/verify_contracts.py` | `M0` | `M0 Verified` |
-| `ENV-03` | `REDIS_URL` | `redis://redis:6379/0` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_config.py`, `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
+| `ENV-03` | `REDIS_URL` | `redis://redis:6379/0` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_config.py`, `tests/integration/test_rate_limit.py` | `M0, M2` | `M2 Verified (live Redis 7-alpine lifespan + integration)` |
 | `ENV-04` | `ML_DATASET_DB_URL` | `postgresql://ml_reader:...` | `core/config.py`, `.env.example` | `tools/verify_contracts.py` | `M0` | `M0 Verified` |
 | `ENV-05` | `ML_READER_PASSWORD` | required secret | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 | `ENV-06` | `ML_DB_STATEMENT_TIMEOUT_MS` | `5000` (`# TODO(OQ-D4)`) | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
@@ -156,9 +156,9 @@
 | `ENV-14` | `GUEST_MAX_FIELDS_PER_FARM` | `5` | `core/config.py`, `services/fields.py` | `tests/integration/test_quotas.py` | `M0, M5` | `Pending` |
 | `ENV-15` | `GUEST_MAX_ANALYSES` | `10` (`40` quarters) | `core/config.py`, `services/analysis.py` | `tests/integration/test_quotas.py` | `M0, M7` | `Pending` |
 | `ENV-16` | `GUEST_MAX_ML_REFUNDS` | `3` | `core/config.py`, `worker/runner.py` | `tests/integration/test_quotas.py` | `M0, M8` | `Pending` |
-| `ENV-17` | `GUEST_BURST_PER_MIN` | `30` | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
+| `ENV-17` | `GUEST_BURST_PER_MIN` | `30` | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `M2 Verified (live Redis 7-alpine rate limit test)` |
 | `ENV-18` | `GUEST_CREATE_PER_IP_HOUR` | `5` | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M3` | `Pending` |
-| `ENV-19` | `RATE_LIMIT_CRUD_PER_MIN` | `60` | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
+| `ENV-19` | `RATE_LIMIT_CRUD_PER_MIN` | `60` | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `M2 Verified (live Redis 7-alpine rate limit test)` |
 | `ENV-20` | `RATE_LIMIT_ANALYSIS_PER_HOUR` | `10` (`40` quarters/h) | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M7` | `Pending` |
 | `ENV-21` | `ANALYSIS_PER_IP_HOUR` | `15` (`60` quarters/h) | `core/config.py`, `core/rate_limit.py` | `tests/integration/test_rate_limit.py` | `M0, M7` | `Pending` |
 | `ENV-22` | `ML_SERVICE_URL` | `https://ml.fieldshift.internal` | `core/config.py`, `ml_client/{real_adapter,manager}.py` | `tests/unit/test_ml_provider_manager.py` | `M0, M6` | `Pending` |
@@ -179,7 +179,7 @@
 | `ENV-37` | `WORKER_CONCURRENCY` | `4` | `core/config.py`, `worker/runner.py` | `tests/concurrency/test_worker_race.py` | `M0, M8` | `Pending` |
 | `ENV-38` | `JOB_LEASE_SECONDS` | `90` | `core/config.py`, `worker/runner.py` | `tests/integration/test_worker.py` | `M0, M8` | `Pending` |
 | `ENV-39` | `MAX_JOB_ATTEMPTS` | `2` | `core/config.py`, `worker/runner.py` | `tests/integration/test_worker.py` | `M0, M8` | `Pending` |
-| `ENV-40` | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | `core/config.py`, `main.py` | `tests/contract/test_cors.py` | `M0, M2` | `Pending` |
+| `ENV-40` | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | `core/config.py`, `main.py` | `tests/contract/test_cors.py` | `M0, M2` | `M2 CORS Middleware Verified` |
 
 ### 7b. Companion Runtime Settings (`7 / 7` Non-Spec Safety & Tuning Knobs — `IMPL-018`)
 
@@ -189,8 +189,8 @@
 | `CMP-02` | `ML_PROVIDER_MODE` | `auto` (forbidden=`mock` when `APP_ENV=production`) | `core/config.py`, `ml_client/manager.py` | `tests/unit/test_config.py`, `tests/unit/test_ml_provider_manager.py` | `M0, M6` | `Pending` |
 | `CMP-03` | `ML_HEALTH_CHECK_INTERVAL_SECONDS` | `30` | `core/config.py`, `ml_client/manager.py`, `worker/runner.py` | `tests/integration/test_system.py` | `M0, M6, M11` | `Pending` |
 | `CMP-04` | `SEM04_NUMERIC_TOLERANCE` | `0.001` (`1e-3`) | `core/config.py`, `services/verification.py` | `tests/unit/test_sem_rules.py` | `M0, M9` | `Pending` |
-| `CMP-05` | `TRUSTED_PROXY_CIDRS` | `""` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_rate_limit.py`, `tests/integration/test_security.py` | `M0, M2, M12` | `Pending` |
-| `CMP-06` | `REDIS_FAIL_CLOSED` | `true` | `core/config.py`, `core/rate_limit.py`, `api/deps.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
+| `CMP-05` | `TRUSTED_PROXY_CIDRS` | `""` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_rate_limit.py`, `tests/integration/test_security.py` | `M0, M2, M12` | `M2 Unit Verified; M12 security integration pending` |
+| `CMP-06` | `REDIS_FAIL_CLOSED` | `true` | `core/config.py`, `core/rate_limit.py`, `api/deps.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `M2 Verified (unit 503 fail-closed + live Redis 7-alpine lifespan)` |
 | `CMP-07` | `ML_DATASET_OWNER_ROLE` | `""` | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 
 ## 8. Open Questions (`19 / 19` — `Blueprint §13`)
@@ -204,7 +204,7 @@
 | `OQ-5` | Legacy `ADR-0` doc location/date | Docs only (`DESIGN_ISSUES.md`) | `M13` | `Pending` |
 | `OQ-6` | 15 Golden scenarios & Agronomy pass gate | `backend/tests/golden/` harness + `# TODO(OQ-6)` marker | `M12` | `Pending` |
 | `OQ-7` | Backups, RPO/RTO & `input_snapshot_gz` archival TTL | `docs/impl/RUNBOOK.md` + optional reaper hook `# TODO(OQ-7)` | `M11, M13` | `Pending` |
-| `OQ-8` | `DEGRADED_MODE_MAX_AGE_HOURS` & `Deprecation`/`Sunset` duration | `core/config.py` + middleware hook `# TODO(OQ-8)` | `M2, M10` | `Pending` |
+| `OQ-8` | `DEGRADED_MODE_MAX_AGE_HOURS` & `Deprecation`/`Sunset` duration | `core/config.py` + middleware hook `# TODO(OQ-8)` | `M2, M10` | `M2 Middleware Hook Verified; M10 replay pending` |
 | `OQ-9` | Exact Guelma regional & demo parcel coords | `db/seed.py` `# TODO(OQ-9)` | `M1` | `M1 Placeholder Added` |
 | `OQ-10` | Protected/greenhouse `INPUT-03` override | `services/validation.py` `# TODO(OQ-10)` | `M7` | `Pending` |
 | `OQ-11` | Strategy tie-breaking & `priority_fit` spread | Delegated to External ML; `SEM-01` checks structural order | `M9` | `Pending` |

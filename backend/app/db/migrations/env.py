@@ -92,6 +92,10 @@ def do_run_migrations(connection: Connection) -> None:
     )
 
     with context.begin_transaction():
+        # Pin search_path inside the migration transaction so pre-installed PostGIS
+        # extensions in `tiger` / `topology` (e.g. postgis/postgis:16-3.4 Docker)
+        # cannot leak into `schema=None` reflection during `alembic check`.
+        connection.exec_driver_sql("SET LOCAL search_path TO public")
         context.run_migrations()
 
 
