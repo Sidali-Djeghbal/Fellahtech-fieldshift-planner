@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from field_profile_builder import FORBIDDEN_TECHNICAL_KEYS
 from fieldshift_integration.config import PROJECT_ROOT
-from src.agronomic import load_knowledge_base
+from src.agronomic import TemporalPlanningError, load_knowledge_base
 from src.api.pipeline_service import (
     FarmerInputValidationError,
     OutputValidationError,
@@ -111,6 +111,19 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
             },
         )
 
+    @application.exception_handler(TemporalPlanningError)
+    async def temporal_planning_error_handler(_request: Request, exc: TemporalPlanningError) -> JSONResponse:
+        err_code = getattr(exc, "error_code", None) or "PAST_PLANNING_SEASON"
+        err_details = getattr(exc, "details", None)
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error_code": err_code,
+                "message": str(exc),
+                "details": [err_details] if isinstance(err_details, dict) else (err_details or []),
+            },
+        )
+
     @application.exception_handler(OutputValidationError)
     @application.exception_handler(PipelineExecutionError)
     async def pipeline_error_handler(_request: Request, exc: Exception) -> JSONResponse:
@@ -170,7 +183,7 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
         scientific_payload = req.to_scientific_payload()
         try:
             return validate_farmer_submission(scientific_payload)
-        except FarmerInputValidationError:
+        except (FarmerInputValidationError, TemporalPlanningError, OutputValidationError, PipelineExecutionError):
             raise
         except ValueError as exc:
             return _value_error_422_response(exc)
@@ -199,7 +212,7 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
                 analysis_id=analysis_id,
                 language=req.language,
             )
-        except FarmerInputValidationError:
+        except (FarmerInputValidationError, TemporalPlanningError, OutputValidationError, PipelineExecutionError):
             raise
         except ValueError as exc:
             return _value_error_422_response(exc)

@@ -129,6 +129,11 @@
       </div>
 
       <h2>4. Optional Priorities &amp; Operational Constraints</h2>
+      <p class="muted" style="margin-top:0;">
+        Verified local crop yields, farmgate prices, and production costs are not yet available in API mode;
+        <code>income_weight</code> is therefore omitted here (qualitative market tiers are still reported, and any
+        positive <code>income_weight</code> sent directly via API falls back to non-monetary scorable priorities with an explicit warning).
+      </p>
       <div class="row-2">
         <div class="field-group">
           <label for="forageMode">Livestock Forage Requirement</label>
@@ -187,8 +192,9 @@
         </div>
         <div class="notice notice-conditional">
           <strong>Scientific Scope Notice:</strong> Outputs provide ordinal decision-support rankings and
-          agronomic rule explanations. They do <strong>not</strong> predict harvest yield (t/ha), promise net profit (DZD/ha),
-          or replace on-farm salinity (ECe) and drainage checks.
+          agronomic rule explanations. They do <strong>not</strong> predict harvest yield (t/ha), score quantitative
+          farm profit (DZD/ha; <code>income_potential</code> remains <code>UNKNOWN</code> and <code>income_weight</code>
+          cannot steer web/API rankings without verified local enterprise budgets), or replace on-farm salinity (ECe) and drainage checks.
         </div>
       </div>
 

@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from src.agronomic.constraint_engine import AgronomicKnowledgeBase, load_knowledge_base
+from src.agronomic.data_adequacy import BLOCKING_ADEQUACY_STATUSES, assess_critical_data_adequacy
 from src.agronomic.land_use_assessment import (
     LAND_USE_DATA_UNAVAILABLE,
     LAND_USE_LOW_EVIDENCE,
@@ -169,40 +170,105 @@ def _resolve_farmer_weights_from_mapping(
     mapping: Dict[str, Any],
     *,
     explicit_mode: bool,
-) -> Tuple[Dict[str, Optional[float]], str]:
-    """Validate and resolve 5 farmer weights while keeping omitted core weights at DEFAULT_FARMER_WEIGHTS."""
+    income_scorable: bool = True,
+) -> Tuple[Dict[str, Optional[float]], str, List[str], str]:
+    """Validate and resolve 5 farmer weights while keeping scorable defaults safe."""
     core_keys = ("water_saving_weight", "soil_improvement_weight", "income_weight", "risk_reduction_weight")
+    scorable_core_keys = ("water_saving_weight", "soil_improvement_weight", "risk_reduction_weight")
     farmer_w = {k: _validate_weight_value(k, mapping.get(k)) for k in FARMER_WEIGHT_KEYS}
     any_provided = any(v is not None for v in farmer_w.values())
     if not any_provided:
-        return dict(DEFAULT_FARMER_WEIGHTS), "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS"
+        return dict(DEFAULT_FARMER_WEIGHTS), "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS", [], (
+            "DEFAULT_WEIGHTS_USED" if income_scorable else "DEFAULT_UNAVAILABLE_ECONOMIC_DATA"
+        )
 
     core_provided = any(farmer_w[k] is not None for k in core_keys)
+    scorable_core_provided = any(farmer_w[k] is not None for k in scorable_core_keys)
+    warnings: List[str] = []
+    explicit_inc = farmer_w.get("income_weight")
+    inc_status = "APPLIED_VERIFIED_ECONOMIC_DATA" if (income_scorable and (explicit_inc or 0.0) > 0.0) else "NOT_REQUESTED_OR_ZERO"
+    src_label = "EXPLICIT_FARMER_PRIORITY_WEIGHTS" if explicit_mode else "FIELD_PROFILE_FARMER_WEIGHTS"
+
     if not core_provided:
         # Preserve balanced default core priorities when only forage_value_weight (0.0 or >0) is supplied.
         for k in core_keys:
             farmer_w[k] = DEFAULT_FARMER_WEIGHTS[k]
+        if not income_scorable:
+            inc_status = "DEFAULT_UNAVAILABLE_ECONOMIC_DATA"
     else:
         if all((v is None or v == 0.0) for v in farmer_w.values()):
             raise ValueError(
                 "All provided priority weights are zero or null; at least one positive (> 0.0) weight is required."
             )
-        for k in core_keys:
-            if farmer_w[k] is None:
-                farmer_w[k] = 0.0
 
-    src_label = "EXPLICIT_FARMER_PRIORITY_WEIGHTS" if explicit_mode else "FIELD_PROFILE_FARMER_WEIGHTS"
-    return farmer_w, src_label
+        pos_forage = float(farmer_w.get("forage_value_weight") or 0.0) > 0.0
+        explicit_scorable_pos = any((farmer_w[k] or 0.0) > 0.0 for k in scorable_core_keys) or pos_forage
+
+        if not income_scorable and not scorable_core_provided:
+            # Solo income_weight (with or without forage_value_weight) while economic_data is absent:
+            # preserve default scorable core weights so active_weight_sum > 0 and never NO_RECOMMENDATION.
+            for k in scorable_core_keys:
+                farmer_w[k] = DEFAULT_FARMER_WEIGHTS[k]
+            src_label = "DEFAULT_SCORABLE_WEIGHTS_FALLBACK_INCOME_UNAVAILABLE"
+            if explicit_inc is not None and float(explicit_inc) > 0.0:
+                inc_status = "IGNORED_UNAVAILABLE_ECONOMIC_DATA_DEFAULT_CORE_PRESERVED"
+                warnings.append(
+                    f"Requested income_weight={explicit_inc} cannot be scored because verified local crop budgets "
+                    "(yield, farmgate price, cost) are unavailable (income_potential='UNKNOWN'). "
+                    "Default scorable core weights (water=0.25, soil=0.30, risk=0.25) were preserved instead of "
+                    "returning NO_RECOMMENDATION; effective active income weight is 0.0."
+                )
+        elif not income_scorable and not explicit_scorable_pos:
+            omitted_scorable = [k for k in scorable_core_keys if farmer_w[k] is None]
+            if omitted_scorable and explicit_inc is not None and float(explicit_inc) > 0.0:
+                for k in omitted_scorable:
+                    farmer_w[k] = DEFAULT_FARMER_WEIGHTS[k]
+                for k in scorable_core_keys:
+                    if farmer_w[k] is None:
+                        farmer_w[k] = 0.0
+                src_label = "PARTIAL_DEFAULT_FALLBACK_INCOME_UNAVAILABLE"
+                inc_status = "IGNORED_UNAVAILABLE_ECONOMIC_DATA_DEFAULT_CORE_PRESERVED"
+                warnings.append(
+                    f"Requested income_weight={explicit_inc} cannot be scored without verified local economic data "
+                    f"and no positive scorable priority was supplied; omitted core weights {omitted_scorable} "
+                    "reverted to defaults so ranking stays valid (effective active income weight is 0.0)."
+                )
+            else:
+                raise ValueError(
+                    "All scorable priority weights were explicitly set to zero while income_weight cannot be scored "
+                    "without verified local economic data; provide at least one positive (> 0.0) scorable weight."
+                )
+        else:
+            for k in core_keys:
+                if farmer_w[k] is None:
+                    farmer_w[k] = 0.0
+            if explicit_inc is not None and float(explicit_inc) > 0.0:
+                if income_scorable:
+                    inc_status = "APPLIED_VERIFIED_ECONOMIC_DATA"
+                else:
+                    inc_status = "IGNORED_UNAVAILABLE_ECONOMIC_DATA_RENORMALIZED"
+                    warnings.append(
+                        f"Requested income_weight={explicit_inc} cannot be applied in active ranking because verified local crop budgets "
+                        "(yield, farmgate price, cost) are unavailable (income_potential='UNKNOWN'). "
+                        "Active scorable weights were renormalized to 1.0 without numeric income weight."
+                    )
+
+    return farmer_w, src_label, warnings, inc_status
 
 
 def _resolve_weights(
     candidate_output: Dict[str, Any],
     field_profile: Optional[Dict[str, Any]],
     priority_weights: Optional[Dict[str, Optional[float]]],
-) -> Tuple[Dict[str, Optional[float]], Dict[str, Optional[float]], str]:
+    *,
+    income_scorable: bool = True,
+) -> Tuple[Dict[str, Optional[float]], Dict[str, Optional[float]], str, List[str], str, Optional[float]]:
     """Map either farmer 5-weight preferences or explicit 8-objective weights onto OBJECTIVE_ORDER."""
     opt_flags = candidate_output.get("preference_handling", {}).get("optional_input_completeness", {})
     forage_flag = opt_flags.get("forage_value_weight", "NOT_PROVIDED")
+    weight_warnings: List[str] = []
+    inc_status = "DEFAULT_UNAVAILABLE_ECONOMIC_DATA" if not income_scorable else "APPLIED_VERIFIED_ECONOMIC_DATA"
+    requested_inc: Optional[float] = None
 
     # Direct 8-objective override mode if caller passes OBJECTIVE_ORDER keys
     if priority_weights is not None:
@@ -225,15 +291,34 @@ def _resolve_weights(
             pos_sum = sum(v for v in raw_obj.values() if v is not None and v > 0.0)
             if pos_sum <= 0.0:
                 raise ValueError("At least one active priority weight must be positive (> 0.0).")
-            return raw_obj, {"forage_value_weight": raw_obj.get("forage_value")}, "EXPLICIT_OBJECTIVE_WEIGHTS"
+            req_inc_obj = raw_obj.get("income_potential")
+            if req_inc_obj is not None and req_inc_obj > 0.0 and not income_scorable:
+                inc_status = "IGNORED_UNAVAILABLE_ECONOMIC_DATA_RENORMALIZED"
+                weight_warnings.append(
+                    f"Requested income_potential weight={req_inc_obj} cannot be scored without verified local economic data."
+                )
+            return raw_obj, {"forage_value_weight": raw_obj.get("forage_value")}, "EXPLICIT_OBJECTIVE_WEIGHTS", weight_warnings, inc_status, req_inc_obj
 
-        farmer_w, source_label = _resolve_farmer_weights_from_mapping(priority_weights, explicit_mode=True)
+        if "income_weight" in priority_weights and priority_weights["income_weight"] is not None:
+            requested_inc = float(priority_weights["income_weight"])
+        farmer_w, source_label, weight_warnings, inc_status = _resolve_farmer_weights_from_mapping(
+            priority_weights,
+            explicit_mode=True,
+            income_scorable=income_scorable,
+        )
     elif field_profile is not None and field_profile.get("section_a_farmer_provided", {}).get("preferences"):
         prefs = field_profile["section_a_farmer_provided"]["preferences"]
-        farmer_w, source_label = _resolve_farmer_weights_from_mapping(prefs, explicit_mode=False)
+        if prefs.get("income_weight") is not None:
+            requested_inc = float(prefs["income_weight"])
+        farmer_w, source_label, weight_warnings, inc_status = _resolve_farmer_weights_from_mapping(
+            prefs,
+            explicit_mode=False,
+            income_scorable=income_scorable,
+        )
     else:
         farmer_w = dict(DEFAULT_FARMER_WEIGHTS)
         source_label = "DEFAULT_BALANCED_AGRONOMIC_WEIGHTS"
+        inc_status = "DEFAULT_UNAVAILABLE_ECONOMIC_DATA" if not income_scorable else "APPLIED_VERIFIED_ECONOMIC_DATA"
 
     # Respect null vs explicitly zero forage_value_weight from Field Profile / Phase H completeness flags
     if forage_flag == "NOT_PROVIDED" and (priority_weights is None or "forage_value_weight" not in priority_weights):
@@ -255,7 +340,7 @@ def _resolve_weights(
         "income_potential": w_inc,
         "forage_value": w_forage,
     }
-    return raw_obj, farmer_w, source_label
+    return raw_obj, farmer_w, source_label, weight_warnings, inc_status, requested_inc
 
 
 def _eval_water_efficiency(
@@ -756,7 +841,28 @@ def _eval_farmer_priority_fit(
         target_pts = 0.45
 
     # Operational readiness component [0..0.5]
+    def _ops_slot_score(w_st: str, e_st: str) -> float:
+        if w_st == "FAIL" or e_st == "FAIL":
+            return 0.0
+        if w_st == "PASS" and e_st == "PASS":
+            return 1.0
+        if w_st == "PASS" and e_st == "UNKNOWN":
+            return 0.75
+        if w_st == "PASS" and e_st == "WARNING":
+            return 0.35
+        if w_st == "WARNING" and e_st == "PASS":
+            return 0.60
+        if w_st == "WARNING" and e_st == "UNKNOWN":
+            return 0.50
+        if w_st == "WARNING" and e_st == "WARNING":
+            return 0.25
+        if w_st == "UNKNOWN" and e_st == "WARNING":
+            return 0.20
+        return 0.45
+
     slot_scores: List[float] = []
+    unk_baseline_scores: List[float] = []
+    warn_indices: List[int] = []
     unsupported_eq = sorted({
         tag
         for s in strat["seasons"]
@@ -764,20 +870,28 @@ def _eval_farmer_priority_fit(
         if r["rule_id"] == "RULE_EQUIPMENT_CONSTRAINT_CHECK"
         for tag in (r.get("observed_inputs") or {}).get("unsupported_equipment_tags", [])
     })
-    for s in strat["seasons"]:
+    for idx, s in enumerate(strat["seasons"]):
         rules = {r["rule_id"]: r["status"] for r in s["slot_constraint_evaluations"]}
         w_st = rules.get("RULE_WATER_IRRIGATION_GATE", "UNKNOWN")
         e_st = rules.get("RULE_EQUIPMENT_CONSTRAINT_CHECK") or rules.get("RULE_EQUIPMENT_COMPATIBILITY", "UNKNOWN")
-        if w_st == "FAIL" or e_st == "FAIL":
-            slot_scores.append(0.0)
-        elif w_st == "PASS" and e_st == "PASS":
-            slot_scores.append(1.0)
-        elif w_st == "PASS" and e_st == "UNKNOWN":
-            slot_scores.append(0.75)
-        else:
-            slot_scores.append(0.45)
+        slot_scores.append(_ops_slot_score(w_st, e_st))
+        unk_baseline_scores.append(_ops_slot_score(w_st, "UNKNOWN"))
+        if e_st == "WARNING":
+            warn_indices.append(idx)
 
-    ops_pts = 0.50 * (sum(slot_scores) / len(slot_scores))
+    mean_slot = sum(slot_scores) / len(slot_scores)
+    mean_unk_baseline = sum(unk_baseline_scores) / len(unk_baseline_scores)
+    if warn_indices:
+        # Never let unrelated PASS slots override or elevate an explicit machinery conflict above UNKNOWN.
+        min_warn_slot = min(slot_scores[i] for i in warn_indices)
+        ops_factor = max(
+            0.0,
+            min(0.50 * mean_slot + 0.50 * min_warn_slot, mean_unk_baseline - 0.05 * len(warn_indices)),
+        )
+    else:
+        ops_factor = mean_slot
+
+    ops_pts = 0.50 * ops_factor
     score = round(_clip01(target_pts + ops_pts), 4)
 
     missing: List[str] = []
@@ -793,7 +907,7 @@ def _eval_farmer_priority_fit(
         "status": status,
         "evidence": [
             "preference_handling (target_crop_ids, excluded_crop_ids) & RULE_EQUIPMENT_CONSTRAINT_CHECK / RULE_WATER_IRRIGATION_GATE",
-            f"equipment_constraints={equip_flag}; eligible_targets_matched={sum(1 for t in req_targets if t in crops_set)}/{len(req_targets)}; unsupported_equipment_tags={unsupported_eq}.",
+            f"equipment_constraints={equip_flag}; eligible_targets_matched={sum(1 for t in req_targets if t in crops_set)}/{len(req_targets)}; equipment_warning_slots={len(warn_indices)}; unsupported_equipment_tags={unsupported_eq}.",
         ],
         "evidence_classification": "USER_REPORTED + AGRONOMIC_RULE_BASED",
         "confidence_or_uncertainty": "HIGH when equipment_constraints confirmed & modeled; PARTIAL when null ('NOT_PROVIDED') or contains unmodeled tags",
@@ -917,19 +1031,7 @@ def rank_rotation_candidates(
         }
     )
 
-    raw_obj_weights, raw_farmer_weights, weight_source = _resolve_weights(
-        candidate_output, field_profile, priority_weights
-    )
-    forage_w = raw_farmer_weights.get("forage_value_weight")
-    if priority_weights is not None and ("forage_value_weight" in priority_weights or "forage_value" in priority_weights):
-        forage_flag = "PROVIDED" if forage_w is not None else "NOT_PROVIDED"
-    else:
-        forage_flag = pref_handling.get("optional_input_completeness", {}).get(
-            "forage_value_weight",
-            "PROVIDED" if forage_w is not None else "NOT_PROVIDED",
-        )
-
-    # 1. Score all strategies across all 8 objectives without fabricating missing data
+    # 1. Score all non-forage objectives first so income_scorable is known before weight fallback resolution
     per_strategy_scores: Dict[str, Dict[str, Dict[str, Any]]] = {}
     power_water_scores: Dict[str, float] = {}
 
@@ -945,15 +1047,46 @@ def rank_rotation_candidates(
             "pest_disease_disruption": _eval_pest_disease_disruption(strat, history_assessment, kb),
             "erosion_protection": _eval_erosion_protection(strat, veg_terrain, kb),
             "income_potential": _eval_income_potential(strat, economic_data, kb),
-            "forage_value": _eval_forage_value(strat, forage_w, forage_flag),
             "farmer_priority_fit": _eval_farmer_priority_fit(strat, pref_handling, kb),
         }
 
     _normalize_income_scores_across_pool(per_strategy_scores)
 
-    # Partition strictly on Phase H hard feasibility gates
+    # Partition strictly on Phase H feasibility gates
     eligible_strats = [s for s in raw_strategies if bool(s.get("feasible", False))]
     infeasible_strats = [s for s in raw_strategies if not bool(s.get("feasible", False))]
+
+    income_scorable = any(
+        per_strategy_scores[s["strategy_id"]]["income_potential"]["status"] == "SCORED"
+        for s in (eligible_strats or raw_strategies)
+    )
+    (
+        raw_obj_weights,
+        raw_farmer_weights,
+        weight_source,
+        weight_warnings,
+        income_weight_status,
+        requested_income_weight,
+    ) = _resolve_weights(
+        candidate_output,
+        field_profile,
+        priority_weights,
+        income_scorable=income_scorable,
+    )
+    forage_w = raw_farmer_weights.get("forage_value_weight")
+    if priority_weights is not None and ("forage_value_weight" in priority_weights or "forage_value" in priority_weights):
+        forage_flag = "PROVIDED" if forage_w is not None else "NOT_PROVIDED"
+    else:
+        forage_flag = pref_handling.get("optional_input_completeness", {}).get(
+            "forage_value_weight",
+            "PROVIDED" if forage_w is not None else "NOT_PROVIDED",
+        )
+
+    for strat in raw_strategies:
+        sid = strat["strategy_id"]
+        per_strategy_scores[sid]["forage_value"] = _eval_forage_value(strat, forage_w, forage_flag)
+        # Re-order dict strictly to OBJECTIVE_ORDER
+        per_strategy_scores[sid] = {obj: per_strategy_scores[sid][obj] for obj in OBJECTIVE_ORDER}
 
     feasible_pass_count = sum(1 for s in eligible_strats if s.get("feasibility_status") == "FEASIBLE_PASS")
     cond_count = sum(
@@ -973,10 +1106,22 @@ def rank_rotation_candidates(
     for obj in OBJECTIVE_ORDER:
         rw = raw_obj_weights.get(obj)
         if obj not in active_pareto_objs:
-            inactive_weight_audit[obj] = {
-                "raw_weight": rw,
-                "reason": "OBJECTIVE_STATUS_UNKNOWN_OR_NOT_APPLICABLE",
+            reason = (
+                "INCOME_POTENTIAL_UNAVAILABLE_WITHOUT_ECONOMIC_DATA"
+                if (obj == "income_potential" and income_weight_status.startswith("IGNORED_"))
+                else "OBJECTIVE_STATUS_UNKNOWN_OR_NOT_APPLICABLE"
+            )
+            audit_entry: Dict[str, Any] = {
+                "raw_weight": (
+                    requested_income_weight
+                    if (obj == "income_potential" and requested_income_weight is not None)
+                    else rw
+                ),
+                "reason": reason,
             }
+            if obj == "income_potential" and income_weight_status != "NOT_REQUESTED":
+                audit_entry["income_weight_status"] = income_weight_status
+            inactive_weight_audit[obj] = audit_entry
         elif rw is None or float(rw) <= 0.0:
             inactive_weight_audit[obj] = {
                 "raw_weight": rw,
@@ -1057,6 +1202,19 @@ def rank_rotation_candidates(
         precip_spread_mm=precip_spread_mm,
     )
 
+    critical_adequacy = assess_critical_data_adequacy(
+        field_profile=field_profile,
+        field_insights=field_insights,
+        land_use_assessment=land_use,
+        water_balance_assessment=water_balance_assessment,
+        water_context=water_ctx,
+        optional_flags=pref_handling.get("optional_input_completeness"),
+        history_sufficient=history_assessment.get("sufficient_for_existing_baseline"),
+        eligible_for_ranking_count=len(eligible_strats),
+        income_potential_unavailable=not income_scorable,
+    )
+    adequacy_blocked = critical_adequacy["adequacy_status"] in BLOCKING_ADEQUACY_STATUSES
+
     provisional_lu = bool(land_use.get("is_provisional", False))
     gate_reasons: List[str] = []
     if not eligible_strats:
@@ -1071,12 +1229,27 @@ def rank_rotation_candidates(
         decision_status = "NO_RECOMMENDATION"
         endorsed_id = None
         gate_reasons.append("No active scorable objectives available to form a composite ranking.")
-    elif provisional_lu:
+    elif provisional_lu or adequacy_blocked:
         suggested_id = prelim_winner_id
         rec_status = "EXPLORATORY_ONLY"
         decision_status = "EXPLORATORY_ONLY"
         endorsed_id = None
-        gate_reasons.append(land_use.get("provisional_gating_reason") or f"Provisional land-use gate: {land_use.get('status')}.")
+        if provisional_lu:
+            gate_reasons.append(land_use.get("provisional_gating_reason") or f"Provisional land-use gate: {land_use.get('status')}.")
+        if adequacy_blocked:
+            blocker_impacts = [
+                g["impact"]
+                for g in critical_adequacy.get("critical_gaps", [])
+                if g.get("severity") in ("CRITICAL_BLOCKER", "NOT_ASSESSABLE")
+            ]
+            if blocker_impacts:
+                gate_reasons.append(
+                    f"Critical data adequacy='{critical_adequacy['adequacy_status']}': {'; '.join(blocker_impacts)}"
+                )
+            else:
+                gate_reasons.append(
+                    f"Critical data adequacy='{critical_adequacy['adequacy_status']}' blocks operational endorsement."
+                )
     elif all_conditional or land_use.get("requires_local_verification"):
         suggested_id = prelim_winner_id
         rec_status = "CONDITIONAL_RECOMMENDATION_REQUIRES_LOCAL_VERIFICATION"
@@ -1164,9 +1337,17 @@ def rank_rotation_candidates(
         )
 
         if not is_elig:
+            ce = strat["constraint_evaluations"]
+            infeas_reasons = (
+                ce.get("hard_fail_reasons", [])
+                + ce.get("hard_unknown_reasons", [])
+                + ce.get("soft_fail_reasons", [])
+            )
+            if not infeas_reasons:
+                infeas_reasons = [r for r in strat.get("reasons", []) if "[FAIL]" in r or "[UNKNOWN]" in r][:3]
             expl = (
                 f"EXCLUDED from recommendation pool due to Phase H feasibility verdict '{strat['feasibility_status']}': "
-                f"{'; '.join(strat['constraint_evaluations'].get('hard_fail_reasons', []) + strat['constraint_evaluations'].get('hard_unknown_reasons', []))}."
+                f"{'; '.join(infeas_reasons)}."
             )
             conf_level = "INFEASIBLE_BLOCKED"
         else:
@@ -1198,7 +1379,7 @@ def rank_rotation_candidates(
                 "name": strat.get("name"),
                 "is_existing_rotation": strat.get("is_existing_rotation", False),
                 "selection_status": strat.get("selection_status"),
-                "provisional": bool(provisional_lu or strat.get("provisional", False)),
+                "provisional": bool(decision_status == "EXPLORATORY_ONLY" or provisional_lu or adequacy_blocked or strat.get("provisional", False)),
                 "land_use_status": land_use.get("status"),
                 "feasibility_status": strat["feasibility_status"],
                 "feasible": is_elig,
@@ -1252,6 +1433,7 @@ def rank_rotation_candidates(
         "decision_gate": decision_gate,
         "land_use_assessment": land_use,
         "water_balance_assessment": water_balance_assessment,
+        "critical_data_adequacy": critical_adequacy,
         "all_candidates_conditional": all_conditional,
         "feasibility_gate_summary": {
             "total_input_candidates": len(raw_strategies),
@@ -1265,6 +1447,9 @@ def rank_rotation_candidates(
             "weight_source": weight_source,
             "raw_farmer_weights": raw_farmer_weights,
             "raw_objective_weights": raw_obj_weights,
+            "requested_income_weight": requested_income_weight,
+            "income_weight_status": income_weight_status,
+            "weight_warnings": weight_warnings,
             "active_weighted_objectives": active_weighted_objs,
             "normalized_active_weights": normalized_weights,
             "normalized_active_weight_sum": round(sum(normalized_weights.values()), 6),

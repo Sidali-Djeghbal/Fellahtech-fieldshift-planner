@@ -712,6 +712,7 @@ def evaluate_crop_for_field(
         "feasibility_status": feasibility_status,
         "hard_fail_rules": hard_fails,
         "hard_unknown_rules": hard_unknowns,
+        "soft_fail_rules": other_fails,
         "status_counts": status_counts,
         "quarantined_excluded": ["soilgrids_v6.nitrogen_0_30cm"],
         "rule_evaluations": [r.to_dict() for r in evals],
@@ -1065,6 +1066,10 @@ def evaluate_crop_sequence(
     )
     any_slot_infeasible = any(not se["feasible"] for se in slot_evaluations)
     seq_soft_fails = [r.rule_id for r in seq_evals if r.evidence_classification != "HARD_CONSTRAINT" and r.status == "FAIL"]
+    soft_fails = (
+        [f"{se['crop_id']}::{rid}" for se in slot_evaluations for rid in se.get("soft_fail_rules", [])]
+        + seq_soft_fails
+    )
 
     if hard_fails:
         feasible = False
@@ -1089,6 +1094,7 @@ def evaluate_crop_sequence(
         "feasibility_status": feasibility_status,
         "hard_fail_reasons": hard_fails,
         "hard_unknown_reasons": hard_unknowns,
+        "soft_fail_reasons": soft_fails,
         "sequence_status_counts": seq_status_counts,
         "quarantined_excluded": ["soilgrids_v6.nitrogen_0_30cm"],
         "slot_evaluations": slot_evaluations,

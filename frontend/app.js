@@ -264,6 +264,11 @@ function renderAnalysisResult(data) {
     <p class="muted">${fp.provenance_disclosures.soilgrids_vs_laboratory_distinction}</p>
   `;
 
+  const rm = fplan.ranking_methodology || {};
+  const weightWarnings = rm.weight_warnings || [];
+  const weightWarnHtml = weightWarnings.length
+    ? `<br/><strong>Priority Weight Disclosure:</strong> ${weightWarnings.join(" ")}`
+    : "";
   const bannerCls = gate.decision_status === "EXPLORATORY_ONLY" || !fplan.suggested_strategy_id ? "notice-error" : "notice-conditional";
   const nearTieHtml = gate.near_tie_detected
     ? `<br/><strong>Near-Tie / Sensitivity Caution (${gate.margin_status}):</strong> Alternatives close in score: ${(gate.plausible_alternatives || []).map((a) => `${a.strategy_id} (Δ=${a.score_gap_from_top})`).join(", ")}`
@@ -272,7 +277,7 @@ function renderAnalysisResult(data) {
     <div class="notice ${bannerCls}">
       <strong>Analysis ID:</strong> <code>${data.analysis_id}</code> | <strong>Decision Gate:</strong> ${gate.decision_status || fplan.recommendation_status} | <strong>Endorsed ID:</strong> ${gate.endorsed_recommendation_id || "NONE (Exploratory/Unendorsed)"}<br/>
       <strong>Water Modeling Scope:</strong> Ordinal crop regime only — FAO-56 Penman-Monteith balance is <code>${wb.fao56_water_balance_status || "UNKNOWN"}</code>.<br/>
-      ${rec.overall_summary}${nearTieHtml}<br/>
+      ${rec.overall_summary}${weightWarnHtml}${nearTieHtml}<br/>
       <small><strong>Important:</strong> Ordinal scores reflect multi-criteria agronomic suitability—NOT predicted crop yield (t/ha), farm profit, or scientific probability.</small>
     </div>
   `;
@@ -291,7 +296,11 @@ function renderAnalysisResult(data) {
   el("strategiesList").innerHTML = fplan.strategies.map((s) => {
     const isTop = s.strategy_id === fplan.suggested_strategy_id;
     const isProvisional = Boolean(s.provisional || gate.provisional_only);
-    const infeas = s.feasibility_status === "INFEASIBLE_HARD_CONSTRAINT" || s.feasibility_status === "UNVERIFIED_HARD_UNKNOWN";
+    const infeas = (
+      s.feasibility_status === "INFEASIBLE_HARD_CONSTRAINT"
+      || s.feasibility_status === "UNVERIFIED_HARD_UNKNOWN"
+      || s.feasibility_status === "INFEASIBLE_CONSTRAINT"
+    );
     const sc = s.scores;
     const stab = s.stability_metrics || {};
     const slotsHtml = s.seasons.map((sl) => `

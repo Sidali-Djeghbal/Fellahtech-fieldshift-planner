@@ -7,9 +7,11 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.agronomic.data_adequacy import BLOCKING_ADEQUACY_STATUSES
+
 DEFAULT_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "final_recommendation_output.schema.json"
 
-INFEASIBLE_STATUSES = {"UNVERIFIED_HARD_UNKNOWN", "INFEASIBLE_HARD_CONSTRAINT"}
+INFEASIBLE_STATUSES = {"UNVERIFIED_HARD_UNKNOWN", "INFEASIBLE_HARD_CONSTRAINT", "INFEASIBLE_CONSTRAINT"}
 ELIGIBLE_STATUSES = {"FEASIBLE_PASS", "CONDITIONALLY_FEASIBLE_WITH_WARNINGS_OR_UNKNOWNS"}
 
 
@@ -206,6 +208,16 @@ def _validate_semantics(payload: Dict[str, Any], errors: List[str]) -> None:
             errors.append(f"decision_gate '{d_status}' cannot carry a non-null endorsed_recommendation_id ('{endorsed}').")
         if d_status == "EXPLORATORY_ONLY" and not d_gate.get("provisional_only"):
             errors.append("decision_gate 'EXPLORATORY_ONLY' must set provisional_only=true.")
+        dq_status = ((fp.get("data_quality") or {}).get("critical_data_adequacy") or {}).get("adequacy_status")
+        if dq_status in BLOCKING_ADEQUACY_STATUSES:
+            if endorsed is not None:
+                errors.append(
+                    f"critical_data_adequacy '{dq_status}' forbids non-null endorsed_recommendation_id ('{endorsed}')."
+                )
+            if d_status not in {"EXPLORATORY_ONLY", "INFEASIBLE", "NO_RECOMMENDATION"}:
+                errors.append(
+                    f"critical_data_adequacy '{dq_status}' must gate decision_status to EXPLORATORY_ONLY/INFEASIBLE/NO_RECOMMENDATION; got '{d_status}'."
+                )
 
     # 6. Pareto references must point only to eligible strategy IDs
     ps = fp.get("pareto_summary", {})

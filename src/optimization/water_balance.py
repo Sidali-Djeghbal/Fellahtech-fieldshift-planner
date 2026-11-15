@@ -153,6 +153,41 @@ def compute_effective_precip_usda_scs_monthly(precip_monthly_mm: float) -> float
     return round(125.0 + 0.1 * p, 2)
 
 
+def _extract_centroid_latitude_deg(
+    spatial: Dict[str, Any],
+    hydro_override: Optional[Any],
+) -> Optional[float]:
+    """Extract validated decimal latitude (deg) respecting [lon, lat] vs [lat, lon] order."""
+    candidates: List[Any] = []
+    if hydro_override is not None:
+        candidates.append(hydro_override)
+
+    cent_lon_lat = spatial.get("centroid_lon_lat")
+    if isinstance(cent_lon_lat, (list, tuple)) and len(cent_lon_lat) >= 2:
+        # FieldGeospatialProcessor emits GeoJSON-ordered [lon, lat]
+        candidates.append(cent_lon_lat[1])
+    elif isinstance(cent_lon_lat, dict):
+        candidates.append(cent_lon_lat.get("lat"))
+
+    cent_lat_lon = spatial.get("centroid_lat_lon")
+    if isinstance(cent_lat_lon, dict):
+        candidates.append(cent_lat_lon.get("lat"))
+    elif isinstance(cent_lat_lon, (list, tuple)) and len(cent_lat_lon) >= 2:
+        # Explicit [lat, lon] coordinate order
+        candidates.append(cent_lat_lon[0])
+
+    for raw in candidates:
+        if raw is None or isinstance(raw, bool):
+            continue
+        try:
+            val = float(raw)
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(val) and -90.0 <= val <= 90.0:
+            return round(val, 6)
+    return None
+
+
 def assess_water_balance_readiness(
     field_profile: Dict[str, Any],
     crop_profiles: Optional[Dict[str, Dict[str, Any]]] = None,
@@ -184,11 +219,12 @@ def assess_water_balance_readiness(
     if elev_m is None:
         elev_m = (dem.get("dem_elevation_m") or {}).get("value")
 
-    cent = spatial.get("centroid_lat_lon") or {}
-    lat = hydro.get("latitude_deg") if hydro.get("latitude_deg") is not None else cent.get("lat")
+    lat = _extract_centroid_latitude_deg(spatial, hydro.get("latitude_deg"))
     doy = int(hydro.get("day_of_year") or 105)
 
     missing_inputs: List[str] = []
+    if lat is None:
+        missing_inputs.append("centroid_latitude_deg (missing valid parcel centroid latitude in spatial_validation)")
     if u2 is None:
         missing_inputs.append("wind_speed_2m_ms (WS2M absent in repository NASA POWER regional extract)")
     if elev_m is None:
@@ -246,7 +282,16 @@ def assess_water_balance_readiness(
     if hydro.get("soil_fc_vol_pct") is not None and hydro.get("soil_pwp_vol_pct") is not None:
         soil_storage_status = "PROVIDED_LOCAL_FC_PWP"
 
-    if et0_mm_day is not None and eff_precip_mm is not None and not missing_stage_crops and soil_storage_status == "PROVIDED_LOCAL_FC_PWP":
+    ea_missing = irrig_sys != "none" and hydro.get("application_efficiency_ea") is None
+    has_complete_kc = any(v == "COMPLETE_KC_AND_STAGE_LENGTHS" for v in kc_coverage.values())
+    if (
+        et0_mm_day is not None
+        and eff_precip_mm is not None
+        and has_complete_kc
+        and not missing_stage_crops
+        and soil_storage_status == "PROVIDED_LOCAL_FC_PWP"
+        and not ea_missing
+    ):
         fao56_status = "COMPUTED_FULL"
     elif et0_mm_day is not None or eff_precip_mm is not None or bool(kc_coverage):
         fao56_status = "PARTIAL" if (et0_mm_day is not None or eff_precip_mm is not None) else "UNKNOWN"
@@ -271,6 +316,7 @@ def assess_water_balance_readiness(
             "solar_sw_mj_m2_day": rs_mj,
             "wind_speed_2m_ms": u2,
             "dem_elevation_m": elev_m,
+            "latitude_deg": lat,
         },
         "kc_parameter_readiness_summary": {
             "crops_with_literature_kc": sum(1 for v in kc_coverage.values() if v.startswith("COMPLETE") or v.startswith("PARTIAL")),

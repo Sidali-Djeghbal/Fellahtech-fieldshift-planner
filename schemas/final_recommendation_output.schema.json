@@ -185,7 +185,8 @@
             "FEASIBLE_PASS",
             "CONDITIONALLY_FEASIBLE_WITH_WARNINGS_OR_UNKNOWNS",
             "UNVERIFIED_HARD_UNKNOWN",
-            "INFEASIBLE_HARD_CONSTRAINT"
+            "INFEASIBLE_HARD_CONSTRAINT",
+            "INFEASIBLE_CONSTRAINT"
           ]
         },
         "scores": {

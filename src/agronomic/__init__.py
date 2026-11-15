@@ -21,6 +21,11 @@ from src.agronomic.land_use_assessment import (
     LandUseThresholds,
     assess_land_use,
 )
+from src.agronomic.data_adequacy import (
+    BLOCKING_ADEQUACY_STATUSES,
+    assess_critical_data_adequacy,
+    compute_data_completeness_score,
+)
 from src.agronomic.temporal_planning import (
     PLANNING_MODE_CURRENT,
     PLANNING_MODE_HISTORICAL,
@@ -39,13 +44,16 @@ __all__ = [
     "LAND_USE_UNVERIFIED",
     "LAND_USE_CONFLICTING_EVIDENCE",
     "LAND_USE_DATA_UNAVAILABLE",
+    "BLOCKING_ADEQUACY_STATUSES",
     "LandUseThresholds",
     "PLANNING_MODE_CURRENT",
     "PLANNING_MODE_HISTORICAL",
     "TemporalPlanningError",
     "AgronomicKnowledgeBase",
     "RuleEvaluation",
+    "assess_critical_data_adequacy",
     "assess_land_use",
+    "compute_data_completeness_score",
     "load_knowledge_base",
     "evaluate_crop_for_field",
     "evaluate_all_crops_for_field",

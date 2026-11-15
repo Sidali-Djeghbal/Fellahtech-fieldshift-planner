@@ -116,6 +116,8 @@ def _build_field_insights(field_profile: Dict[str, Any]) -> Dict[str, Any]:
         "soil_summary_modeled_250m": {
             "usda_texture_0_5cm": soil.get("usda_texture_0_5cm", {}).get("value"),
             "clay_0_30cm_pct": soil.get("clay_0_30cm", {}).get("value"),
+            "clay_0_30cm_coverage_pct": soil.get("clay_0_30cm", {}).get("polygon_coverage_pct"),
+            "clay_0_30cm_quality_status": soil.get("clay_0_30cm", {}).get("quality_status"),
             "ph_0_30cm": soil.get("ph_0_30cm", {}).get("value"),
             "soc_0_30cm_g_kg": soil.get("soc_0_30cm", {}).get("value"),
             "cec_0_30cm_cmol_kg": soil.get("cec_0_30cm", {}).get("value"),
@@ -643,7 +645,7 @@ def generate_rotation_candidates(
         if combined_counts["WARNING"] > 0:
             checklist.append("Review WARNING flags (GPM vs NASA POWER precipitation spread, clay workability, sequence return breaks, Hypothesis DSA trial status).")
         if not seq_eval["feasible"]:
-            checklist.append("HARD/UNKNOWN BLOCKER: Sequence infeasible as configured; inspect hard_fail_reasons / hard_unknown_reasons.")
+            checklist.append("HARD/UNKNOWN/CONSTRAINT BLOCKER: Sequence infeasible as configured; inspect hard_fail_reasons / hard_unknown_reasons / soft_fail_reasons.")
 
         strategies.append({
             "candidate_id": f"CAND_{len(strategies) + 1:02d}",
@@ -669,6 +671,7 @@ def generate_rotation_candidates(
                 "sequence_status_counts": seq_eval["sequence_status_counts"],
                 "hard_fail_reasons": seq_eval["hard_fail_reasons"],
                 "hard_unknown_reasons": seq_eval["hard_unknown_reasons"],
+                "soft_fail_reasons": seq_eval.get("soft_fail_reasons", []),
                 "sequence_rules": seq_eval["sequence_rule_evaluations"],
             },
             "confidence_limitations": {
