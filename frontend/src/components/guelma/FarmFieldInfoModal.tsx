@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Calculator,
   Check,
@@ -13,6 +13,7 @@ import {
   Warning,
   X,
 } from "@phosphor-icons/react";
+import { useResolvedTheme } from "@/app/providers";
 import { UsdaTextureModal } from "@/components/profile/UsdaTextureModal";
 import { FieldPolygonThumbnail } from "@/components/guelma/FieldPolygonThumbnail";
 import type { BorderDraftResult } from "@/components/guelma/GuelmaBorderEditorMap";
@@ -130,6 +131,7 @@ export function FarmFieldInfoModal({
   const dict = GUELMA_WORKSPACE_I18N[lang];
   const t = dict.form;
   const authMode = useAppStore((s) => s.authMode);
+  const resolvedTheme = useResolvedTheme();
 
   const isEditField = Boolean(editingField);
 
@@ -174,6 +176,28 @@ export function FarmFieldInfoModal({
   const [catalogItems, setCatalogItems] = useState<CropItem[]>(FIXTURE_CATALOG_ITEMS);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    return () => {
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !usdaModalOpen && !submitting) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, usdaModalOpen, submitting, onClose]);
 
   useEffect(() => {
     if (authMode === "none") return;
@@ -421,17 +445,28 @@ export function FarmFieldInfoModal({
     }
   };
 
+  const inputClassName =
+    "mt-1 min-h-10 w-full rounded-xl border border-[#111813]/15 bg-white/90 px-3 py-2 text-base text-[#111813] placeholder:text-[#6B7A6F] transition-[border-color,background-color] focus:border-[#15803D] focus:outline-none dark:border-white/12 dark:bg-[#141A16] dark:text-[#F5F7F5] dark:placeholder:text-[#78847B] dark:focus:border-[#86EFAC]/60 sm:text-xs";
+  const compactInputClassName =
+    "mt-1 min-h-10 w-full rounded-xl border border-[#111813]/15 bg-white/90 px-2.5 py-1.5 text-base text-[#111813] placeholder:text-[#6B7A6F] transition-[border-color,background-color] focus:border-[#15803D] focus:outline-none dark:border-white/12 dark:bg-[#141A16] dark:text-[#F5F7F5] dark:placeholder:text-[#78847B] dark:focus:border-[#86EFAC]/60 sm:text-xs";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 sm:p-6 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-label={isEditField ? t.editFieldTitle : t.createTitle}
       data-testid="farm-field-info-modal"
     >
-      <div className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[#DCE3DF] bg-white text-[#111827] shadow-2xl">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t.cancelBtn}
+        className="fixed inset-0 bg-[#0F1711]/35 backdrop-blur-sm dark:bg-black/65"
+      />
+      <div className="fs-hud-glass relative z-10 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl text-[#111813] shadow-[0_32px_90px_rgba(17,24,19,0.22)] dark:text-[#F5F7F5] dark:shadow-[0_32px_90px_rgba(0,0,0,0.65)]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-[#E5EAE7] bg-[#F7FAF8] px-5 py-4">
+        <div className="flex items-start justify-between gap-4 border-b border-[#111813]/10 bg-[#111813]/[0.03] px-5 py-4 dark:border-white/10 dark:bg-white/[0.04]">
           <div className="flex items-center gap-3">
             <FieldPolygonThumbnail
               boundary={activeBoundary}
@@ -442,20 +477,20 @@ export function FarmFieldInfoModal({
               className="h-14 w-24 shrink-0"
             />
             <div>
-              <h2 className="text-base font-bold text-[#0B4B2E]">
+              <h2 className="font-heading text-base font-semibold text-[#111813] dark:text-[#F5F7F5]">
                 {isEditField ? t.editFieldTitle : t.createTitle}
               </h2>
-              <p className="mt-0.5 text-xs text-[#6B7280]">{t.subtitle}</p>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-mono text-[#374151]">
+              <p className="mt-0.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-mono tabular-nums text-[#243227] dark:text-[#D1DBD3]">
                 <span className="inline-flex items-center gap-1" dir="ltr">
-                  <MapPin size={12} className="text-[#137135]" />
+                  <MapPin size={12} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
                   {activeLat.toFixed(4)}° N, {activeLon.toFixed(4)}° E
                 </span>
                 {onEditBorders ? (
                   <button
                     type="button"
                     onClick={onEditBorders}
-                    className="font-sans font-semibold text-[#137135] underline hover:text-[#0B4B2E]"
+                    className="min-h-8 font-sans font-semibold text-[#15803D] underline decoration-[#15803D]/50 underline-offset-4 transition-colors hover:text-[#0B3D2E] dark:text-[#86EFAC] dark:decoration-[#86EFAC]/50 dark:hover:text-white"
                   >
                     {dict.editBordersBtn}
                   </button>
@@ -467,9 +502,9 @@ export function FarmFieldInfoModal({
             type="button"
             onClick={onClose}
             aria-label={t.cancelBtn}
-            className="rounded-lg p-1.5 text-[#6B7280] hover:bg-gray-200/70 hover:text-[#111827]"
+            className="fs-liquid-pill flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#4A5A4E] hover:text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#9CA89E] dark:hover:text-white"
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
@@ -477,30 +512,30 @@ export function FarmFieldInfoModal({
         <form onSubmit={handleSubmit} className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
           {formError ? (
             <div
-              className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-700"
+              className="flex items-start gap-2 rounded-xl border border-red-600/25 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-800 dark:border-red-400/30 dark:bg-red-500/15 dark:text-red-200"
               role="alert"
             >
-              <Warning size={16} weight="fill" className="mt-0.5 shrink-0" />
+              <Warning size={16} weight="fill" className="mt-0.5 shrink-0 text-red-600 dark:text-red-300" aria-hidden="true" />
               <span>{formError}</span>
             </div>
           ) : null}
 
           {/* 1. Farm Section */}
           {!isEditField ? (
-            <section className="rounded-xl border border-[#E5EAE7] bg-[#FAFCFB] p-4">
+            <section className="fs-liquid-well rounded-2xl p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B4B2E]">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15803D] dark:text-[#86EFAC]">
                   {t.farmSection}
                 </h3>
                 {existingFarms.length > 0 ? (
-                  <div className="inline-flex rounded-lg border border-[#D1DDD6] bg-white p-0.5 text-xs font-semibold">
+                  <div className="inline-flex rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] p-0.5 text-xs font-semibold dark:border-white/12 dark:bg-black/30">
                     <button
                       type="button"
                       onClick={() => setTargetFarmMode("new")}
-                      className={`rounded-md px-2.5 py-1 transition ${
+                      className={`min-h-8 rounded-full px-3 py-1 transition-[background-color,color] ${
                         targetFarmMode === "new"
-                          ? "bg-[#0B4B2E] text-white"
-                          : "text-[#4B5563] hover:text-[#111827]"
+                          ? "bg-[#0B3D2E] text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
+                          : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-white"
                       }`}
                     >
                       {t.targetModeNew}
@@ -508,10 +543,10 @@ export function FarmFieldInfoModal({
                     <button
                       type="button"
                       onClick={() => setTargetFarmMode("existing")}
-                      className={`rounded-md px-2.5 py-1 transition ${
+                      className={`min-h-8 rounded-full px-3 py-1 transition-[background-color,color] ${
                         targetFarmMode === "existing"
-                          ? "bg-[#0B4B2E] text-white"
-                          : "text-[#4B5563] hover:text-[#111827]"
+                          ? "bg-[#0B3D2E] text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
+                          : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-white"
                       }`}
                     >
                       {t.targetModeExisting}
@@ -522,13 +557,13 @@ export function FarmFieldInfoModal({
 
               {targetFarmMode === "existing" && existingFarms.length > 0 ? (
                 <div className="mt-3">
-                  <label className="block text-xs font-semibold text-[#374151]">
+                  <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.chooseFarmLabel}
                   </label>
                   <select
                     value={selectedFarmId}
                     onChange={(e) => setSelectedFarmId(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs text-[#111827]"
+                    className={inputClassName}
                   >
                     {existingFarms.map((fm) => (
                       <option key={fm.farm_id} value={fm.farm_id}>
@@ -540,7 +575,7 @@ export function FarmFieldInfoModal({
               ) : (
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-[#374151]">
+                    <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                       {t.farmNameLabel} *
                     </label>
                     <input
@@ -551,18 +586,18 @@ export function FarmFieldInfoModal({
                       onChange={(e) => setFarmName(e.target.value)}
                       placeholder={t.farmNamePlaceholder}
                       data-testid="input-farm-name"
-                      className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#137135] focus:outline-none"
+                      className={inputClassName}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#374151]">
+                    <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                       {t.communeLabel}
                     </label>
                     <select
                       value={commune}
                       onChange={(e) => setCommune(e.target.value)}
                       data-testid="select-farm-commune"
-                      className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs text-[#111827]"
+                      className={inputClassName}
                     >
                       {GUELMA_COMMUNES.map((c) => (
                         <option key={c.id} value={c.name.en}>
@@ -570,29 +605,31 @@ export function FarmFieldInfoModal({
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1 text-[10px] text-[#059669]">{t.communeAutoHint}</p>
+                    <p className="mt-1 text-[11px] font-medium text-[#15803D] dark:text-[#86EFAC]">
+                      {t.communeAutoHint}
+                    </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-semibold text-[#374151]">
+                      <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                         {t.regionLabel}
                       </label>
                       <input
                         type="text"
                         value={region}
                         onChange={(e) => setRegion(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-gray-100 px-3 py-2 text-xs text-[#374151]"
+                        className="mt-1 min-h-10 w-full rounded-xl border border-[#111813]/12 bg-[#111813]/[0.03] px-3 py-2 text-base text-[#243227] transition-[border-color] focus:border-[#15803D]/60 focus:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#D1DBD3] dark:focus:border-[#86EFAC]/60 sm:text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#374151]">
+                      <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                         {t.countryLabel}
                       </label>
                       <input
                         type="text"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-gray-100 px-3 py-2 text-xs text-[#374151]"
+                        className="mt-1 min-h-10 w-full rounded-xl border border-[#111813]/12 bg-[#111813]/[0.03] px-3 py-2 text-base text-[#243227] transition-[border-color] focus:border-[#15803D]/60 focus:outline-none dark:border-white/10 dark:bg-white/[0.04] dark:text-[#D1DBD3] dark:focus:border-[#86EFAC]/60 sm:text-xs"
                       />
                     </div>
                   </div>
@@ -602,16 +639,16 @@ export function FarmFieldInfoModal({
           ) : null}
 
           {/* 2. Field Section */}
-          <section className="rounded-xl border border-[#E5EAE7] bg-[#FAFCFB] p-4">
+          <section className="fs-liquid-well rounded-2xl p-4">
             <div className="flex items-center gap-2">
-              <Ruler size={15} className="text-[#137135]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B4B2E]">
+              <Ruler size={15} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15803D] dark:text-[#86EFAC]">
                 {t.fieldSection}
               </h3>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.fieldNameLabel} *
                 </label>
                 <input
@@ -622,11 +659,11 @@ export function FarmFieldInfoModal({
                   onChange={(e) => setFieldName(e.target.value)}
                   placeholder={t.fieldNamePlaceholder}
                   data-testid="input-field-name"
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#137135] focus:outline-none"
+                  className={inputClassName}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.fieldIdLabel} *
                 </label>
                 <input
@@ -637,15 +674,17 @@ export function FarmFieldInfoModal({
                   value={fieldId}
                   onChange={(e) => setFieldId(e.target.value)}
                   data-testid="input-field-id"
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs text-[#111827] disabled:bg-gray-100"
+                  className={`${inputClassName} font-mono disabled:bg-[#111813]/[0.04] disabled:text-[#6B7A6F] dark:disabled:bg-white/[0.04] dark:disabled:text-[#78847B]`}
                 />
               </div>
               <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#374151]">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.areaLabel} *
                   </label>
-                  <span className="text-[10px] font-semibold text-[#059669]">{t.areaAutoTag}</span>
+                  <span className="text-[11px] font-semibold text-[#15803D] dark:text-[#86EFAC]">
+                    {t.areaAutoTag}
+                  </span>
                 </div>
                 <input
                   type="number"
@@ -656,11 +695,11 @@ export function FarmFieldInfoModal({
                   value={areaHectares}
                   onChange={(e) => setAreaHectares(e.target.value)}
                   data-testid="input-area-hectares"
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs text-[#111827]"
+                  className={`${inputClassName} font-mono tabular-nums`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.elevLabel}
                 </label>
                 <input
@@ -672,29 +711,31 @@ export function FarmFieldInfoModal({
                   onChange={(e) => setElevationM(e.target.value)}
                   placeholder={t.elevOptionalPlaceholder}
                   data-testid="input-elevation-m"
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs text-[#111827]"
+                  className={`${inputClassName} font-mono tabular-nums`}
                 />
-                <p className="mt-1 text-[10px] text-[#6B7280]">{t.elevAdrNote}</p>
+                <p className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">{t.elevAdrNote}</p>
               </div>
             </div>
           </section>
 
           {/* 3. Soil Section (ADR-5) */}
-          <section className="rounded-xl border border-[#E5EAE7] bg-[#FAFCFB] p-4">
+          <section className="fs-liquid-well rounded-2xl p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Leaf size={15} className="text-[#137135]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B4B2E]">
+                <Leaf size={15} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15803D] dark:text-[#86EFAC]">
                   {t.soilSection}
                 </h3>
               </div>
-              <div className="inline-flex rounded-lg border border-[#D1DDD6] bg-white p-0.5 text-xs font-semibold">
+              <div className="inline-flex rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] p-0.5 text-xs font-semibold dark:border-white/12 dark:bg-black/30">
                 <button
                   type="button"
                   onClick={() => setSoilKnown(false)}
                   data-testid="soil-mode-unknown"
-                  className={`rounded-md px-2.5 py-1 transition ${
-                    !soilKnown ? "bg-[#0B4B2E] text-white" : "text-[#4B5563]"
+                  className={`min-h-8 rounded-full px-3 py-1 transition-[background-color,color] ${
+                    !soilKnown
+                      ? "bg-[#0B3D2E] text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-white"
                   }`}
                 >
                   {t.soilModeUnknown}
@@ -703,8 +744,10 @@ export function FarmFieldInfoModal({
                   type="button"
                   onClick={() => setSoilKnown(true)}
                   data-testid="soil-mode-known"
-                  className={`rounded-md px-2.5 py-1 transition ${
-                    soilKnown ? "bg-[#0B4B2E] text-white" : "text-[#4B5563]"
+                  className={`min-h-8 rounded-full px-3 py-1 transition-[background-color,color] ${
+                    soilKnown
+                      ? "bg-[#0B3D2E] text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-white"
                   }`}
                 >
                   {t.soilModeKnown}
@@ -715,23 +758,23 @@ export function FarmFieldInfoModal({
             {soilKnown ? (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-[#374151]">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                       {t.soilTypeLabel}
                     </label>
                     <button
                       type="button"
                       onClick={() => setUsdaModalOpen(true)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#137135] hover:underline"
+                      className="inline-flex min-h-7 items-center gap-1 rounded-full bg-[#15803D]/10 px-2.5 text-[11px] font-semibold text-[#15803D] ring-1 ring-[#15803D]/25 transition-[background-color,color] hover:bg-[#15803D]/20 hover:text-[#0B3D2E] dark:bg-white/[0.06] dark:text-[#86EFAC] dark:ring-white/12 dark:hover:bg-white/[0.12] dark:hover:text-white"
                     >
-                      <Calculator size={13} />
+                      <Calculator size={13} aria-hidden="true" />
                       <span>{t.usdaCalcBtn}</span>
                     </button>
                   </div>
                   <select
                     value={soilType}
                     onChange={(e) => setSoilType(e.target.value as Exclude<SoilType, "unknown">)}
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs text-[#111827]"
+                    className={inputClassName}
                   >
                     {KNOWN_SOIL_TYPES.map((st) => (
                       <option key={st} value={st}>
@@ -741,7 +784,7 @@ export function FarmFieldInfoModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#374151]">
+                  <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.soilPhLabel}
                   </label>
                   <input
@@ -752,11 +795,11 @@ export function FarmFieldInfoModal({
                     value={soilPh}
                     onChange={(e) => setSoilPh(e.target.value)}
                     placeholder="7.3"
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs"
+                    className={`${inputClassName} font-mono tabular-nums`}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#374151]">
+                  <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.soilOmLabel}
                   </label>
                   <input
@@ -767,18 +810,18 @@ export function FarmFieldInfoModal({
                     value={soilOm}
                     onChange={(e) => setSoilOm(e.target.value)}
                     placeholder="1.4"
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs"
+                    className={`${inputClassName} font-mono tabular-nums`}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#374151]">
+                  <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.soilDateLabel}
                   </label>
                   <input
                     type="date"
                     value={soilTestDate}
                     onChange={(e) => setSoilTestDate(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 font-mono text-xs"
+                    className={`${inputClassName} font-mono tabular-nums [color-scheme:light] dark:[color-scheme:dark]`}
                   />
                 </div>
               </div>
@@ -786,22 +829,22 @@ export function FarmFieldInfoModal({
           </section>
 
           {/* 4. Water & Irrigation Section */}
-          <section className="rounded-xl border border-[#E5EAE7] bg-[#FAFCFB] p-4">
+          <section className="fs-liquid-well rounded-2xl p-4">
             <div className="flex items-center gap-2">
-              <Drop size={15} className="text-[#0284C7]" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B4B2E]">
+              <Drop size={15} className="text-[#0284C7] dark:text-[#38BDF8]" aria-hidden="true" />
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15803D] dark:text-[#86EFAC]">
                 {t.waterSection}
               </h3>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.waterAvailLabel}
                 </label>
                 <select
                   value={waterAvail}
                   onChange={(e) => setWaterAvail(e.target.value as WaterAvailability)}
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs"
+                  className={inputClassName}
                 >
                   {WATER_AVAIL_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
@@ -811,13 +854,13 @@ export function FarmFieldInfoModal({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.waterSourceLabel}
                 </label>
                 <select
                   value={waterSource}
                   onChange={(e) => setWaterSource(e.target.value as WaterSource)}
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs"
+                  className={inputClassName}
                 >
                   {WATER_SOURCE_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
@@ -827,13 +870,13 @@ export function FarmFieldInfoModal({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#374151]">
+                <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                   {t.irrigationLabel}
                 </label>
                 <select
                   value={irrigationSystem}
                   onChange={(e) => setIrrigationSystem(e.target.value as IrrigationSystem)}
-                  className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs"
+                  className={inputClassName}
                 >
                   {IRRIGATION_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
@@ -844,7 +887,7 @@ export function FarmFieldInfoModal({
               </div>
               {waterSource === "other" ? (
                 <div className="sm:col-span-3">
-                  <label className="block text-xs font-semibold text-[#374151]">
+                  <label className="block text-xs font-semibold text-[#243227] dark:text-[#D1DBD3]">
                     {t.waterSourceOtherLabel} *
                   </label>
                   <input
@@ -853,7 +896,7 @@ export function FarmFieldInfoModal({
                     maxLength={200}
                     value={waterSourceOther}
                     onChange={(e) => setWaterSourceOther(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-3 py-2 text-xs"
+                    className={inputClassName}
                   />
                 </div>
               ) : null}
@@ -861,13 +904,13 @@ export function FarmFieldInfoModal({
           </section>
 
           {/* 5. Crop History Section (1..30) */}
-          <section className="rounded-xl border border-[#E5EAE7] bg-[#FAFCFB] p-4">
+          <section className="fs-liquid-well rounded-2xl p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#0B4B2E]">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#15803D] dark:text-[#86EFAC]">
                   {t.historySection}
                 </h3>
-                <p className="text-[11px] text-[#6B7280]">{t.historySubtitle}</p>
+                <p className="mt-0.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">{t.historySubtitle}</p>
               </div>
               <button
                 type="button"
@@ -886,9 +929,9 @@ export function FarmFieldInfoModal({
                     },
                   ])
                 }
-                className="inline-flex items-center gap-1 rounded-lg border border-[#137135]/40 bg-white px-2.5 py-1 text-xs font-semibold text-[#0B4B2E] hover:bg-[#ECFDF5] disabled:opacity-40"
+                className="fs-liquid-pill inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5] disabled:opacity-40"
               >
-                <Plus size={13} />
+                <Plus size={13} aria-hidden="true" />
                 <span>{t.addHistoryBtn}</span>
               </button>
             </div>
@@ -901,11 +944,11 @@ export function FarmFieldInfoModal({
                 return (
                   <div
                     key={idx}
-                    className="rounded-xl border border-[#E5EAE7] bg-white p-3 shadow-xs"
+                    className="rounded-2xl border border-[#111813]/10 bg-[#111813]/[0.03] p-3.5 dark:border-white/10 dark:bg-black/25"
                   >
                     <div className="grid gap-2.5 sm:grid-cols-4">
                       <div>
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.seasonLabel}
                         </label>
                         <select
@@ -916,7 +959,7 @@ export function FarmFieldInfoModal({
                               prev.map((it, i) => (i === idx ? { ...it, season: s } : it))
                             );
                           }}
-                          className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 text-xs"
+                          className={compactInputClassName}
                         >
                           {SEASON_OPTIONS.map((s) => (
                             <option key={s} value={s}>
@@ -927,7 +970,7 @@ export function FarmFieldInfoModal({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.yearLabel}
                         </label>
                         <input
@@ -941,12 +984,12 @@ export function FarmFieldInfoModal({
                               prev.map((it, i) => (i === idx ? { ...it, year: y } : it))
                             );
                           }}
-                          className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 font-mono text-xs"
+                          className={`${compactInputClassName} font-mono tabular-nums`}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.monthLabel}
                         </label>
                         <select
@@ -959,8 +1002,10 @@ export function FarmFieldInfoModal({
                               )
                             );
                           }}
-                          className={`mt-1 w-full rounded-lg border bg-white px-2.5 py-1.5 font-mono text-xs ${
-                            !monthCheck.valid ? "border-red-500 text-red-700" : "border-[#D1D5DB]"
+                          className={`${compactInputClassName} font-mono tabular-nums ${
+                            !monthCheck.valid
+                              ? "border-red-600/70 text-red-700 dark:border-red-400/70 dark:text-red-300"
+                              : "border-[#111813]/15 dark:border-white/12"
                           }`}
                         >
                           <option value="">{t.monthAutoOption}</option>
@@ -973,7 +1018,7 @@ export function FarmFieldInfoModal({
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.yieldLabel}
                         </label>
                         <input
@@ -991,12 +1036,12 @@ export function FarmFieldInfoModal({
                             );
                           }}
                           placeholder="3.2"
-                          className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 font-mono text-xs"
+                          className={`${compactInputClassName} font-mono tabular-nums`}
                         />
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.catalogCropLabel}
                         </label>
                         <select
@@ -1007,7 +1052,7 @@ export function FarmFieldInfoModal({
                               prev.map((it, i) => (i === idx ? { ...it, crop_id: cid } : it))
                             );
                           }}
-                          className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 text-xs"
+                          className={compactInputClassName}
                         >
                           <option value="">— Custom Crop Name —</option>
                           {catalogItems.map((c) => (
@@ -1019,7 +1064,7 @@ export function FarmFieldInfoModal({
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-semibold text-[#4B5563]">
+                        <label className="block text-[11px] font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
                           {t.customCropLabel}
                         </label>
                         <input
@@ -1035,13 +1080,13 @@ export function FarmFieldInfoModal({
                             );
                           }}
                           placeholder={t.customCropPlaceholder}
-                          className="mt-1 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 py-1.5 text-xs"
+                          className={compactInputClassName}
                         />
                       </div>
                     </div>
 
                     {!monthCheck.valid ? (
-                      <p className="mt-1.5 text-[11px] font-semibold text-red-600">
+                      <p className="mt-1.5 text-[11px] font-semibold text-red-700 dark:text-red-300">
                         {monthCheck.error}
                       </p>
                     ) : null}
@@ -1058,7 +1103,7 @@ export function FarmFieldInfoModal({
                           );
                         }}
                         placeholder={`${t.notesLabel} (${t.notesPrivateTag})`}
-                        className="flex-1 rounded-lg border border-[#D1D5DB] bg-[#F9FAFB] px-2.5 py-1 text-[11px] text-[#374151]"
+                        className="min-h-9 flex-1 rounded-xl border border-[#111813]/15 bg-white/90 px-3 py-1 text-base text-[#111813] placeholder:text-[#6B7A6F] transition-[border-color] focus:border-[#15803D] focus:outline-none dark:border-white/10 dark:bg-[#141A16] dark:text-[#D1DBD3] dark:placeholder:text-[#78847B] dark:focus:border-[#86EFAC]/60 sm:text-[11px]"
                       />
                       {cropRows.length > 1 ? (
                         <button
@@ -1067,9 +1112,9 @@ export function FarmFieldInfoModal({
                             setCropRows((prev) => prev.filter((_, i) => i !== idx))
                           }
                           aria-label={t.removeRowLabel}
-                          className="rounded-lg p-1.5 text-red-600 hover:bg-red-50"
+                          className="flex min-h-9 min-w-9 items-center justify-center rounded-xl text-red-600 transition-[background-color,color] hover:bg-red-500/12 hover:text-red-800 dark:text-red-300 dark:hover:bg-red-500/15 dark:hover:text-red-200"
                         >
-                          <Trash size={14} />
+                          <Trash size={14} aria-hidden="true" />
                         </button>
                       ) : null}
                     </div>
@@ -1080,11 +1125,11 @@ export function FarmFieldInfoModal({
           </section>
 
           {/* Footer Submit Controls */}
-          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-[#E5EAE7] pt-3">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 border-t border-[#111813]/10 pt-3.5 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#D1D5DB] bg-white px-4 py-2 text-xs font-semibold text-[#374151] hover:bg-gray-50"
+              className="fs-liquid-pill min-h-10 rounded-full px-4 text-xs font-semibold text-[#243227] hover:text-[#111813] dark:text-[#D1DBD3] dark:hover:text-white active:not-disabled:scale-[0.96]"
             >
               {t.cancelBtn}
             </button>
@@ -1092,9 +1137,9 @@ export function FarmFieldInfoModal({
               type="submit"
               disabled={submitting}
               data-testid="submit-farm-field-form"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B4B2E] px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#137135] disabled:opacity-60"
+              className="fs-cta-primary inline-flex min-h-10 items-center gap-1.5 rounded-full ps-4 pe-5 text-xs font-semibold active:not-disabled:scale-[0.96] disabled:opacity-50"
             >
-              <Check size={15} weight="bold" />
+              <Check size={15} weight="bold" aria-hidden="true" />
               <span>{isEditField ? t.updateFieldBtn : t.saveFarmFieldBtn}</span>
             </button>
           </div>
@@ -1104,6 +1149,7 @@ export function FarmFieldInfoModal({
       <UsdaTextureModal
         open={usdaModalOpen}
         lang={lang}
+        theme={resolvedTheme}
         onClose={() => setUsdaModalOpen(false)}
         onApply={(derived) => {
           setSoilType(derived);

@@ -458,7 +458,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     showRegion: "Show Guelma overview",
     provLine1: "DEM · AWS Terrarium (SRTM 30 m grid)",
     provLine2: "Climate · POWER 1996–2025 daily climatology",
-    backField: "← Back to field profile",
+    backField: "Back to field profile",
     fitSuffix: "/ 100 fit",
     fitCard: "/ 100",
     hWhy: "Why this was suggested",
@@ -778,7 +778,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     showRegion: "Vue Wilaya de Guelma",
     provLine1: "MNT · AWS Terrarium (grille SRTM 30 m)",
     provLine2: "Climat · POWER climatologie 1996–2025",
-    backField: "← Retour au profil",
+    backField: "Retour au profil",
     fitSuffix: "/ 100 score",
     fitCard: "/ 100",
     hWhy: "Pourquoi ce choix",
@@ -1035,7 +1035,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     cmpTitleFmt: (short) => `${short} · مصفوفة المقارنة`,
     cmpSubFmt: (scenTxt, consTxt) =>
       `تقييم مباشر (${scenTxt} · ${consTxt}). انقر أي عمود لاختياره.`,
-    cmpInspect: "فتح تدقيق الخطة المختارة ←",
+    cmpInspect: "فتح تدقيق الخطة المختارة",
     cmpShort: {
       s0: "قمح ← بور",
       s1: "قمح ← فول ← شعير",

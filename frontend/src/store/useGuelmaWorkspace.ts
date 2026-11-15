@@ -119,6 +119,7 @@ export interface GuelmaWorkspaceState {
   ) => Promise<FieldDetailPublic>;
   deleteField: (farmId: string, fieldId: string) => Promise<void>;
   loadSampleParcels: (lang: Language) => void;
+  reconcileFarmId: (oldFarmId: string, nextFarm: FarmPublic) => void;
   syncFromBackend: () => Promise<void>;
   reset: () => void;
 }
@@ -416,6 +417,30 @@ export const useGuelmaWorkspace = create<GuelmaWorkspaceState>()(
           selectedFieldKey: fieldKey(sampleFarmId, sampleFields[0].field_id),
         });
       },
+
+      reconcileFarmId: (oldFarmId, nextFarm) =>
+        set((state) => {
+          const nextFields = state.fields.map((fld) =>
+            fld.farm_id === oldFarmId ? { ...fld, farm_id: nextFarm.farm_id } : fld
+          );
+          const nextSelected =
+            state.selectedFieldKey && state.selectedFieldKey.startsWith(`${oldFarmId}::`)
+              ? `${nextFarm.farm_id}::${state.selectedFieldKey.slice(oldFarmId.length + 2)}`
+              : state.selectedFieldKey;
+          return {
+            farms: state.farms.map((fm) =>
+              fm.farm_id === oldFarmId
+                ? {
+                    ...nextFarm,
+                    field_count: nextFields.filter((fld) => fld.farm_id === nextFarm.farm_id)
+                      .length,
+                  }
+                : fm
+            ),
+            fields: nextFields,
+            selectedFieldKey: nextSelected,
+          };
+        }),
 
       syncFromBackend: async () => {
         if (useAppStore.getState().authMode === "none") return;

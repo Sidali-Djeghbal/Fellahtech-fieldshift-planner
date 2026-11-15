@@ -1,53 +1,221 @@
 @import "tailwindcss";
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
-  --font-heading: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Overpass", ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: "IBM Plex Sans Arabic", "Overpass", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-arabic: var(--font-ibm-arabic), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  --color-primary-forest: #00291b;
-  --color-primary-forest-hover: #04421b;
-  --color-emerald-vigor: #137135;
-  --color-sage-mid: #5fa87d;
+  --color-primary-forest: #0b3d2e;
+  --color-primary-forest-hover: #176b4a;
+  --color-emerald-vigor: #22c55e;
+  --color-sage-mid: #58685c;
   --color-vibrant-lime: #84e875;
-  --color-canvas-bg: #f8faf8;
-  --color-card-surface: #ffffff;
-  --color-card-border: #e5e7eb;
+  --color-canvas-bg: var(--fs-canvas-bg);
+  --color-card-surface: var(--fs-panel-bg);
+  --color-card-border: var(--fs-card-border);
 }
 
 :root {
-  --primary: #00291b;
-  --primary-hover: #04421b;
+  color-scheme: light;
+  --primary: #15803d;
+  --primary-hover: #166534;
   --primary-foreground: #ffffff;
-  --accent-emerald: #137135;
-  --accent-sage: #5fa87d;
-  --accent-lime: #84e875;
-  --background: #f8faf8;
-  --foreground: #111827;
-  --card: #ffffff;
-  --card-dark: #151a06;
-  --card-foreground: #111827;
-  --text-secondary: #374151;
-  --border: #e5e7eb;
-  --muted: #6b7280;
+  --accent-emerald: #15803d;
+  --accent-amber: #b45309;
+  --accent-coral: #dc2626;
+  --text-primary: #111813;
+  --text-secondary: #3e4c42;
+  --text-tertiary: #58685c;
 
-  --status-healthy-bg: #dcfce7;
+  /* Light Mode — Botanical Alpine Dew Liquid Glass */
+  --fs-canvas-bg: #eef3ef;
+  --fs-canvas-image:
+    radial-gradient(circle at 80% 16%, oklch(0.86 0.085 135 / 0.34), transparent 54%),
+    radial-gradient(ellipse 62% 50% at 15% 86%, oklch(0.84 0.065 150 / 0.28), transparent 60%),
+    radial-gradient(ellipse 46% 36% at 50% 40%, oklch(0.95 0.02 140 / 0.45), transparent 72%);
+  --fs-card-border: oklch(0.2 0.03 148 / 0.10);
+
+  --shadow-liquid-shell:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.92),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.08),
+    0 30px 60px -16px oklch(0.22 0.04 148 / 0.14);
+
+  --shadow-liquid-glass:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.90),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.08),
+    0 12px 28px -8px oklch(0.22 0.04 148 / 0.10);
+
+  --shadow-liquid-well:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.65),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.08);
+
+  --shadow-liquid-dark:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.92),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.10),
+    0 16px 36px -8px oklch(0.2 0.04 148 / 0.16);
+
+  --fs-shell-bg: oklch(0.975 0.008 148 / 0.72);
+  --fs-nav-bg: oklch(0.99 0.005 148 / 0.84);
+  --fs-nav-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.92),
+    inset 0 -1px 0 0 oklch(0.2 0.03 148 / 0.08),
+    0 8px 24px -6px oklch(0.2 0.04 148 / 0.09);
+
+  --fs-rail-bg: oklch(1 0 0 / 0.62);
+  --fs-rail-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.90),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.08),
+    0 10px 28px -8px oklch(0.2 0.04 148 / 0.10);
+
+  --fs-panel-bg: oklch(1 0 0 / 0.84);
+  --fs-microclimate-bg:
+    radial-gradient(110% 95% at 88% 8%, oklch(0.86 0.09 138 / 0.36), transparent 62%),
+    linear-gradient(155deg, oklch(0.98 0.02 142 / 0.92) 0%, oklch(0.96 0.015 148 / 0.88) 100%);
+
+  --fs-well-bg: oklch(0.96 0.008 148 / 0.85);
+  --fs-well-hover-bg: oklch(0.93 0.012 148 / 0.95);
+
+  --fs-pill-bg: oklch(1 0 0 / 0.82);
+  --fs-pill-hover-bg: oklch(0.95 0.012 148 / 0.98);
+  --fs-pill-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.92),
+    inset 0 0 0 1px oklch(0.2 0.03 148 / 0.10),
+    0 2px 8px -2px oklch(0.2 0.04 148 / 0.08);
+
+  --fs-hud-bg: oklch(0.99 0.005 148 / 0.92);
+
+  --fs-cta-bg: #0b3d2e;
+  --fs-cta-fg: #ffffff;
+  --fs-cta-hover: #14533e;
+  --fs-cta-shadow:
+    0 4px 12px -2px oklch(0.2 0.06 150 / 0.28),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.18);
+
+  --fs-focus-ring: #15803d;
+  --fs-cta-focus-ring: #0b3d2e;
+
+  --status-healthy-bg: rgba(21, 128, 61, 0.12);
   --status-healthy-text: #15803d;
-  --status-stable-bg: #fef3c7;
-  --status-stable-text: #d97706;
+  --status-stable-bg: rgba(180, 83, 9, 0.12);
+  --status-stable-text: #b45309;
 
-  --donut-irrigation: #003523;
-  --donut-nutrition: #18664c;
-  --donut-equipment: #afda8a;
-  --donut-pest: #d0a034;
-  --donut-logistics: #bc4c4b;
+  --donut-irrigation: #15803d;
+  --donut-nutrition: #16a34a;
+  --donut-equipment: #65a30d;
+  --donut-pest: #d97706;
+  --donut-logistics: #dc2626;
 
-  --heat-l0: #effedf;
-  --heat-l1: #d4f9b3;
-  --heat-l2: #98ea70;
-  --heat-l3: #1b8a5f;
-  --heat-l4: #072b1f;
-  --heat-stress: #ca5609;
+  --heat-l0: rgba(17, 24, 19, 0.06);
+  --heat-l1: rgba(34, 197, 94, 0.22);
+  --heat-l2: rgba(22, 163, 74, 0.45);
+  --heat-l3: rgba(21, 128, 61, 0.72);
+  --heat-l4: #15803d;
+  --heat-stress: #d97706;
+
+  --fs-scrollbar-thumb: rgba(17, 24, 19, 0.18);
+  --fs-scrollbar-thumb-hover: rgba(17, 24, 19, 0.30);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #22c55e;
+  --primary-hover: #16a34a;
+  --primary-foreground: #111713;
+  --accent-emerald: #22c55e;
+  --accent-amber: #f59e0b;
+  --accent-coral: #ef4444;
+  --text-primary: #f5f7f5;
+  --text-secondary: #9ca89e;
+  --text-tertiary: #7d8b80;
+
+  /* Dark Spatial Liquid Glass Optical Shadows */
+  --fs-canvas-bg: #121713;
+  --fs-canvas-image:
+    radial-gradient(circle at 80% 18%, oklch(0.45 0.12 125 / 0.28), transparent 55%),
+    radial-gradient(ellipse 60% 48% at 15% 86%, oklch(0.30 0.07 145 / 0.22), transparent 60%),
+    radial-gradient(ellipse 46% 36% at 50% 42%, oklch(0.22 0.03 135 / 0.18), transparent 72%);
+  --fs-card-border: oklch(1 0 0 / 0.12);
+
+  --shadow-liquid-shell:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.18),
+    inset 0 0 0 1px oklch(1 0 0 / 0.07),
+    0 32px 64px -16px oklch(0 0 0 / 0.58);
+
+  --shadow-liquid-glass:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.12),
+    inset 0 0 0 1px oklch(1 0 0 / 0.05),
+    0 12px 32px -8px oklch(0 0 0 / 0.45);
+
+  --shadow-liquid-well:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.06),
+    inset 0 0 0 1px oklch(1 0 0 / 0.04);
+
+  --shadow-liquid-dark:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.16),
+    inset 0 0 0 1px oklch(1 0 0 / 0.08),
+    0 16px 36px -8px oklch(0 0 0 / 0.55);
+
+  --fs-shell-bg: oklch(0.20 0.014 148 / 0.72);
+  --fs-nav-bg: oklch(0.15 0.013 148 / 0.78);
+  --fs-nav-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.14),
+    inset 0 -1px 0 0 oklch(1 0 0 / 0.06),
+    0 8px 24px -6px oklch(0 0 0 / 0.35);
+
+  --fs-rail-bg: oklch(1 0 0 / 0.06);
+  --fs-rail-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.14),
+    inset 0 0 0 1px oklch(1 0 0 / 0.05),
+    0 10px 28px -8px oklch(0 0 0 / 0.38);
+
+  --fs-panel-bg: oklch(0.14 0.012 148 / 0.74);
+  --fs-microclimate-bg:
+    radial-gradient(110% 95% at 88% 8%, oklch(0.42 0.09 135 / 0.28), transparent 62%),
+    linear-gradient(155deg, oklch(0.21 0.025 142 / 0.80) 0%, oklch(0.14 0.012 148 / 0.78) 100%);
+
+  --fs-well-bg: oklch(1 0 0 / 0.05);
+  --fs-well-hover-bg: oklch(1 0 0 / 0.09);
+
+  --fs-pill-bg: oklch(1 0 0 / 0.08);
+  --fs-pill-hover-bg: oklch(1 0 0 / 0.14);
+  --fs-pill-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.14),
+    0 2px 8px -2px oklch(0 0 0 / 0.28);
+
+  --fs-hud-bg: oklch(0.11 0.014 148 / 0.80);
+
+  --fs-cta-bg: #ffffff;
+  --fs-cta-fg: #111713;
+  --fs-cta-hover: #eff5f0;
+  --fs-cta-shadow:
+    0 2px 10px -2px oklch(0 0 0 / 0.32),
+    inset 0 1px 0 0 #ffffff;
+
+  --fs-focus-ring: #86efac;
+  --fs-cta-focus-ring: #22c55e;
+
+  --status-healthy-bg: rgba(34, 197, 94, 0.16);
+  --status-healthy-text: #86efac;
+  --status-stable-bg: rgba(245, 158, 11, 0.16);
+  --status-stable-text: #fcd34d;
+
+  --donut-irrigation: #22c55e;
+  --donut-nutrition: #16a34a;
+  --donut-equipment: #84e875;
+  --donut-pest: #f59e0b;
+  --donut-logistics: #ef4444;
+
+  --heat-l0: rgba(255, 255, 255, 0.06);
+  --heat-l1: rgba(132, 232, 117, 0.25);
+  --heat-l2: rgba(34, 197, 94, 0.50);
+  --heat-l3: rgba(34, 197, 94, 0.80);
+  --heat-l4: #22c55e;
+  --heat-stress: #f59e0b;
+
+  --fs-scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --fs-scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 }
 
 html[lang="ar"] body {
@@ -63,30 +231,215 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--fs-canvas-bg);
+  color: var(--text-primary);
   overflow-x: hidden;
 }
 
 .fs-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  background: var(--fs-panel-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-liquid-glass);
+  color: var(--text-primary);
 }
 
 .fs-card-dark {
-  background-color: rgba(21, 26, 6, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: var(--fs-hud-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-liquid-dark);
+  color: var(--text-primary);
+}
+
+/* Tier 0 — Atmospheric Optical Glass Canvas (Light / Dark) */
+.fs-workstation-canvas {
+  background-color: var(--fs-canvas-bg);
+  background-image: var(--fs-canvas-image);
+  background-attachment: fixed;
+  color: var(--text-primary);
+}
+
+/* Primary App Window Shell (Spatial Tablet Frame) */
+.fs-app-shell {
+  background: var(--fs-shell-bg);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: var(--shadow-liquid-shell);
+}
+
+/* Floating Command Header & Left Rail Dock */
+.fs-glass-nav {
+  background: var(--fs-nav-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--fs-nav-shadow);
+}
+
+.fs-glass-rail {
+  background: var(--fs-rail-bg);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: var(--fs-rail-shadow);
+}
+
+/* Bento Cards & Panels — Optical Liquid Glass */
+.fs-liquid-panel,
+.fs-panel {
+  background: var(--fs-panel-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-liquid-glass);
+  color: var(--text-primary);
+  transition:
+    box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Atmospheric Top-Left Microclimate Glass Variant */
+.fs-liquid-microclimate {
+  background: var(--fs-microclimate-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-liquid-glass);
+  color: var(--text-primary);
+}
+
+/* Recessed Inner Wells & Metric Sub-Tiles */
+.fs-liquid-well,
+.fs-panel-muted {
+  background: var(--fs-well-bg);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: var(--shadow-liquid-well);
+  color: var(--text-primary);
+  transition:
+    background-color 150ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.fs-liquid-well-interactive:hover {
+  background: var(--fs-well-hover-bg);
+}
+
+/* Interactive Liquid Glass Pill */
+.fs-liquid-pill {
+  background: var(--fs-pill-bg);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: var(--fs-pill-shadow);
+  color: var(--text-primary);
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 150ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 150ms cubic-bezier(0.2, 0, 0, 1),
+    color 150ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 150ms ease-out;
+}
+
+.fs-liquid-pill:hover {
+  background: var(--fs-pill-hover-bg);
+}
+
+/* Satellite Map Floating Frosted Callout & Elevated Modal Glass */
+.fs-hud-glass,
+.fs-liquid-dark {
+  background: var(--fs-hud-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-liquid-dark);
+  color: var(--text-primary);
+}
+
+/* High-Contrast Primary Control Surface */
+.fs-active-pill,
+.fs-cta-primary {
+  background: var(--fs-cta-bg);
+  color: var(--fs-cta-fg);
+  box-shadow: var(--fs-cta-shadow);
+  transition:
+    transform 150ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 150ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 150ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 150ms ease-out;
+}
+
+.fs-cta-primary:hover {
+  background: var(--fs-cta-hover);
+}
+
+/* Accessible High-Contrast Focus Rings */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+.fs-active-pill:focus-visible,
+.fs-cta-primary:focus-visible {
+  outline: 2px solid var(--fs-cta-focus-ring);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+p {
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* View Transition Choreography — Motion-safe only */
+@keyframes fsViewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fs-view-enter {
+    animation: fsViewEnter 220ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom subtle scrollbar */
+/* Theme-Aware Subtle Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -95,11 +448,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--fs-scrollbar-thumb);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--fs-scrollbar-thumb-hover);
 }
 
 /* Printable 1-Page Field Brief (@media print) */
