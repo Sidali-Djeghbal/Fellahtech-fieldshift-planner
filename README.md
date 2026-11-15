@@ -298,15 +298,4 @@ CI-style checks used across the repo: TypeScript strict typecheck, Vitest, Pytes
 
 ---
 
-## Contributors
-
-<p align="center">
-  <a href="https://github.com/Sidali-Djeghbal">
-    <img alt="Sidali-Djeghbal" src="https://img.shields.io/badge/Sidali%20DJEGHBAL-Frontend%20%C2%B7%20Platform-181717?logo=github&logoColor=white" />
-  </a>
-  <img alt="Yehia Boulahia" src="https://img.shields.io/badge/Yehia%20BOULAHIA-Mobile-181717?logo=github&logoColor=white" />
-  <img alt="3boudi" src="https://img.shields.io/badge/3boudi-Backend-181717?logo=github&logoColor=white" />
-  <img alt="Lokman Brahmia" src="https://img.shields.io/badge/Lokman%20BRAHMIA-Backend-181717?logo=github&logoColor=white" />
-</p>
-
 <p align="center"><sub>Built for the Guelma agricultural community · NASA Space Apps Challenge</sub></p>
