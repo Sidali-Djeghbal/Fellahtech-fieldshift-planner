@@ -27,6 +27,7 @@ import com.example.myapplication.core.network.ScenarioOverridesDto
 import com.example.myapplication.core.network.SeasonPlanDto
 import com.example.myapplication.core.network.StrategyDto
 import com.example.myapplication.core.network.StrategyScoresDto
+import com.example.myapplication.core.network.StrategySelectionResponseDto
 import com.example.myapplication.data.auth.toDomain
 import com.example.myapplication.domain.analysis.AnalysisJobStatus
 import com.example.myapplication.domain.analysis.AnalysisPollState
@@ -52,7 +53,10 @@ import com.example.myapplication.domain.analysis.SeasonPlan
 import com.example.myapplication.domain.analysis.SeverityLevel
 import com.example.myapplication.domain.analysis.Strategy
 import com.example.myapplication.domain.analysis.StrategyScores
+import com.example.myapplication.domain.analysis.StrategySelectionResult
+import com.example.myapplication.domain.analysis.StrategySelectionStatus
 import com.example.myapplication.domain.field.Season
+import java.io.IOException
 import kotlinx.serialization.json.JsonPrimitive
 
 fun AnalysisSubmitInput.toSubmitRequestDto(): AnalysisSubmitRequestDto = AnalysisSubmitRequestDto(
@@ -288,4 +292,15 @@ fun CatalogPageDto.toDomain(): CatalogPage = CatalogPage(
     nextCursor = nextCursor,
     hasMore = hasMore
 )
+
+fun StrategySelectionResponseDto.toDomain(): StrategySelectionResult {
+    val mappedStatus = StrategySelectionStatus.fromApiOrNull(selectionStatus)
+        ?: throw IOException("Unexpected selection_status: $selectionStatus")
+    return StrategySelectionResult(
+        analysisId = analysisId,
+        fieldId = fieldId,
+        strategyId = strategyId,
+        selectionStatus = mappedStatus
+    )
+}
 

@@ -25,6 +25,8 @@ import com.example.myapplication.core.network.NetworkModule
 import com.example.myapplication.core.network.PlanningDto
 import com.example.myapplication.core.network.PrioritiesDto
 import com.example.myapplication.core.network.PriorityWeightsDto
+import com.example.myapplication.core.network.StrategySelectionRequestDto
+import com.example.myapplication.core.network.StrategySelectionResponseDto
 import com.example.myapplication.data.analysis.ActiveAnalysisStore
 import com.example.myapplication.data.analysis.AnalysisRepositoryImpl
 import com.example.myapplication.data.analysis.DataStoreActiveAnalysisStore
@@ -50,6 +52,8 @@ import com.example.myapplication.domain.analysis.MarketPreference
 import com.example.myapplication.domain.analysis.PlanningConfig
 import com.example.myapplication.domain.analysis.PollErrorInfo
 import com.example.myapplication.domain.analysis.PriorityWeights
+import com.example.myapplication.domain.analysis.StrategySelectionResult
+import com.example.myapplication.domain.analysis.StrategySelectionStatus
 import com.example.myapplication.domain.auth.WarningNotice
 import com.example.myapplication.domain.farm.Farm
 import com.example.myapplication.domain.farm.FarmPage
@@ -781,6 +785,154 @@ class AnalysisManagementTest {
         }
     }
 
+    @Test
+    fun `StrategySelectionRequestDto serializes exact OpenAPI v3_2 fields with NetworkModule provideJson`() {
+        val prodJson = NetworkModule.provideJson()
+        val selectedPayload = prodJson.encodeToString(
+            StrategySelectionRequestDto(
+                fieldId = "field_01",
+                strategyId = "strat_balanced",
+                selectionStatus = StrategySelectionStatus.SELECTED.apiValue
+            )
+        )
+        val selectedObj = prodJson.parseToJsonElement(selectedPayload).jsonObject
+        assertEquals("field_01", selectedObj.getValue("field_id").jsonPrimitive.content)
+        assertEquals("strat_balanced", selectedObj.getValue("strategy_id").jsonPrimitive.content)
+        assertEquals("selected", selectedObj.getValue("selection_status").jsonPrimitive.content)
+
+        val rejectedPayload = prodJson.encodeToString(
+            StrategySelectionRequestDto(
+                fieldId = "field_02",
+                strategyId = "strat_alt",
+                selectionStatus = StrategySelectionStatus.REJECTED.apiValue
+            )
+        )
+        val rejectedObj = prodJson.parseToJsonElement(rejectedPayload).jsonObject
+        assertEquals("rejected", rejectedObj.getValue("selection_status").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `AnalysisRepositoryImpl updateStrategySelection sends PATCH and maps 200 and unexpected status`() = runTest {
+        data class CapturedPatch(
+            val method: String,
+            val encodedPath: String,
+            val body: String
+        )
+
+        val prodJson = NetworkModule.provideJson()
+        val captured = mutableListOf<CapturedPatch>()
+        var nextStatusToReturn = "selected"
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val req = chain.request()
+                val buffer = Buffer()
+                req.body?.writeTo(buffer)
+                captured += CapturedPatch(
+                    method = req.method,
+                    encodedPath = req.url.encodedPath,
+                    body = buffer.readUtf8()
+                )
+                val responseJson = """
+                    {
+                      "analysis_id": "analysis_0123456789ab",
+                      "field_id": "field_01",
+                      "strategy_id": "strat_balanced",
+                      "selection_status": "$nextStatusToReturn"
+                    }
+                """.trimIndent()
+                okhttp3.Response.Builder()
+                    .request(req)
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .message("OK")
+                    .body(responseJson.toResponseBody("application/json".toMediaType()))
+                    .build()
+            }
+            .build()
+
+        val apiService = Retrofit.Builder()
+            .baseUrl("https://api.example.com/api/v1/")
+            .client(client)
+            .addConverterFactory(prodJson.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(AnalysisApiService::class.java)
+
+        val repo = AnalysisRepositoryImpl(
+            apiService = apiService,
+            activeAnalysisStore = InMemoryActiveAnalysisStore(),
+            errorParser = ApiErrorParser(prodJson)
+        )
+
+        val result = repo.updateStrategySelection(
+            analysisId = "analysis_0123456789ab",
+            fieldId = "field_01",
+            strategyId = "strat_balanced",
+            selectionStatus = StrategySelectionStatus.SELECTED
+        )
+        assertTrue(result is AnalysisCallResult.Success)
+        val data = (result as AnalysisCallResult.Success).data
+        assertEquals("analysis_0123456789ab", data.analysisId)
+        assertEquals("field_01", data.fieldId)
+        assertEquals("strat_balanced", data.strategyId)
+        assertEquals(StrategySelectionStatus.SELECTED, data.selectionStatus)
+
+        assertEquals(1, captured.size)
+        assertEquals("PATCH", captured.first().method)
+        assertEquals("/api/v1/analysis/analysis_0123456789ab/selection", captured.first().encodedPath)
+        val reqBody = prodJson.parseToJsonElement(captured.first().body).jsonObject
+        assertEquals("field_01", reqBody.getValue("field_id").jsonPrimitive.content)
+        assertEquals("strat_balanced", reqBody.getValue("strategy_id").jsonPrimitive.content)
+        assertEquals("selected", reqBody.getValue("selection_status").jsonPrimitive.content)
+
+        // Unexpected selection_status in 200 response fails cleanly instead of silently coercing
+        nextStatusToReturn = "suggested"
+        val invalidStatusResult = repo.updateStrategySelection(
+            analysisId = "analysis_0123456789ab",
+            fieldId = "field_01",
+            strategyId = "strat_balanced",
+            selectionStatus = StrategySelectionStatus.REJECTED
+        )
+        assertTrue(invalidStatusResult is AnalysisCallResult.Failure)
+        assertTrue((invalidStatusResult as AnalysisCallResult.Failure).error is AnalysisError.Network)
+    }
+
+    @Test
+    fun `AnalysisRepositoryImpl updateStrategySelection maps 400 and 404 API errors`() = runTest {
+        val api = FakeAnalysisApiService()
+        val repo = AnalysisRepositoryImpl(api, InMemoryActiveAnalysisStore(), ApiErrorParser(json))
+
+        api.selectionException = httpException(
+            400,
+            """{"error":{"code":"INVALID_INPUT","message":"Unknown strategy_id","request_id":"req-400"}}"""
+        )
+        val badRequest = repo.updateStrategySelection(
+            analysisId = "analysis_0123456789ab",
+            fieldId = "field_01",
+            strategyId = "missing_strat",
+            selectionStatus = StrategySelectionStatus.SELECTED
+        )
+        assertTrue(badRequest is AnalysisCallResult.Failure)
+        val err400 = (badRequest as AnalysisCallResult.Failure).error as AnalysisError.Api
+        assertEquals(400, err400.httpStatus)
+        assertEquals("INVALID_INPUT", err400.errorCode)
+
+        api.selectionException = httpException(
+            404,
+            """{"error":{"code":"NOT_FOUND","message":"Analysis not found","request_id":"req-404"}}"""
+        )
+        val notFound = repo.updateStrategySelection(
+            analysisId = "analysis_missing",
+            fieldId = "field_01",
+            strategyId = "strat_1",
+            selectionStatus = StrategySelectionStatus.REJECTED
+        )
+        assertTrue(notFound is AnalysisCallResult.Failure)
+        val err404 = (notFound as AnalysisCallResult.Failure).error as AnalysisError.Api
+        assertEquals(404, err404.httpStatus)
+        assertTrue(err404.isNotFound)
+    }
+
     private fun httpException(code: Int, body: String, retryAfter: String? = null): HttpException {
         val responseBody = body.toResponseBody("application/json".toMediaType())
         val raw = if (retryAfter != null) {
@@ -902,6 +1054,14 @@ class AnalysisManagementTest {
 
         override suspend fun cancelAnalysisRequest(requestId: String) = cancelResult
         override suspend fun getAnalysisResult(analysisId: String) = resultResponse
+        override suspend fun updateStrategySelection(
+            analysisId: String,
+            fieldId: String,
+            strategyId: String,
+            selectionStatus: StrategySelectionStatus
+        ): AnalysisCallResult<StrategySelectionResult> = AnalysisCallResult.Success(
+            StrategySelectionResult(analysisId, fieldId, strategyId, selectionStatus)
+        )
         override suspend fun listFarmAnalyses(farmId: String, limit: Int, cursor: String?, status: AnalysisJobStatus?): AnalysisCallResult<FarmAnalysesPage> =
             AnalysisCallResult.Success(FarmAnalysesPage(emptyList(), null, false))
         override suspend fun getActiveRequest(): ActiveAnalysisRequest? =
@@ -918,6 +1078,7 @@ class AnalysisManagementTest {
         var submitException: Throwable? = null
         var pollException: Throwable? = null
         var pollResponse: Response<AnalysisPollEnvelopeDto>? = null
+        var selectionException: Throwable? = null
 
         override suspend fun submitAnalysis(
             idempotencyKey: String?,
@@ -940,6 +1101,19 @@ class AnalysisManagementTest {
 
         override suspend fun getAnalysisResult(analysisId: String): AnalysisEnvelopeDto =
             throw UnsupportedOperationException()
+
+        override suspend fun updateStrategySelection(
+            analysisId: String,
+            request: StrategySelectionRequestDto
+        ): StrategySelectionResponseDto {
+            selectionException?.let { throw it }
+            return StrategySelectionResponseDto(
+                analysisId = analysisId,
+                fieldId = request.fieldId,
+                strategyId = request.strategyId,
+                selectionStatus = request.selectionStatus
+            )
+        }
 
         override suspend fun listFarmAnalyses(
             farmId: String,

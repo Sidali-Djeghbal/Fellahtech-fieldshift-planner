@@ -69,6 +69,21 @@ data class AnalysisCancelResponseDto(
 )
 
 @Serializable
+data class StrategySelectionRequestDto(
+    @SerialName("field_id") val fieldId: String,
+    @SerialName("strategy_id") val strategyId: String,
+    @SerialName("selection_status") val selectionStatus: String
+)
+
+@Serializable
+data class StrategySelectionResponseDto(
+    @SerialName("analysis_id") val analysisId: String,
+    @SerialName("field_id") val fieldId: String,
+    @SerialName("strategy_id") val strategyId: String,
+    @SerialName("selection_status") val selectionStatus: String
+)
+
+@Serializable
 data class DegradedModeMetadataDto(
     @SerialName("kind") val kind: String,
     @SerialName("stale") val stale: Boolean,

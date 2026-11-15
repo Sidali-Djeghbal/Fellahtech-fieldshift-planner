@@ -57,6 +57,23 @@ enum class SeverityLevel(val apiValue: String) {
     }
 }
 
+enum class StrategySelectionStatus(val apiValue: String) {
+    SELECTED("selected"),
+    REJECTED("rejected");
+
+    companion object {
+        fun fromApiOrNull(value: String): StrategySelectionStatus? =
+            entries.firstOrNull { it.apiValue == value }
+    }
+}
+
+data class StrategySelectionResult(
+    val analysisId: String,
+    val fieldId: String,
+    val strategyId: String,
+    val selectionStatus: StrategySelectionStatus
+)
+
 data class PriorityWeights(
     val waterSaving: Int = 70,
     val soilImprovement: Int = 70,

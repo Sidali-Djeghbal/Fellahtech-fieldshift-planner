@@ -20,6 +20,13 @@ interface AnalysisRepository {
 
     suspend fun getAnalysisResult(analysisId: String): AnalysisCallResult<AnalysisResultEnvelope>
 
+    suspend fun updateStrategySelection(
+        analysisId: String,
+        fieldId: String,
+        strategyId: String,
+        selectionStatus: StrategySelectionStatus
+    ): AnalysisCallResult<StrategySelectionResult>
+
     suspend fun listFarmAnalyses(
         farmId: String,
         limit: Int = 20,

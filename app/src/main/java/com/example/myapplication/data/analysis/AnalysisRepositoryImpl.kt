@@ -3,6 +3,7 @@ package com.example.myapplication.data.analysis
 import com.example.myapplication.core.common.AppLanguage
 import com.example.myapplication.core.network.AnalysisApiService
 import com.example.myapplication.core.network.ApiErrorParser
+import com.example.myapplication.core.network.StrategySelectionRequestDto
 import com.example.myapplication.domain.analysis.ActiveAnalysisRequest
 import com.example.myapplication.domain.analysis.AnalysisCallResult
 import com.example.myapplication.domain.analysis.AnalysisError
@@ -14,6 +15,8 @@ import com.example.myapplication.domain.analysis.AnalysisResultEnvelope
 import com.example.myapplication.domain.analysis.AnalysisSubmitInput
 import com.example.myapplication.domain.analysis.CatalogPage
 import com.example.myapplication.domain.analysis.FarmAnalysesPage
+import com.example.myapplication.domain.analysis.StrategySelectionResult
+import com.example.myapplication.domain.analysis.StrategySelectionStatus
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -77,6 +80,22 @@ class AnalysisRepositoryImpl @Inject constructor(
         analysisId: String
     ): AnalysisCallResult<AnalysisResultEnvelope> = safeCall {
         apiService.getAnalysisResult(analysisId).toDomain()
+    }
+
+    override suspend fun updateStrategySelection(
+        analysisId: String,
+        fieldId: String,
+        strategyId: String,
+        selectionStatus: StrategySelectionStatus
+    ): AnalysisCallResult<StrategySelectionResult> = safeCall {
+        apiService.updateStrategySelection(
+            analysisId = analysisId,
+            request = StrategySelectionRequestDto(
+                fieldId = fieldId,
+                strategyId = strategyId,
+                selectionStatus = selectionStatus.apiValue
+            )
+        ).toDomain()
     }
 
     override suspend fun listFarmAnalyses(

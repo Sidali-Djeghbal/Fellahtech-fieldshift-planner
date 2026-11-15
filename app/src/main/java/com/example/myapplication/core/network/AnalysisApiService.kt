@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -34,6 +35,12 @@ interface AnalysisApiService {
     suspend fun getAnalysisResult(
         @Path("analysis_id") analysisId: String
     ): AnalysisEnvelopeDto
+
+    @PATCH("analysis/{analysis_id}/selection")
+    suspend fun updateStrategySelection(
+        @Path("analysis_id") analysisId: String,
+        @Body request: StrategySelectionRequestDto
+    ): StrategySelectionResponseDto
 
     @GET("farms/{farm_id}/analyses")
     suspend fun listFarmAnalyses(
