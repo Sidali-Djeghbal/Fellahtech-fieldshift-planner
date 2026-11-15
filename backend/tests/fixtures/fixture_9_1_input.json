@@ -1,0 +1,85 @@
+{
+  "schema_version": "5.0",
+  "request_id": "550e8400-e29b-41d4-a716-446655440000",
+  "catalog_version": "2026.11",
+  "dataset_version": "2026.11-guelma-v1",
+  "language": "en",
+  "farm": {
+    "farm_id": "farm_1",
+    "farm_name": "Ferme Guelma Demo",
+    "country": "Algeria",
+    "region": "Guelma",
+    "commune": "Guelma"
+  },
+  "planning": {
+    "start_season": "spring",
+    "start_year": 2027,
+    "horizon_seasons": 4,
+    "cycle_mode": "annual_rotation",
+    "planting_month": 3,
+    "scenario_overrides": {
+      "temp_delta_c": 0.0,
+      "precip_pct_delta": 0.0
+    }
+  },
+  "priorities": {
+    "weights": {
+      "water_saving": 30,
+      "soil_improvement": 25,
+      "income": 25,
+      "risk_reduction": 10,
+      "forage_value": 10
+    },
+    "market_preference": "mixed",
+    "target_crop_ids": ["chickpea"],
+    "excluded_crop_ids": [],
+    "equipment_constraints": []
+  },
+  "fields": [
+    {
+      "field_id": "F1",
+      "field_name": "Guelma Team Demo Parcel (Unstudied)",
+      "is_unverified_demo_parcel": true,
+      "location": {
+        "latitude": 36.52,
+        "longitude": 7.52,
+        "boundary": null
+      },
+      "area_hectares": 12.5,
+      "elevation_m": null,
+      "crop_history": [
+        {
+          "season": "autumn",
+          "year": 2025,
+          "planting_month": 11,
+          "crop_id": "durum_wheat",
+          "crop_name_raw": "Durum Wheat",
+          "catalog_version": "2026.11",
+          "yield_tons_per_hectare": null
+        },
+        {
+          "season": "autumn",
+          "year": 2024,
+          "planting_month": 11,
+          "crop_id": "barley",
+          "crop_name_raw": "Barley",
+          "catalog_version": "2026.11",
+          "yield_tons_per_hectare": null
+        }
+      ],
+      "soil": {
+        "soil_type": "unknown",
+        "source": "unknown",
+        "soil_ph": null,
+        "organic_matter_percent": null,
+        "soil_test_date": null
+      },
+      "water": {
+        "availability": "moderate",
+        "source": "well",
+        "source_other": null,
+        "irrigation_system": "drip"
+      }
+    }
+  ]
+}

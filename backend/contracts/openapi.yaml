@@ -1,0 +1,2144 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+info:
+  title: FieldShift Planner Backend REST API
+  version: "3.2"
+  description: |
+    Authoritative REST API specification for FieldShift Planner (`/api/v1`).
+    - Backend API contract: `openapi.yaml` (this file, 34 endpoints).
+    - Backend <-> External ML wire contract: `./schema-v5.0.json` (`v5.x`).
+    - All environmental and agronomic reference datasets reside inside PostgreSQL `Schema: dataset` (read-only by ML via `ml_reader`); the Backend performs zero external NASA, SoilGrids, or SRTM HTTP calls.
+    - Ownership isolation: foreign-owner records always return `404 NOT_FOUND` (never `403`). `403` is reserved exclusively for `GUEST_LIMIT_REACHED`.
+servers:
+  - url: /api/v1
+    description: API v1 base path
+tags:
+  - name: Auth
+  - name: Demo
+  - name: Farms
+  - name: Fields
+  - name: Analysis
+  - name: Catalog
+  - name: System
+
+paths:
+  /auth/guest:
+    post:
+      tags: [Auth]
+      summary: Start a guest demo session bound to Guelma MVP boundary
+      operationId: startGuestSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [demo_location_id]
+              properties:
+                demo_location_id:
+                  type: integer
+                  minimum: 1
+      responses:
+        "201":
+          description: Guest session created with pre-designated unstudied demo parcel handle
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestSessionStartResponse"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a user account and issue access + rotating refresh tokens
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password, full_name]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                full_name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                preferred_lang:
+                  $ref: "./schema-v5.0.json#/$defs/Language"
+      responses:
+        "201":
+          description: Account created
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate with email and password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: Token pair issued
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token and detect family reuse
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: Rotated token pair issued under the same family_id
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke current refresh token family
+      operationId: logoutUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                refresh_token:
+                  type: ["string", "null"]
+      responses:
+        "204":
+          description: Refresh family revoked
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Return current user profile
+      operationId: getMe
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Authenticated user profile
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    delete:
+      tags: [Auth]
+      summary: Immediately hard-delete the user account and cascade all owned records
+      operationId: deleteMe
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Account, refresh tokens, farms, fields, crop history, analysis requests (including input_snapshot_gz), results, and selections permanently deleted
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /auth/me/export:
+    get:
+      tags: [Auth]
+      summary: Export all personal data owned by the authenticated user
+      operationId: exportMeData
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Complete JSON export of profile, farms, fields, crop history, requests, results, and selections
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDataExport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /auth/claim-guest:
+    post:
+      tags: [Auth]
+      summary: Move guest session farms and analyses into the authenticated account
+      operationId: claimGuestSession
+      security:
+        - BearerAuth: []
+          GuestTokenAuth: []
+      responses:
+        "200":
+          description: Guest data transferred and guest session deleted
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [claimed_farms_count]
+                properties:
+                  claimed_farms_count:
+                    type: integer
+                    minimum: 0
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /demo/locations:
+    get:
+      tags: [Demo]
+      summary: List active MVP demo locations (paginated)
+      operationId: listDemoLocations
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/CursorParam"
+      responses:
+        "200":
+          description: Paginated demo locations (`items[]` only)
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoLocationPage"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+
+  /demo/locations/{id}/boundary:
+    get:
+      tags: [Demo]
+      summary: Return GeoJSON boundary polygon for an active demo location
+      operationId: getDemoLocationBoundary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: GeoJSON Feature representing the MVP boundary
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoundaryFeature"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /demo/session:
+    get:
+      tags: [Demo]
+      summary: Inspect current guest session limits, canonical quarter usage, and pre-designated parcel status
+      operationId: getDemoSession
+      security:
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Current guest session state
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestSessionInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    delete:
+      tags: [Demo]
+      summary: End the current guest session early and cascade-delete all guest data
+      operationId: deleteDemoSession
+      security:
+        - GuestTokenAuth: []
+      responses:
+        "204":
+          description: Guest session and owned data deleted
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /farms:
+    get:
+      tags: [Farms]
+      summary: List farms owned by the caller
+      operationId: listFarms
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/CursorParam"
+        - name: country
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: region
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        "200":
+          description: Paginated farm list
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmPage"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    post:
+      tags: [Farms]
+      summary: Create a farm owned by the caller
+      operationId: createFarm
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmWriteRequest"
+      responses:
+        "201":
+          description: Farm created with public string `farm_id`
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/GuestLimitReached"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /farms/{farm_id}:
+    parameters:
+      - $ref: "#/components/parameters/FarmIdParam"
+    get:
+      tags: [Farms]
+      summary: Get an owned farm
+      operationId: getFarm
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Farm details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmPublic"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    put:
+      tags: [Farms]
+      summary: Replace an owned farm
+      operationId: replaceFarm
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmWriteRequest"
+      responses:
+        "200":
+          description: Updated farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    patch:
+      tags: [Farms]
+      summary: Partially update an owned farm
+      operationId: patchFarm
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmPatchRequest"
+      responses:
+        "200":
+          description: Updated farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    delete:
+      tags: [Farms]
+      summary: Delete an owned farm and cascade-delete its fields, history, requests, results, and selections
+      operationId: deleteFarm
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "204":
+          description: Farm deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /farms/{farm_id}/fields:
+    parameters:
+      - $ref: "#/components/parameters/FarmIdParam"
+    get:
+      tags: [Fields]
+      summary: List fields belonging to an owned farm
+      operationId: listFields
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/CursorParam"
+        - name: soil_type
+          in: query
+          schema:
+            $ref: "./schema-v5.0.json#/$defs/SoilType"
+        - name: water_availability
+          in: query
+          schema:
+            $ref: "./schema-v5.0.json#/$defs/WaterAvailability"
+      responses:
+        "200":
+          description: Paginated field list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    post:
+      tags: [Fields]
+      summary: Create a field inside an owned farm with PostGIS boundary enforcement
+      operationId: createField
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldWriteRequest"
+      responses:
+        "201":
+          description: Field created (returns `DEMO_PARCEL_UNVERIFIED` or `MVP_OUTSIDE_COVERAGE` notices in `warnings[]` when applicable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/GuestLimitReached"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /farms/{farm_id}/fields/{field_id}:
+    parameters:
+      - $ref: "#/components/parameters/FarmIdParam"
+      - $ref: "#/components/parameters/FieldIdParam"
+    get:
+      tags: [Fields]
+      summary: Get one field including crop history and dynamic notices
+      operationId: getField
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Field details with crop history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDetailPublic"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    put:
+      tags: [Fields]
+      summary: Replace an owned field (re-runs PostGIS boundary check and notices)
+      operationId: replaceField
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldWriteRequest"
+      responses:
+        "200":
+          description: Updated field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDetailPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    patch:
+      tags: [Fields]
+      summary: Partially update an owned field
+      operationId: patchField
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FieldPatchRequest"
+      responses:
+        "200":
+          description: Updated field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldDetailPublic"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+    delete:
+      tags: [Fields]
+      summary: Delete an owned field and its crop history
+      operationId: deleteField
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "204":
+          description: Field deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /analysis:
+    post:
+      tags: [Analysis]
+      summary: Enqueue a durable crop-rotation analysis job (`202 Accepted` default; test-only `?wait=true`)
+      operationId: submitAnalysis
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      parameters:
+        - name: wait
+          in: query
+          description: Test-only synchronous wait flag (`ALLOW_SYNC_WAIT` defaults to `false`; returns `504 JOB_TIMEOUT` if exceeded).
+          schema:
+            type: boolean
+            default: false
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisSubmitRequest"
+      responses:
+        "202":
+          description: Analysis job queued
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+            Location:
+              description: Poll URL for the queued request
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisQueuedResponse"
+        "200":
+          description: Synchronous test-only result (`?wait=true` when `ALLOW_SYNC_WAIT=true`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisEnvelope"
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/GuestLimitReached"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableAnalysis"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+        "502":
+          $ref: "#/components/responses/MLGatewayError"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+        "504":
+          $ref: "#/components/responses/TimeoutError"
+
+  /analysis/requests/{request_id}:
+    parameters:
+      - $ref: "#/components/parameters/RequestIdParam"
+    get:
+      tags: [Analysis]
+      summary: Poll async analysis job state and result (`120 req/min` poll bucket)
+      operationId: pollAnalysisRequest
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Current job state (includes merged user selections and any `degraded_mode` metadata on completion)
+          headers:
+            Retry-After:
+              description: Present (`2`) while status is `pending` or `running`
+              schema:
+                type: string
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisPollEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /analysis/requests/{request_id}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/RequestIdParam"
+    post:
+      tags: [Analysis]
+      summary: Cancel a pending or running analysis request (refunds quota if not yet sent to ML)
+      operationId: cancelAnalysisRequest
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Request cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [request_id, status]
+                properties:
+                  request_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    const: cancelled
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /analysis/{analysis_id}:
+    parameters:
+      - $ref: "#/components/parameters/AnalysisIdParam"
+    get:
+      tags: [Analysis]
+      summary: Read a saved, validated analysis result with read-time merged user selections
+      operationId: getAnalysisResult
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      responses:
+        "200":
+          description: Validated analysis envelope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /analysis/{analysis_id}/selection:
+    parameters:
+      - $ref: "#/components/parameters/AnalysisIdParam"
+    patch:
+      tags: [Analysis]
+      summary: Record farmer strategy choice (`selected` or `rejected`) in `analysis_selections` (at most one `selected` per field)
+      operationId: updateAnalysisSelection
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [field_id, strategy_id, selection_status]
+              properties:
+                field_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                strategy_id:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                selection_status:
+                  type: string
+                  enum: [selected, rejected]
+      responses:
+        "200":
+          description: Selection persisted in `analysis_selections` without modifying immutable `result_json`
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [analysis_id, field_id, strategy_id, selection_status]
+                properties:
+                  analysis_id:
+                    type: string
+                    pattern: "^analysis_[0-9a-f]{12}$"
+                  field_id:
+                    type: string
+                  strategy_id:
+                    type: string
+                  selection_status:
+                    type: string
+                    enum: [selected, rejected]
+        "400":
+          $ref: "#/components/responses/InvalidInput"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /farms/{farm_id}/analyses:
+    parameters:
+      - $ref: "#/components/parameters/FarmIdParam"
+    get:
+      tags: [Analysis]
+      summary: List saved analysis history for an owned farm (paginated)
+      operationId: listFarmAnalyses
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/CursorParam"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, running, ok, partial, failed, cancelled]
+      responses:
+        "200":
+          description: Paginated farm analysis summary list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnalysesPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /catalog:
+    get:
+      tags: [Catalog]
+      summary: Query the locally mirrored crop catalog (`items[]` envelope, default `limit=20`)
+      operationId: getCatalog
+      security:
+        - BearerAuth: []
+        - GuestTokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/CursorParam"
+        - name: category
+          in: query
+          schema:
+            $ref: "./schema-v5.0.json#/$defs/CropCategory"
+        - name: role
+          in: query
+          schema:
+            $ref: "./schema-v5.0.json#/$defs/CropRole"
+        - name: lang
+          in: query
+          schema:
+            $ref: "./schema-v5.0.json#/$defs/Language"
+        - name: version
+          in: query
+          schema:
+            type: string
+            maxLength: 64
+      responses:
+        "200":
+          description: Paginated crop catalog items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "502":
+          $ref: "#/components/responses/MLGatewayError"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
+
+  /health:
+    get:
+      tags: [System]
+      summary: Liveness & readiness probe covering PostgreSQL/PostGIS, Redis, active `dataset_registry`, catalog sync, worker heartbeats, and `ml_breaker_state`
+      operationId: getHealth
+      parameters:
+        - name: check
+          in: query
+          schema:
+            type: string
+            enum: [live, ready, dependencies]
+            default: dependencies
+      responses:
+        "200":
+          description: Healthy (`ok`) or DB-up with external ML unavailable (`degraded`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: PostgreSQL/PostGIS or Redis unreachable (`SERVICE_UNAVAILABLE`) or no active dataset (`DATASET_UNAVAILABLE`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /metrics:
+    get:
+      tags: [System]
+      x-internal-only: true
+      summary: Prometheus text metrics endpoint (restricted to internal network / proxy ACL)
+      operationId: getMetrics
+      responses:
+        "200":
+          description: Prometheus exposition format text
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    GuestTokenAuth:
+      type: apiKey
+      in: header
+      name: X-Guest-Token
+
+  headers:
+    XRequestId:
+      schema:
+        type: string
+        format: uuid
+    RetryAfterHeader:
+      schema:
+        type: string
+
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    CursorParam:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    FarmIdParam:
+      name: farm_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^farm_[0-9]+$"
+    FieldIdParam:
+      name: field_id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+    RequestIdParam:
+      name: request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AnalysisIdParam:
+      name: analysis_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^analysis_[0-9a-f]{12}$"
+
+  responses:
+    InvalidInput:
+      description: Request failed input validation (`400 INVALID_INPUT`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthorized:
+      description: Missing, invalid, expired, or reused credential (`401 UNAUTHORIZED`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    GuestLimitReached:
+      description: Guest quota reached (`403 GUEST_LIMIT_REACHED`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    NotFound:
+      description: Resource does not exist or belongs to another owner (`404 NOT_FOUND`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Conflict:
+      description: Uniqueness conflict, terminal job cancel conflict, idempotency conflict, or catalog mismatch (`409 CONFLICT` / `409 CATALOG_VERSION_MISMATCH`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    OutsideDemoBoundary:
+      description: Guest parcel outside active Guelma MVP boundary (`422 OUTSIDE_DEMO_BOUNDARY`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    UnprocessableAnalysis:
+      description: Guest boundary violation (`422 OUTSIDE_DEMO_BOUNDARY`) or ML insufficient data (`422 INSUFFICIENT_DATA`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    RateLimited:
+      description: Rate limit exceeded (`429 RATE_LIMIT_EXCEEDED`)
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/RetryAfterHeader"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    InternalError:
+      description: Unhandled backend failure or exhausted `413` trim retry (`500 INTERNAL_ERROR`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    MLGatewayError:
+      description: External ML unavailable, contract error, dataset error, or invalid response (`502`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    ServiceOrDatasetUnavailable:
+      description: PostgreSQL or fail-closed Redis unreachable (`503 SERVICE_UNAVAILABLE`) or no active dataset (`503 DATASET_UNAVAILABLE`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    TimeoutError:
+      description: ML inference timeout (`504 ML_TIMEOUT`) or sync wait/lease timeout (`504 JOB_TIMEOUT`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+
+  schemas:
+    ErrorCode:
+      type: string
+      enum:
+        - INVALID_INPUT
+        - UNAUTHORIZED
+        - GUEST_LIMIT_REACHED
+        - NOT_FOUND
+        - CONFLICT
+        - CATALOG_VERSION_MISMATCH
+        - OUTSIDE_DEMO_BOUNDARY
+        - INSUFFICIENT_DATA
+        - RATE_LIMIT_EXCEEDED
+        - INTERNAL_ERROR
+        - ML_UNAVAILABLE
+        - ML_INVALID_RESPONSE
+        - ML_CONTRACT_ERROR
+        - DATASET_VERSION_UNAVAILABLE
+        - ML_DATASET_ERROR
+        - SERVICE_UNAVAILABLE
+        - DATASET_UNAVAILABLE
+        - ML_TIMEOUT
+        - JOB_TIMEOUT
+
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, details]
+          properties:
+            code:
+              $ref: "#/components/schemas/ErrorCode"
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+            request_id:
+              type: ["string", "null"]
+
+    WarningNotice:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [MVP_OUTSIDE_COVERAGE, DEMO_PARCEL_UNVERIFIED]
+        message:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+
+    DemoLocationSummary:
+      type: object
+      additionalProperties: false
+      required: [id, code, name, country, region]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+
+    DemoParcelPreview:
+      type: object
+      additionalProperties: false
+      required: [field_id, field_name, location, area_hectares, is_unverified_demo_parcel, warnings]
+      properties:
+        field_id:
+          type: string
+        field_name:
+          type: string
+        location:
+          type: object
+          required: [latitude, longitude]
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+        area_hectares:
+          type: number
+        is_unverified_demo_parcel:
+          type: boolean
+          const: true
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+
+    GuestSessionStartResponse:
+      type: object
+      additionalProperties: false
+      required: [guest_token, expires_at, demo_location, demo_parcel]
+      properties:
+        guest_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        demo_location:
+          $ref: "#/components/schemas/DemoLocationSummary"
+        demo_parcel:
+          $ref: "#/components/schemas/DemoParcelPreview"
+
+    UserProfile:
+      type: object
+      additionalProperties: false
+      required: [id, email, full_name, preferred_lang, created_at]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        preferred_lang:
+          $ref: "./schema-v5.0.json#/$defs/Language"
+        created_at:
+          type: string
+          format: date-time
+
+    TokenPairResponse:
+      type: object
+      additionalProperties: false
+      required: [access_token, refresh_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          const: bearer
+        expires_in:
+          type: integer
+
+    RegisterResponse:
+      type: object
+      additionalProperties: false
+      required: [user, access_token, refresh_token, token_type, expires_in]
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          const: bearer
+        expires_in:
+          type: integer
+
+    DemoLocationPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, has_more]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemoLocationSummary"
+        next_cursor:
+          type: ["string", "null"]
+        has_more:
+          type: boolean
+
+    BoundaryFeature:
+      type: object
+      additionalProperties: true
+      required: [type, properties, geometry, bbox]
+      properties:
+        type:
+          type: string
+          const: Feature
+        properties:
+          type: object
+        geometry:
+          type: object
+        bbox:
+          type: array
+          items:
+            type: number
+
+    GuestSessionInfo:
+      type: object
+      additionalProperties: false
+      required: [demo_location, demo_parcel, created_at, expires_at, limits, usage]
+      properties:
+        demo_location:
+          $ref: "#/components/schemas/DemoLocationSummary"
+        demo_parcel:
+          $ref: "#/components/schemas/DemoParcelPreview"
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        limits:
+          type: object
+          additionalProperties: false
+          required: [max_farms, max_fields_per_farm, max_analyses, max_analysis_quarters]
+          properties:
+            max_farms:
+              type: integer
+            max_fields_per_farm:
+              type: integer
+            max_analyses:
+              type: integer
+            max_analysis_quarters:
+              type: integer
+        usage:
+          type: object
+          additionalProperties: false
+          required: [farms, fields, analysis_quarters, analyses]
+          properties:
+            farms:
+              type: integer
+            fields:
+              type: integer
+            analysis_quarters:
+              type: integer
+            analyses:
+              type: number
+
+    FarmWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [farm_name, country, region]
+      properties:
+        farm_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        country:
+          type: string
+          minLength: 1
+          maxLength: 80
+        region:
+          type: string
+          minLength: 1
+          maxLength: 80
+        commune:
+          type: ["string", "null"]
+          maxLength: 120
+
+    FarmPatchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        farm_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        country:
+          type: string
+          minLength: 1
+          maxLength: 80
+        region:
+          type: string
+          minLength: 1
+          maxLength: 80
+        commune:
+          type: ["string", "null"]
+          maxLength: 120
+
+    FarmPublic:
+      type: object
+      additionalProperties: false
+      required: [farm_id, farm_name, country, region, commune, field_count, created_at]
+      properties:
+        farm_id:
+          type: string
+          pattern: "^farm_[0-9]+$"
+        farm_name:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+        commune:
+          type: ["string", "null"]
+        field_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+
+    FarmPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, has_more]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmPublic"
+        next_cursor:
+          type: ["string", "null"]
+        has_more:
+          type: boolean
+
+    CropHistoryWriteItem:
+      type: object
+      additionalProperties: false
+      required: [season, year]
+      anyOf:
+        - required: [crop_id]
+          properties:
+            crop_id:
+              type: string
+              minLength: 1
+              maxLength: 64
+        - required: [crop_name_raw]
+          properties:
+            crop_name_raw:
+              type: string
+              minLength: 1
+              maxLength: 120
+      properties:
+        season:
+          $ref: "./schema-v5.0.json#/$defs/Season"
+        year:
+          type: integer
+          minimum: 1980
+          maximum: 2100
+        planting_month:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 12
+        crop_id:
+          type: ["string", "null"]
+          maxLength: 64
+        crop_name_raw:
+          type: ["string", "null"]
+          maxLength: 120
+        yield_tons_per_hectare:
+          type: ["number", "null"]
+          minimum: 0
+        notes:
+          type: ["string", "null"]
+          maxLength: 500
+
+    FieldWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [field_id, field_name, location, area_hectares, soil, water, crop_history]
+      properties:
+        field_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+        field_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        is_unverified_demo_parcel:
+          type: boolean
+          default: false
+        location:
+          type: object
+          additionalProperties: false
+          required: [latitude, longitude]
+          properties:
+            latitude:
+              type: number
+              minimum: -90
+              maximum: 90
+            longitude:
+              type: number
+              minimum: -180
+              maximum: 180
+            boundary:
+              type: ["object", "null"]
+        area_hectares:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 10000
+        elevation_m:
+          type: ["number", "null"]
+          minimum: -500
+          maximum: 9000
+        soil:
+          type: object
+          additionalProperties: false
+          required: [soil_type]
+          properties:
+            soil_type:
+              $ref: "./schema-v5.0.json#/$defs/SoilType"
+            soil_ph:
+              type: ["number", "null"]
+              minimum: 3.0
+              maximum: 11.0
+            organic_matter_percent:
+              type: ["number", "null"]
+              minimum: 0.0
+              maximum: 100.0
+            soil_test_date:
+              type: ["string", "null"]
+              format: date
+        water:
+          type: object
+          additionalProperties: false
+          required: [availability, source, irrigation_system]
+          properties:
+            availability:
+              $ref: "./schema-v5.0.json#/$defs/WaterAvailability"
+            source:
+              $ref: "./schema-v5.0.json#/$defs/WaterSource"
+            source_other:
+              type: ["string", "null"]
+              maxLength: 200
+            irrigation_system:
+              $ref: "./schema-v5.0.json#/$defs/IrrigationSystem"
+        crop_history:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/CropHistoryWriteItem"
+
+    FieldPatchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        field_name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        location:
+          type: object
+        area_hectares:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 10000
+        elevation_m:
+          type: ["number", "null"]
+          minimum: -500
+          maximum: 9000
+        soil:
+          type: object
+        water:
+          type: object
+        crop_history:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/CropHistoryWriteItem"
+
+    FieldPublic:
+      type: object
+      additionalProperties: false
+      required: [farm_id, field_id, field_name, is_unverified_demo_parcel, location, area_hectares, elevation_m, soil, water, warnings]
+      properties:
+        farm_id:
+          type: string
+          pattern: "^farm_[0-9]+$"
+        field_id:
+          type: string
+        field_name:
+          type: string
+        is_unverified_demo_parcel:
+          type: boolean
+        location:
+          type: object
+          additionalProperties: false
+          required: [latitude, longitude, boundary]
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+            boundary:
+              type: ["object", "null"]
+        area_hectares:
+          type: number
+        elevation_m:
+          type: ["number", "null"]
+        soil:
+          type: object
+          additionalProperties: false
+          required: [soil_type, source, soil_ph, organic_matter_percent, soil_test_date]
+          properties:
+            soil_type:
+              $ref: "./schema-v5.0.json#/$defs/SoilType"
+            source:
+              $ref: "./schema-v5.0.json#/$defs/SoilSource"
+            soil_ph:
+              type: ["number", "null"]
+            organic_matter_percent:
+              type: ["number", "null"]
+            soil_test_date:
+              type: ["string", "null"]
+        water:
+          type: object
+          additionalProperties: false
+          required: [availability, source, source_other, irrigation_system]
+          properties:
+            availability:
+              $ref: "./schema-v5.0.json#/$defs/WaterAvailability"
+            source:
+              $ref: "./schema-v5.0.json#/$defs/WaterSource"
+            source_other:
+              type: ["string", "null"]
+            irrigation_system:
+              $ref: "./schema-v5.0.json#/$defs/IrrigationSystem"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+
+    FieldDetailPublic:
+      type: object
+      additionalProperties: false
+      required: [farm_id, field_id, field_name, is_unverified_demo_parcel, location, area_hectares, elevation_m, soil, water, crop_history, warnings]
+      properties:
+        farm_id:
+          type: string
+          pattern: "^farm_[0-9]+$"
+        field_id:
+          type: string
+        field_name:
+          type: string
+        is_unverified_demo_parcel:
+          type: boolean
+        location:
+          type: object
+        area_hectares:
+          type: number
+        elevation_m:
+          type: ["number", "null"]
+        soil:
+          type: object
+        water:
+          type: object
+        crop_history:
+          type: array
+          items:
+            $ref: "#/components/schemas/CropHistoryWriteItem"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+
+    FieldPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, has_more]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldPublic"
+        next_cursor:
+          type: ["string", "null"]
+        has_more:
+          type: boolean
+
+    AnalysisSubmitRequest:
+      type: object
+      additionalProperties: false
+      required: [farm_id, language, planning, priorities, field_ids]
+      properties:
+        farm_id:
+          type: string
+          pattern: "^farm_[0-9]+$"
+        language:
+          $ref: "./schema-v5.0.json#/$defs/Language"
+        planning:
+          $ref: "./schema-v5.0.json#/$defs/Planning"
+        priorities:
+          type: object
+          additionalProperties: false
+          required: [weights, market_preference, target_crop_ids, excluded_crop_ids, equipment_constraints]
+          properties:
+            weights:
+              $ref: "./schema-v5.0.json#/$defs/PriorityWeights"
+            market_preference:
+              $ref: "./schema-v5.0.json#/$defs/MarketPreference"
+            target_crop_ids:
+              type: array
+              maxItems: 20
+              items:
+                type: string
+                minLength: 1
+                maxLength: 64
+            excluded_crop_ids:
+              type: array
+              maxItems: 20
+              items:
+                type: string
+                minLength: 1
+                maxLength: 64
+            equipment_constraints:
+              type: array
+              maxItems: 20
+              items:
+                type: string
+                minLength: 1
+                maxLength: 160
+        field_ids:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+
+    AnalysisQueuedResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, status, poll_url, poll_interval_ms, warnings]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: pending
+        poll_url:
+          type: string
+        poll_interval_ms:
+          type: integer
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+
+    DegradedModeMetadata:
+      type: object
+      additionalProperties: false
+      required: [kind, stale, source_analysis_id, created_at, dataset_version, age_seconds]
+      properties:
+        kind:
+          type: string
+          const: last_good_replay
+        stale:
+          type: boolean
+          const: true
+        source_analysis_id:
+          type: string
+          pattern: "^analysis_[0-9a-f]{12}$"
+        created_at:
+          type: string
+          format: date-time
+        dataset_version:
+          type: string
+        age_seconds:
+          type: integer
+          minimum: 0
+
+    AnalysisEnvelope:
+      type: object
+      additionalProperties: false
+      required: [analysis_id, request_id, status, dataset_version, warnings, degraded_mode, result]
+      properties:
+        analysis_id:
+          type: string
+          pattern: "^analysis_[0-9a-f]{12}$"
+        request_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [ok, partial]
+        dataset_version:
+          type: string
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+        degraded_mode:
+          oneOf:
+            - $ref: "#/components/schemas/DegradedModeMetadata"
+            - type: "null"
+        result:
+          $ref: "./schema-v5.0.json#/$defs/AnalysisResult"
+
+    PollErrorObject:
+      type: object
+      additionalProperties: false
+      required: [code, http_equivalent, message, details]
+      properties:
+        code:
+          $ref: "#/components/schemas/ErrorCode"
+        http_equivalent:
+          type: integer
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+    AnalysisPollEnvelope:
+      type: object
+      additionalProperties: false
+      required: [request_id, status, poll_interval_ms, analysis_id, warnings, degraded_mode, error, result]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, ok, partial, failed, cancelled]
+        poll_interval_ms:
+          type: ["integer", "null"]
+        analysis_id:
+          type: ["string", "null"]
+          pattern: "^analysis_[0-9a-f]{12}$"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+        degraded_mode:
+          oneOf:
+            - $ref: "#/components/schemas/DegradedModeMetadata"
+            - type: "null"
+        error:
+          oneOf:
+            - $ref: "#/components/schemas/PollErrorObject"
+            - type: "null"
+        result:
+          oneOf:
+            - $ref: "./schema-v5.0.json#/$defs/AnalysisResult"
+            - type: "null"
+
+    FarmAnalysisSummary:
+      type: object
+      additionalProperties: false
+      required: [request_id, analysis_id, status, language, catalog_version, dataset_version, ml_engine_version, warnings, created_at, duration_ms]
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        analysis_id:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, running, ok, partial, failed, cancelled]
+        language:
+          $ref: "./schema-v5.0.json#/$defs/Language"
+        catalog_version:
+          type: string
+        dataset_version:
+          type: ["string", "null"]
+        ml_engine_version:
+          type: ["string", "null"]
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WarningNotice"
+        created_at:
+          type: string
+          format: date-time
+        duration_ms:
+          type: ["integer", "null"]
+
+    FarmAnalysesPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, has_more]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmAnalysisSummary"
+        next_cursor:
+          type: ["string", "null"]
+        has_more:
+          type: boolean
+
+    CatalogPage:
+      type: object
+      additionalProperties: false
+      required: [catalog_version, synced_at, items, next_cursor, has_more]
+      properties:
+        catalog_version:
+          type: string
+        synced_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "./schema-v5.0.json#/$defs/CropItem"
+        next_cursor:
+          type: ["string", "null"]
+        has_more:
+          type: boolean
+
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, db, dataset, catalog, worker_queue, ml_service]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        db:
+          type: object
+          additionalProperties: false
+          required: [connected, postgis_version]
+          properties:
+            connected:
+              type: boolean
+            postgis_version:
+              type: string
+        dataset:
+          type: object
+          additionalProperties: false
+          required: [active_version, loaded_at]
+          properties:
+            active_version:
+              type: ["string", "null"]
+            loaded_at:
+              type: ["string", "null"]
+              format: date-time
+        catalog:
+          type: object
+          additionalProperties: false
+          required: [version, synced_at]
+          properties:
+            version:
+              type: ["string", "null"]
+            synced_at:
+              type: ["string", "null"]
+              format: date-time
+        worker_queue:
+          type: object
+          additionalProperties: false
+          required: [active_workers, pending_jobs, stale_leases]
+          properties:
+            active_workers:
+              type: integer
+            pending_jobs:
+              type: integer
+            stale_leases:
+              type: integer
+        ml_service:
+          type: object
+          additionalProperties: false
+          required: [reachable, circuit_breaker, consecutive_failures, ml_engine_version]
+          properties:
+            reachable:
+              type: boolean
+            circuit_breaker:
+              type: string
+              enum: [closed, open, half_open]
+            consecutive_failures:
+              type: integer
+            ml_engine_version:
+              type: ["string", "null"]
+
+    UserDataExport:
+      type: object
+      additionalProperties: false
+      required: [exported_at, user, farms, fields, analysis_requests, analysis_results, analysis_selections]
+      properties:
+        exported_at:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        farms:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmPublic"
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldDetailPublic"
+        analysis_requests:
+          type: array
+          items:
+            type: object
+        analysis_results:
+          type: array
+          items:
+            type: object
+        analysis_selections:
+          type: array
+          items:
+            type: object
