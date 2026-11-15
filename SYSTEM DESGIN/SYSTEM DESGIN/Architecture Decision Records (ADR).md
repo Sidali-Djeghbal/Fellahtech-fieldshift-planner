@@ -11,12 +11,12 @@
 - `ADR-1:` PostgreSQL-First Asynchronous Architecture *(Accepted — Data Sourcing Updated by ADR-9)*
 - `ADR-2:` Development Environment, Dedicated `migrate` Job & PostgreSQL/PostGIS `(public + dataset)`
 - `ADR-3:` Geographic Strategy — PostGIS Wilaya of Guelma Boundary & Unstudied Demo Parcel
-- `ADR-4:` Backend Orchestrator & External ML Service Split *(Supersedes ADR-0)*
+- `ADR-4:` Backend Orchestrator, ML Adapter Pattern & External ML Service Split *(Supersedes ADR-0)*
 - `ADR-5:` Soil Provenance (`farmer` / `unknown`), Optional Farmer Elevation & Authentication
 - `ADR-6:` Durable PostgreSQL Job Leasing, Rotating `refresh_tokens` & Unknown Field Policy (`schema-v5.0.json`)
-- `ADR-7:` REST API Contract (`openapi.yaml`), Additive `/api/v1` Versioning & Deprecation Policy *(Proposed)*
-- `ADR-8:` Shared PostgreSQL ML Resilience State (`ml_breaker_state`) & Honest Degraded Mode *(Proposed)*
-- `ADR-9:` Local PostgreSQL `Schema: dataset`, `dataset_registry`, and Read-Only Role `ml_reader` *(Proposed)*
+- `ADR-7:` REST API Contract (`openapi.yaml`), Additive `/api/v1` Versioning & Deprecation Policy *(Accepted)*
+- `ADR-8:` Shared PostgreSQL ML Resilience State (`ml_breaker_state`), Redis Rate Limiting & Honest Degraded Mode *(Accepted)*
+- `ADR-9:` Local PostgreSQL `Schema: dataset`, `dataset_registry`, and Read-Only Role `ml_reader` *(Accepted)*
 
 ---
 
@@ -133,17 +133,20 @@ flowchart TD
 
 ---
 
-## `ADR-4`: Backend Orchestrator & External ML Service Split
+## `ADR-4`: Backend Orchestrator, ML Adapter Pattern & External ML Service Split
 
 - **Status:** Accepted *(Supersedes `ADR-0`)*
-- **Date:** `2026-11-14`
+- **Date:** `2026-11-15`
 
 ### Context
-Decoupling user state, quotas, spatial validation, and job orchestration from specialized crop-rotation ML modeling lets both services iterate on independent stacks.
+Decoupling user state, quotas, spatial validation, and job orchestration from specialized crop-rotation ML modeling lets both services iterate on independent stacks while allowing the Backend to be developed, tested, and operated seamlessly before and after the external ML service is live.
 
 ### Decision
 - **Backend Owns:** Auth, PostGIS checks, `INPUT-01..03`, `dataset_version` resolution, job scheduling, Stage 1 + Stage 2 verification (`SEM-01..07`), and `analysis_selections`.
 - **External ML (`{ML_SERVICE_URL}`) Owns:** Reading `Schema: dataset` through `ml_reader`, running agronomic prediction (`POST /v1/analyze`), publishing `GET /v1/catalog` and `GET /v1/health`, and returning `AnalysisResult` + `dataset_version_used` (without minting `analysis_id`).
+- **Mandatory ML Adapter Pattern (`app/ml_client/`):**
+  - All ML communication goes strictly through a unified `MLAdapter` interface (`analyze`, `get_catalog`, `get_health`) with two independent providers: **`RealMLAdapter`** (configurable via `ML_SERVICE_URL` and `ML_SERVICE_API_KEY` / `ML_SERVICE_PREVIOUS_API_KEY`) and **`MockMLAdapter`** (deterministic provider for development and testing driven by verified fixtures).
+  - A centralized **`MLProviderManager`** selects the active provider automatically: if the real ML service is not configured or unavailable in development/testing, it uses `MockMLAdapter`, periodically probes `RealMLAdapter.get_health()`, and automatically switches to `RealMLAdapter` when available. Every analysis logs the selected provider (`real_ml` vs `mock_ml`), and the manager never silently falls back on invalid requests (`400`/`422`/`409`) or business-logic errors.
 - Worker handles timeouts (`ML_TIMEOUT_SECONDS=60`), single-retry transport resilience, cluster-wide bulkhead/breaker coordination (`ADR-8`), and cooperative cancellation (`POST /analysis/requests/{request_id}/cancel`).
 
 ### Consequences
@@ -207,8 +210,8 @@ Single-row user columns prevented multi-device sessions and clean token reuse au
 
 ## `ADR-7`: REST API Contract (`openapi.yaml`), Additive `/api/v1` Versioning & Deprecation Policy
 
-- **Status:** Proposed
-- **Date:** `TBD`
+- **Status:** Accepted
+- **Date:** `2026-11-15`
 
 ### Context
 Markdown tables alone cannot validate REST endpoint parity automatically or enforce consistent client SDK evolution across **34** endpoints.
@@ -223,28 +226,29 @@ Markdown tables alone cannot validate REST endpoint parity automatically or enfo
 
 ---
 
-## `ADR-8`: Shared PostgreSQL ML Resilience State (`ml_breaker_state`) & Honest Degraded Mode
+## `ADR-8`: Shared PostgreSQL ML Resilience State (`ml_breaker_state`), Redis Rate Limiting & Honest Degraded Mode
 
-- **Status:** Proposed
-- **Date:** `TBD`
+- **Status:** Accepted
+- **Date:** `2026-11-15`
 
 ### Context
-In-memory circuit breakers and semaphores inside individual Python worker processes break down under horizontal scaling (`api` and multiple `worker` replicas). Also, when ML outages occur, returning cached prior results without flagging staleness misleads farmers.
+In-memory circuit breakers, semaphores, and rate-limit counters inside individual Python processes break down under horizontal scaling (`api` and multiple `worker` replicas). Also, when ML outages occur, returning cached prior results without flagging staleness misleads farmers.
 
 ### Decision
-1. **Shared Breaker Singleton (`public.ml_breaker_state`):** Row `id = 1` persists `state` (`closed` / `open` / `half_open`), `consecutive_failures`, `opened_at`, and `half_open_probe_at` transactionally in PostgreSQL so `worker` and `GET /health` read one unified state.
-2. **Cluster-Wide Bulkhead Semaphore:** Workers acquire PostgreSQL session advisory locks `pg_try_advisory_lock(1001..1008)` capping active concurrent ML requests at `ML_MAX_CONCURRENT_REQUESTS = 8` across all containers.
-3. **Honest Degraded Mode (`last_good_replay`):** During `open` breaker state or post-retry `502`/`504` outage, if an earlier validated result exists with matching `full_input_hash` and age `<= DEGRADED_MODE_MAX_AGE_HOURS` (`TBD` — `OQ-8`), Backend may return that prior result wrapped with explicit `degraded_mode: { kind: "last_good_replay", stale: true, source_analysis_id, created_at, dataset_version, age_seconds }`. Otherwise the request fails cleanly (`ML_UNAVAILABLE` / `ML_TIMEOUT`).
+1. **Centralized Redis Rate Limiting (`REDIS_URL`):** Backend-only Redis (`redis:7-alpine`, never accessed from the Frontend) manages all sliding/fixed time-window rate-limit counters using atomic Lua scripts / `INCR` + `EXPIRE` TTLs across multiple `api` replicas (`RATE_LIMIT_ANALYSIS_PER_HOUR=10`, `ANALYSIS_PER_IP_HOUR=15`, `GUEST_CREATE_PER_IP_HOUR=5`, `GUEST_BURST_PER_MIN=30`, `RATE_LIMIT_CRUD_PER_MIN=60` -> `429 RATE_LIMIT_EXCEEDED`), while permanent/session business quotas (`GUEST_MAX_ANALYSES=10` = `40` canonical quarters, `GUEST_MAX_FARMS=3`, `GUEST_MAX_FIELDS_PER_FARM=5` -> `403 GUEST_LIMIT_REACHED`) remain durably backed by PostgreSQL (`public.analysis_requests`) and mirrored in Redis.
+2. **Shared Breaker Singleton (`public.ml_breaker_state`):** Row `id = 1` persists `state` (`closed` / `open` / `half_open`), `consecutive_failures`, `opened_at`, and `half_open_probe_at` transactionally in PostgreSQL so `worker` and `GET /health` read one unified state.
+3. **Cluster-Wide Bulkhead Semaphore:** Workers acquire PostgreSQL session advisory locks `pg_try_advisory_lock(1001..1008)` capping active concurrent ML requests at `ML_MAX_CONCURRENT_REQUESTS = 8` across all containers.
+4. **Honest Degraded Mode (`last_good_replay`):** During `open` breaker state or post-retry `502`/`504` outage, if an earlier validated result exists with matching `full_input_hash` and age `<= DEGRADED_MODE_MAX_AGE_HOURS` (`72` hours default, tuning `TBD` — `OQ-8`), Backend may return that prior result wrapped with explicit `degraded_mode: { kind: "last_good_replay", stale: true, source_analysis_id, created_at, dataset_version, age_seconds }`. Otherwise the request fails cleanly (`ML_UNAVAILABLE` / `ML_TIMEOUT`).
 
 ### Consequences
-- Multi-worker resilience with zero Redis dependency and transparent staleness signaling.
+- Multi-replica rate limiting via Redis and durable multi-worker ML resilience in PostgreSQL without adding any tables beyond the 13 `public` tables.
 
 ---
 
 ## `ADR-9`: Local PostgreSQL `Schema: dataset`, `dataset_registry`, and Read-Only Role `ml_reader`
 
-- **Status:** Proposed
-- **Date:** `TBD`
+- **Status:** Accepted
+- **Date:** `2026-11-15`
 
 ### Context
 Relying on external third-party environmental APIs (`NASA POWER`, `ORNL MODIS`, `ISRIC SoilGrids`, elevation endpoints) at inference time introduces fragile network latencies, external rate limits, and irreproducible historical responses. The ML team builds curated, offline-validated datasets specifically tailored for FieldShift Planner.

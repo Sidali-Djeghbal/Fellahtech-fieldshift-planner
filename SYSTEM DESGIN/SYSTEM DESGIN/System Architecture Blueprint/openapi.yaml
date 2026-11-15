@@ -55,6 +55,8 @@ paths:
           $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /auth/register:
     post:
@@ -191,6 +193,10 @@ paths:
               $ref: "#/components/headers/XRequestId"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /auth/me:
     get:
@@ -211,6 +217,10 @@ paths:
                 $ref: "#/components/schemas/UserProfile"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     delete:
       tags: [Auth]
       summary: Immediately hard-delete the user account and cascade all owned records
@@ -225,6 +235,10 @@ paths:
               $ref: "#/components/headers/XRequestId"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /auth/me/export:
     get:
@@ -245,6 +259,10 @@ paths:
                 $ref: "#/components/schemas/UserDataExport"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /auth/claim-guest:
     post:
@@ -272,6 +290,10 @@ paths:
                     minimum: 0
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /demo/locations:
     get:
@@ -338,6 +360,10 @@ paths:
                 $ref: "#/components/schemas/GuestSessionInfo"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     delete:
       tags: [Demo]
       summary: End the current guest session early and cascade-delete all guest data
@@ -352,6 +378,10 @@ paths:
               $ref: "#/components/headers/XRequestId"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /farms:
     get:
@@ -393,6 +423,10 @@ paths:
           $ref: "#/components/responses/InvalidInput"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     post:
       tags: [Farms]
       summary: Create a farm owned by the caller
@@ -424,6 +458,8 @@ paths:
           $ref: "#/components/responses/GuestLimitReached"
         "429":
           $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /farms/{farm_id}:
     parameters:
@@ -446,6 +482,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     put:
       tags: [Farms]
       summary: Replace an owned farm
@@ -472,6 +512,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     patch:
       tags: [Farms]
       summary: Partially update an owned farm
@@ -498,6 +542,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     delete:
       tags: [Farms]
       summary: Delete an owned farm and cascade-delete its fields, history, requests, results, and selections
@@ -512,6 +560,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /farms/{farm_id}/fields:
     parameters:
@@ -545,6 +597,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     post:
       tags: [Fields]
       summary: Create a field inside an owned farm with PostGIS boundary enforcement
@@ -577,6 +633,10 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /farms/{farm_id}/fields/{field_id}:
     parameters:
@@ -600,6 +660,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     put:
       tags: [Fields]
       summary: Replace an owned field (re-runs PostGIS boundary check and notices)
@@ -630,6 +694,10 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     patch:
       tags: [Fields]
       summary: Partially update an owned field
@@ -660,6 +728,10 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/OutsideDemoBoundary"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
     delete:
       tags: [Fields]
       summary: Delete an owned field and its crop history
@@ -674,6 +746,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /analysis:
     post:
@@ -736,6 +812,8 @@ paths:
           $ref: "#/components/responses/UnprocessableAnalysis"
         "429":
           $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
         "502":
           $ref: "#/components/responses/MLGatewayError"
         "503":
@@ -771,6 +849,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /analysis/requests/{request_id}/cancel:
     parameters:
@@ -804,6 +886,10 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /analysis/{analysis_id}:
     parameters:
@@ -826,6 +912,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /analysis/{analysis_id}/selection:
     parameters:
@@ -883,6 +973,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /farms/{farm_id}/analyses:
     parameters:
@@ -913,6 +1007,10 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /catalog:
     get:
@@ -953,13 +1051,17 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
         "502":
           $ref: "#/components/responses/MLGatewayError"
+        "503":
+          $ref: "#/components/responses/ServiceOrDatasetUnavailable"
 
   /health:
     get:
       tags: [System]
-      summary: Liveness & readiness probe covering PostgreSQL/PostGIS, active `dataset_registry`, catalog sync, worker heartbeats, and `ml_breaker_state`
+      summary: Liveness & readiness probe covering PostgreSQL/PostGIS, Redis, active `dataset_registry`, catalog sync, worker heartbeats, and `ml_breaker_state`
       operationId: getHealth
       parameters:
         - name: check
@@ -976,7 +1078,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
         "503":
-          description: PostgreSQL/PostGIS unreachable (`SERVICE_UNAVAILABLE`) or no active dataset (`DATASET_UNAVAILABLE`)
+          description: PostgreSQL/PostGIS or Redis unreachable (`SERVICE_UNAVAILABLE`) or no active dataset (`DATASET_UNAVAILABLE`)
           content:
             application/json:
               schema:
@@ -1112,6 +1214,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
+    InternalError:
+      description: Unhandled backend failure or exhausted `413` trim retry (`500 INTERNAL_ERROR`)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
     MLGatewayError:
       description: External ML unavailable, contract error, dataset error, or invalid response (`502`)
       content:
@@ -1119,7 +1227,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
     ServiceOrDatasetUnavailable:
-      description: PostgreSQL unreachable (`503 SERVICE_UNAVAILABLE`) or no active dataset (`503 DATASET_UNAVAILABLE`)
+      description: PostgreSQL or fail-closed Redis unreachable (`503 SERVICE_UNAVAILABLE`) or no active dataset (`503 DATASET_UNAVAILABLE`)
       content:
         application/json:
           schema:

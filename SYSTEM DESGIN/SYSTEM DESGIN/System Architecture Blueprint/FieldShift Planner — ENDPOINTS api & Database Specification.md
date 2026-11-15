@@ -25,7 +25,7 @@
   - B.8 Catalog (1 endpoint)
   - B.9 Health & Metrics (2 endpoints)
   - B.10 External ML Service Sub-Contract (`{ML_SERVICE_URL}` — 3 endpoints)
-- C. Environment Variables (`.env`) Reference (**39** variables)
+- C. Environment Variables (`.env`) Reference (**40** variables)
 
 ---
 
@@ -490,7 +490,7 @@ ALTER ROLE ml_reader SET statement_timeout = '5000ms'; -- exact ML_DB_STATEMENT_
 | `X-Guest-Token` | Guest endpoints | Raw guest token (Backend hashes via SHA-256) |
 | `X-Request-Id` | All endpoints | Client/proxy correlation UUID (echoed on response) |
 | `Idempotency-Key` | `POST /analysis` | 24 h duplicate submission protection per farm |
-| `Deprecation`, `Sunset` | Deprecated routes/fields (when applicable) | Returned per `ADR-7` (`Proposed`); notice duration **TBD (`OQ-8`)** |
+| `Deprecation`, `Sunset` | Deprecated routes/fields (when applicable) | Returned per `ADR-7` (`Accepted`); notice duration **TBD (`OQ-8`)** |
 
 ### Error Envelope (All Endpoints)
 
@@ -929,7 +929,7 @@ System (2)
 | --- | --- |
 | **Purpose** | Replace (`PUT`) or partially update (`PATCH`) an owned field (re-runs PostGIS boundary check on location changes) |
 | **Auth** | 🔓 Both |
-| **Success** `200 OK` | Updated `FieldPublic` |
+| **Success** `200 OK` | Updated `FieldDetailPublic` |
 | **Errors** | `400 INVALID_INPUT`, `404 NOT_FOUND`, `409 CONFLICT`, `422 OUTSIDE_DEMO_BOUNDARY` |
 
 ### `DELETE /farms/{farm_id}/fields/{field_id}`
@@ -1137,12 +1137,13 @@ External ML connects to **3** internal/service routes and reads curated local da
 
 # C. Environment Variables (`.env`) Reference
 
-Referenced by `docker-compose.yml` (`env_file: .env`) across `migrate`, `api`, `worker`, and `ml-service` (where indicated) — exact **`39`** keys:
+Referenced by `docker-compose.yml` (`env_file: .env`) across `migrate`, `api`, `worker`, `redis`, and `ml-service` (where indicated) — exact **`40`** keys:
 
 | Variable | Example / Default | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | `postgresql+asyncpg://fieldshift:***@db:5432/fieldshift` | PostGIS connection URI for `migrate`, `api`, & `worker` (`public` schema) |
 | `DB_PASSWORD` | `<strong random secret>` | PostgreSQL admin/app password for `db` service |
+| `REDIS_URL` | `redis://redis:6379/0` | Backend-only Redis connection URI for atomic time-window rate limiting & guest quota cache |
 | `ML_DATASET_DB_URL` | `postgresql://ml_reader:***@db:5432/fieldshift` | Read-only PostgreSQL URI for External ML querying `Schema: dataset` |
 | `ML_READER_PASSWORD` | `<strong random secret>` | Password for read-only PostgreSQL role `ml_reader` |
 | `ML_DB_STATEMENT_TIMEOUT_MS` | `5000` (tuning `TBD` — `OQ-D4`) | Per-query SQL timeout for `ml_reader` against `Schema: dataset` (`OQ-D4`) |

@@ -32,9 +32,10 @@ FieldShift Planner is a crop-rotation planning backend and spatial API platform.
 | --- | --- | --- |
 | **API Framework** | FastAPI (Python async) | `/api/v1` REST endpoints, synchronous `INPUT-01..03` validation, cursor pagination |
 | **Database & Geospatial** | PostgreSQL 16 + PostGIS 3.4 | `public` schema (**13** OLTP/resilience tables) + isolated `Schema: dataset` (tables **TBD**, `OQ-D1`) |
+| **Rate-Limit Store** | Redis 7 (`REDIS_URL`, backend-only) | Atomic Lua / `INCR` + `EXPIRE` time-window rate limiting across `api` replicas (`429`) + guest quota cache |
 | **Migrations** | Alembic (one-shot `migrate` container) | Versioned DDL execution before `api` and `worker` readiness |
 | **Async Job Queue** | PostgreSQL `FOR UPDATE SKIP LOCKED` workers | Durable analysis queue with lease expiry, heartbeats, cancellation, and cascade guards |
-| **External ML Service** | `{ML_SERVICE_URL}` (`/v1/analyze`, `/v1/catalog`, `/v1/health`) | Computes crop-rotation strategies; reads PostgreSQL `Schema: dataset` via `ml_reader` (`SELECT` only) |
+| **ML Integration (`MLAdapter`)** | `MLProviderManager` (`RealMLAdapter` + `MockMLAdapter`) | Unified adapter interface for `{ML_SERVICE_URL}` (`/v1/analyze`, `/v1/catalog`, `/v1/health`) with automatic dev/test mock fallback & health-based promotion |
 | **Contracts** | OpenAPI 3.1.0 (`openapi.yaml`) + JSON Schema Draft 2020-12 (`schema-v5.0.json`) | Single sources of truth for REST API and Backend ↔ ML wire payloads |
 
 ### 1.1 Problem Statement, Target Users & Measurable Success Criteria (KPIs)
@@ -83,8 +84,9 @@ flowchart LR
 1. **`migrate` Service (One-Shot Init):** Runs `alembic upgrade head` (creates `public` **13** tables, `Schema: dataset`, read-only `ml_reader` role grants, PostGIS indexes) cleanly before app traffic starts.
 2. **Auth & Account Lifecycle Module:** Argon2id password hashing, dual-key HS256 JWT verification (`JWT_SECRET_KEY` + `JWT_PREVIOUS_SECRET_KEY`), `refresh_tokens` rotation with reuse family revocation, guest sessions (`X-Guest-Token` SHA-256), `DELETE /auth/me` immediate cascade wipe, and `GET /auth/me/export`.
 3. **Geospatial & Boundary Gate (`PostGIS`):** Evaluates `ST_Covers(demo_locations.boundary, fields.geom_point)` inside PostgreSQL — rejecting **guests** outside Wilaya of Guelma with `422 OUTSIDE_DEMO_BOUNDARY` and attaching `MVP_OUTSIDE_COVERAGE` notices for **registered users** outside Guelma. No external geocoding or NASA API is ever called.
-4. **Catalog & Dataset Sync Manager:** Synchronizes `{ML_SERVICE_URL}/v1/catalog` every `ML_CATALOG_SYNC_HOURS=6` under single-leader `pg_try_advisory_lock(hashtext('catalog_sync'))` (retaining `N` and `N-1` versions); resolves the unique `is_active = true` row in `public.dataset_registry` for every analysis run (`503 DATASET_UNAVAILABLE` if absent).
-5. **Async Job Worker & Cluster-Wide Resilience:** Claims `analysis_requests` via `FOR UPDATE SKIP LOCKED`, updates `heartbeat_at` & `lease_until`, enforces cluster-wide `ML_MAX_CONCURRENT_REQUESTS=8` via `pg_try_advisory_lock(1001..1008)`, manages shared `public.ml_breaker_state`, handles cooperative cancellation (`cancelled_at`), verifies outputs (`Stage 1 + Stage 2`), and writes `analysis_results` with Backend-generated `^analysis_[0-9a-f]{12}$`.
+4. **Catalog, Dataset & ML Provider Manager (`MLAdapter` Pattern):** All ML interactions go exclusively through `app/ml_client/` (`MLAdapter` interface with `RealMLAdapter` and `MockMLAdapter` managed by `MLProviderManager`). In dev/test, if `RealMLAdapter` is unconfigured or unreachable, `MLProviderManager` uses `MockMLAdapter` and periodically probes `RealMLAdapter.get_health()` to switch automatically when available (logging the selected provider on every analysis and never falling back on 4xx/business-logic errors). Synchronizes `/v1/catalog` every `ML_CATALOG_SYNC_HOURS=6` under single-leader `pg_try_advisory_lock(hashtext('catalog_sync'))` (retaining `N` and `N-1` versions); resolves the unique `is_active = true` row in `public.dataset_registry` for every analysis run (`503 DATASET_UNAVAILABLE` if absent).
+5. **Centralized Redis Rate Limiter & Durable Quotas:** Redis (`REDIS_URL`, never exposed to the Frontend) enforces atomic time-window rate limits (`RATE_LIMIT_ANALYSIS_PER_HOUR=10`, `ANALYSIS_PER_IP_HOUR=15`, `GUEST_CREATE_PER_IP_HOUR=5`, `GUEST_BURST_PER_MIN=30`, `RATE_LIMIT_CRUD_PER_MIN=60` -> `429 RATE_LIMIT_EXCEEDED`), while permanent/session business quotas (`GUEST_MAX_ANALYSES=10` = `40` canonical quarters, `GUEST_MAX_FARMS=3`, `GUEST_MAX_FIELDS_PER_FARM=5` -> `403 GUEST_LIMIT_REACHED`) are durably tracked in PostgreSQL (`public.analysis_requests`) and mirrored in Redis.
+6. **Async Job Worker & Cluster-Wide Resilience:** Claims `analysis_requests` via `FOR UPDATE SKIP LOCKED`, updates `heartbeat_at` & `lease_until`, enforces cluster-wide `ML_MAX_CONCURRENT_REQUESTS=8` via `pg_try_advisory_lock(1001..1008)`, manages shared `public.ml_breaker_state`, handles cooperative cancellation (`cancelled_at`), verifies outputs (`Stage 1 + Stage 2`), and writes `analysis_results` with Backend-generated `^analysis_[0-9a-f]{12}$`.
 
 ---
 
@@ -261,6 +263,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   migrate:
     build: ./backend
     env_file: .env
@@ -277,6 +288,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/v1/health?check=ready"]
       interval: 10s
@@ -290,6 +303,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-m", "app.worker.healthcheck"]
       interval: 15s
@@ -378,8 +393,7 @@ fieldshift-planner/
 
 Architecture decisions and their full context/consequences live in [Architecture Decision Records (ADR)](Architecture%20Decision%20Records%20(ADR).md) (`ADR-0` through `ADR-9`):
 - `ADR-0` (`Superseded`): Legacy v1 in-backend synchronous pipeline.
-- `ADR-1`..`ADR-6` (`Accepted`): Async PostgreSQL dataset-backed architecture, external ML black-box boundary, Guelma PostGIS enforcement & unstudied demo parcel, async worker leases, dataset/farmer soil precedence, and rotating `refresh_tokens` + Unknown Field Policy.
-- `ADR-7`..`ADR-9` (`Proposed`): `openapi.yaml` additive `/v1` governance, shared `ml_breaker_state` + `last_good_replay`, and local PostgreSQL `Schema: dataset` + `ml_reader` + `dataset_registry`.
+- `ADR-1`..`ADR-9` (`Accepted`): Async PostgreSQL dataset-backed architecture, external ML black-box boundary with mandatory `MLAdapter` (`RealMLAdapter` / `MockMLAdapter` / `MLProviderManager`), Guelma PostGIS enforcement & unstudied demo parcel, async worker leases, dataset/farmer soil precedence, rotating `refresh_tokens` + Unknown Field Policy, `openapi.yaml` additive `/v1` governance, Redis centralized rate-limiting + shared PostgreSQL `ml_breaker_state` + `last_good_replay`, and local PostgreSQL `Schema: dataset` + `ml_reader` + `dataset_registry`.
 
 ---
 
