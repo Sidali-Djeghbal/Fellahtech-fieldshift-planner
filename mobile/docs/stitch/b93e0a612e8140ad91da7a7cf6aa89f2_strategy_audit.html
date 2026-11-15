@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Space+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-high": "#1C241E", "on-secondary-fixed-variant": "#005313", "outline": "#9c8f7d", "surface-variant": "#2d3732", "on-tertiary-container": "#00516f", "surface-container": "#131814", "on-primary": "#422c00", "inverse-surface": "#dbe5de", "secondary-container": "#00761f", "foliage-green-bright": "#66BB6A", "text-secondary": "#A3B3A7", "on-secondary-container": "#95fb92", "on-secondary-fixed": "#002204", "tertiary-fixed-dim": "#7bd0ff", "inverse-on-surface": "#29322e", "secondary-fixed-dim": "#78dc77", "primary": "#ffd183", "telemetry-cyan": "#38BDF8", "background": "#0c1511", "text-tertiary": "#65776A", "primary-fixed": "#ffdeaa", "on-error-container": "#ffdad6", "on-surface": "#dbe5de", "on-tertiary-fixed-variant": "#004c69", "outline-variant": "#4f4536", "tertiary-fixed": "#c4e7ff", "surface-bright": "#323b36", "error": "#ffb4ab", "surface-canvas": "#0B0F0C", "surface": "#0c1511", "inverse-primary": "#7d5700", "on-secondary": "#00390a", "surface-container-low": "#141d19", "on-primary-fixed": "#271900", "surface-tint": "#f5bd56", "surface-dim": "#0c1511", "on-tertiary": "#00354a", "tertiary": "#aadeff", "error-container": "#93000a", "secondary": "#78dc77", "on-surface-variant": "#d3c4b0", "on-background": "#dbe5de", "on-error": "#690005", "tertiary-container": "#56c7ff", "on-primary-fixed-variant": "#5f4100", "primary-container": "#eab34d", "surface-border": "rgba(255, 255, 255, 0.08)", "text-primary": "#F4F7F4", "primary-fixed-dim": "#f5bd56", "spectral-deep-sea": "#183A41", "surface-container-highest": "#2d3732", "on-primary-container": "#654600", "surface-container-lowest": "#07100c", "on-tertiary-fixed": "#001e2c", "secondary-fixed": "#94f990", "erosion-alert": "#F97316", "foliage-green-deep": "#4D5432" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "margin-mobile": "1rem", "space-xs": "0.25rem", "margin": "1.25rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem" }, "fontFamily": { "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Space Mono"], "label-sm": ["Space Mono"], "label-lg": ["Space Mono"], "body-md": ["Inter"], "headline-sm": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "body-sm": ["Inter"], "headline-md": ["Space Grotesk"] }, "fontSize": { "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.06em", "fontWeight": "400" }], "label-lg": ["13px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#0c1511;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)]"><div class="flex flex-col"><div class="h-6 px-margin-mobile flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-label-md text-label-md text-on-surface font-medium">09:41</span><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[14px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[14px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Back" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-text-primary tracking-tight">Parcel Detail</h1></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-22 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full px-margin-mobile pb-space-xl gap-space-md">
+<!-- Breadcrumb & Plot Context Ribbon -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">satellite_alt</span>
+<span class="font-label-sm text-label-sm text-text-secondary uppercase tracking-wider">Tidjelabine Hillside · Sector 4B</span>
+</div>
+<div class="bg-surface-container-high px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-foliage-green-bright"></span>
+<span class="font-label-sm text-label-sm text-foliage-green-bright">Audit Complete</span>
+</div>
+</div>
+<!-- Match Score Hero Card -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-space-md shadow-md">
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col gap-space-md relative">
+<!-- Upper Section: Score Badge & Meta -->
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col gap-1 min-w-0">
+<span class="font-label-sm text-label-sm text-primary uppercase font-medium">Cropping Strategy Fit</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary leading-tight">Balanced Water &amp; Soil</h2>
+<p class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Optimized for semiarid clay-loam topography</p>
+</div>
+<!-- Prominent Radial Gauge Badge -->
+<div class="relative flex items-center justify-center shrink-0 w-20 h-20 bg-surface-container-high rounded-full p-1 shadow-sm">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 72 72">
+<circle class="text-surface-variant" cx="36" cy="36" fill="none" r="30" stroke="currentColor" stroke-width="5"></circle>
+<circle class="text-primary-container" cx="36" cy="36" fill="none" r="30" stroke="currentColor" stroke-dasharray="188.5" stroke-dashoffset="49" stroke-linecap="round" stroke-width="5.5"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center">
+<span class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">74</span>
+<span class="font-label-sm text-[9px] text-text-tertiary uppercase leading-none">/ 100</span>
+</div>
+</div>
+</div>
+<!-- Confidence & NASA Source Chip -->
+<div class="flex items-center gap-space-xs bg-surface-container-high px-space-sm py-1.5 rounded-lg text-text-secondary">
+<span class="material-symbols-outlined text-telemetry-cyan text-[16px]">verified</span>
+<span class="font-label-sm text-label-sm tracking-normal truncate">Medium-High Confidence · NASA IMERG &amp; POWER</span>
+</div>
+<!-- Key Impact Telemetry Pill Grid -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<div class="bg-surface-container-high/80 rounded-lg p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-text-tertiary">Runoff Risk Mitigation</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-headline-sm text-headline-sm text-foliage-green-bright font-bold">-29</span>
+<span class="font-label-sm text-label-sm text-text-secondary">days/yr</span>
+</div>
+<span class="font-body-sm text-[11px] text-text-secondary mt-0.5">Bare-wet days eliminated</span>
+</div>
+<div class="bg-surface-container-high/80 rounded-lg p-space-sm flex flex-col">
+<span class="font-label-sm text-label-sm text-text-tertiary">Substrate Moisture</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-headline-sm text-headline-sm text-telemetry-cyan font-bold">+38</span>
+<span class="font-label-sm text-label-sm text-text-secondary">mm</span>
+</div>
+<span class="font-body-sm text-[11px] text-text-secondary mt-0.5">Retained autumn water</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Rotation Timeline Visualizer -->
+<div class="flex flex-col bg-surface-container rounded-xl p-space-md gap-space-sm shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">sync_alt</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary text-[16px]">Rotation Sequence</h3>
+</div>
+<span class="font-label-sm text-label-sm text-text-tertiary">20-Month Arc</span>
+</div>
+<!-- Timeline Phases -->
+<div class="flex flex-col gap-space-xs pt-space-xs relative">
+<!-- Continuous line guide -->
+<div class="absolute left-4 top-4 bottom-4 w-0.5 bg-surface-container-highest"></div>
+<!-- Phase 1: Cash Crop -->
+<div class="flex items-start gap-space-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 text-primary-container flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">grain</span>
+</div>
+<div class="flex flex-col bg-surface-container-high p-space-sm rounded-lg w-full">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-[14px] text-text-primary">Durum Wheat</span>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-0.5 rounded">Cash Grain</span>
+</div>
+<div class="flex items-center justify-between mt-1 text-text-secondary">
+<span class="font-body-sm text-body-sm">Oct – Jun · 9 mos</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">Yield priority</span>
+</div>
+</div>
+</div>
+<!-- Phase 2: Cover Crop (Delight Highlight) -->
+<div class="flex items-start gap-space-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-foliage-green-bright/20 text-foliage-green-bright flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div class="flex flex-col bg-surface-container-high p-space-sm rounded-lg w-full">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-[14px] text-text-primary">Vetch Cover Crop</span>
+<span class="font-label-sm text-label-sm text-foliage-green-bright bg-foliage-green-bright/10 px-2 py-0.5 rounded">Inter-Season</span>
+</div>
+<div class="flex items-center justify-between mt-1 text-text-secondary">
+<span class="font-body-sm text-body-sm">Jul – Nov · 5 mos</span>
+<span class="font-label-sm text-label-sm text-foliage-green-bright font-medium">+N2 Fixation</span>
+</div>
+<p class="font-body-sm text-[11px] text-text-tertiary mt-1">Armor canopy halts summer wind drag &amp; November slope wash.</p>
+</div>
+</div>
+<!-- Phase 3: Pulse Break -->
+<div class="flex items-start gap-space-sm relative z-10">
+<div class="w-8 h-8 rounded-full bg-telemetry-cyan/20 text-telemetry-cyan flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">spa</span>
+</div>
+<div class="flex flex-col bg-surface-container-high p-space-sm rounded-lg w-full">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-[14px] text-text-primary">Chickpea</span>
+<span class="font-label-sm text-label-sm text-telemetry-cyan bg-telemetry-cyan/10 px-2 py-0.5 rounded">Pulse Break</span>
+</div>
+<div class="flex items-center justify-between mt-1 text-text-secondary">
+<span class="font-body-sm text-body-sm">Nov – May · 6 mos</span>
+<span class="font-label-sm text-label-sm text-text-tertiary">Disease cycle break</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Structured Explainability Accordion Group -->
+<div class="flex flex-col gap-space-sm">
+<!-- 1. Why this was recommended (Default Expanded) -->
+<details class="group bg-surface-container rounded-xl overflow-hidden shadow-sm transition-colors duration-200" open="">
+<summary class="flex items-center justify-between p-space-md cursor-pointer list-none select-none">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<span class="font-headline-sm text-[15px] text-text-primary">Why This Was Recommended</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary transition-transform duration-200 group-open:rotate-180 text-[20px]">expand_more</span>
+</summary>
+<div class="px-space-md pb-space-md pt-0 text-text-secondary font-body-md text-body-md flex flex-col gap-space-xs">
+<p class="leading-relaxed">Alternating shallow-root winter wheat with deep-root leguminous cover traps <span class="text-text-primary font-medium">38mm additional moisture</span> in clay-loam substrate while halting nitrate leaching across the 12% slope gradient.</p>
+<div class="flex items-center gap-space-xs pt-1 text-foliage-green-bright font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">format_image_left</span>
+<span>Targeted against flash runoffs typical in November-December.</span>
+</div>
+</div>
+</details>
+<!-- 2. Performance Breakdown -->
+<details class="group bg-surface-container rounded-xl overflow-hidden shadow-sm transition-colors duration-200">
+<summary class="flex items-center justify-between p-space-md cursor-pointer list-none select-none">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-telemetry-cyan">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+</div>
+<span class="font-headline-sm text-[15px] text-text-primary">Performance Breakdown</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary transition-transform duration-200 group-open:rotate-180 text-[20px]">expand_more</span>
+</summary>
+<div class="px-space-md pb-space-md pt-space-xs flex flex-col gap-space-sm">
+<!-- Water Efficiency Metric -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-text-secondary">Water Efficiency</span>
+<span class="text-text-primary font-medium">82 / 100</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-telemetry-cyan rounded-full" style="width: 82%"></div>
+</div>
+</div>
+<!-- Erosion Protection Metric -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-text-secondary">Erosion Protection</span>
+<span class="text-text-primary font-medium">88 / 100</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-foliage-green-bright rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<!-- Soil Nitrogen Gain Metric -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-text-secondary">Soil Nitrogen Gain</span>
+<span class="text-foliage-green-bright font-medium">+24 kg N/ha</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-secondary-fixed rounded-full" style="width: 72%"></div>
+</div>
+</div>
+<!-- Profit Index Metric -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-text-secondary">Profit Index</span>
+<span class="text-text-primary font-medium">76 / 100</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 76%"></div>
+</div>
+</div>
+</div>
+</details>
+<!-- 3. Supporting Evidence & NASA Data -->
+<details class="group bg-surface-container rounded-xl overflow-hidden shadow-sm transition-colors duration-200">
+<summary class="flex items-center justify-between p-space-md cursor-pointer list-none select-none">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined text-[18px]">public</span>
+</div>
+<span class="font-headline-sm text-[15px] text-text-primary">Supporting Evidence &amp; Climatology</span>
+</div>
+<span class="material-symbols-outlined text-text-secondary transition-transform duration-200 group-open:rotate-180 text-[20px]">expand_more</span>
+</summary>
+<div class="px-space-md pb-space-md pt-0 text-text-secondary font-body-md text-body-md flex flex-col gap-space-xs">
+<p class="leading-relaxed">NASA POWER 30-year climatology indicates autumn rainfall onset shift (+11 days delay). Clay-loam topsoil holds <span class="text-text-primary font-medium">140mm available water capacity</span>, making summer cover termination timing critical.</p>
+<div class="bg-surface-container-high rounded-lg p-2.5 mt-1 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-telemetry-cyan text-[18px]">dew_point</span>
+<span class="font-label-sm text-label-sm text-text-primary">Field AWC: 140mm</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-tertiary">36.72° N, 3.48° E</span>
+</div>
+</div>
+</details>
+<!-- 4. Information Gaps & Risks (High-Visibility Alert Framing) -->
+<div class="rounded-xl bg-surface-container-high p-space-md shadow-sm relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-erosion-alert"></div>
+<div class="flex flex-col gap-space-xs pl-1">
+<div class="flex items-center gap-space-xs text-erosion-alert">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+<h4 class="font-headline-sm text-[15px] text-text-primary font-semibold">Information Gaps &amp; Ground Risks</h4>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary leading-relaxed">
+          Subsurface hardpan depth unknown at lower contour. Verify local seed availability for drought-hardy vetch cultivars with <span class="text-text-primary font-medium">ITGC Boumerdès</span> prior to procurement.
+        </p>
+</div>
+</div>
+<!-- 5. Agronomic Validation Notice -->
+<div class="flex items-start gap-space-sm bg-surface-container-low p-space-md rounded-xl text-text-tertiary">
+<span class="material-symbols-outlined text-[20px] text-text-secondary shrink-0 mt-0.5">assignment_late</span>
+<p class="font-body-sm text-[12px] leading-relaxed">
+<strong class="text-text-secondary font-medium">Decision-support prototype:</strong> Algorithms model regional historical probability. Always review plan with your DSA sector engineer or agronomic consultant before sowing.
+      </p>
+</div>
+</div>
+<!-- Bottom Interactive Action Dock -->
+<div class="flex flex-col gap-space-xs pt-space-xs pb-space-sm">
+<button class="w-full h-12 bg-primary-container text-surface-canvas font-headline-sm text-[15px] font-bold rounded-xl flex items-center justify-center gap-space-xs active:scale-[0.98] transition-all shadow-md" id="adoptBtn">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Adopt This Strategy</span>
+</button>
+<button class="w-full h-12 bg-surface-container-high text-text-primary font-headline-sm text-[14px] font-medium rounded-xl flex items-center justify-center gap-space-xs active:scale-[0.98] transition-all shadow-sm" id="compareBtn">
+<span class="material-symbols-outlined text-[18px] text-text-secondary">compare_arrows</span>
+<span>Compare with Alternative Strategies</span>
+</button>
+</div>
+</div>
+<script>
+  (function() {
+    const adoptBtn = document.getElementById('adoptBtn');
+    const compareBtn = document.getElementById('compareBtn');
+
+    if (adoptBtn) {
+      adoptBtn.addEventListener('click', function() {
+        const originalText = adoptBtn.innerHTML;
+        adoptBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span><span>Applying Sequence...</span>';
+        adoptBtn.classList.add('opacity-90');
+        setTimeout(() => {
+          adoptBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">task_alt</span><span>Strategy Activated</span>';
+          adoptBtn.classList.replace('bg-primary-container', 'bg-foliage-green-bright');
+        }, 1100);
+      });
+    }
+
+    if (compareBtn) {
+      compareBtn.addEventListener('click', function() {
+        compareBtn.classList.add('bg-surface-variant');
+        setTimeout(() => compareBtn.classList.remove('bg-surface-variant'), 300);
+      });
+    }
+  })();
+</script></main><div class="fixed bottom-0 w-full z-40 pointer-events-none pb-2 flex justify-center"><div class="w-32 h-1 rounded-full bg-on-surface/20"></div></div></body></html>

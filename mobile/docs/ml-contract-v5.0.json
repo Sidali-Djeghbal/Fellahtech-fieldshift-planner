@@ -1,0 +1,1526 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fieldshift.spaceapps.org/schemas/schema-v5.0.json",
+  "title": "FieldShift Planner v5.x Backend <-> ML Contract",
+  "description": "Authoritative contract schema for FarmAnalysisInput, AnalysisResult, and CropCatalog exchanged between the FastAPI/Worker Backend and the External ML Service. Environmental and agronomic reference features are queried read-only by the ML Service from PostgreSQL Schema: dataset (role ml_reader) using the pinned dataset_version.",
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/FarmAnalysisInput"
+    },
+    {
+      "$ref": "#/$defs/AnalysisResult"
+    },
+    {
+      "$ref": "#/$defs/CropCatalog"
+    }
+  ],
+  "$defs": {
+    "SchemaVersion": {
+      "type": "string",
+      "pattern": "^5\\.[0-9]+$"
+    },
+    "Language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "ar"
+      ]
+    },
+    "Season": {
+      "type": "string",
+      "enum": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ]
+    },
+    "CycleMode": {
+      "type": "string",
+      "enum": [
+        "annual_rotation",
+        "consecutive_seasons"
+      ]
+    },
+    "DataSource": {
+      "type": "string",
+      "description": "Controlled evidence source identifier. Sub-dataset identifiers inside PostgreSQL Schema: dataset are tracked under OQ-D1 and OQ-D5.",
+      "enum": [
+        "farmer_input",
+        "dataset"
+      ]
+    },
+    "EvidenceUnit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "mm/day",
+        "mm/year",
+        "mm/month",
+        "% vs historical mean",
+        "degC",
+        "%",
+        "m/s",
+        "MJ/m2/day",
+        "index",
+        "m3/m3",
+        "pct",
+        "mm",
+        "m",
+        "t/ha",
+        null
+      ]
+    },
+    "EvidenceParameter": {
+      "type": "string",
+      "enum": [
+        "precipitation",
+        "t2m",
+        "t2m_max",
+        "t2m_min",
+        "rh2m",
+        "wind_2m",
+        "solar_radiation",
+        "ndvi",
+        "soil_moisture_surface",
+        "precipitation_anomaly",
+        "evaporative_stress_index",
+        "groundwater_anomaly",
+        "crop_history",
+        "soil_type",
+        "soil_ph",
+        "organic_matter_percent",
+        "elevation_m",
+        "water_availability",
+        "dataset_feature"
+      ]
+    },
+    "CropCategory": {
+      "type": "string",
+      "description": "Controlled agronomic crop categories. Note: 'forage' encompasses both green grazed forage and conserved fodder/hay.",
+      "enum": [
+        "cereals",
+        "legumes",
+        "oilseeds",
+        "vegetables",
+        "forage",
+        "cover_crops",
+        "fallow"
+      ]
+    },
+    "CropRole": {
+      "type": "string",
+      "enum": [
+        "cash_crop",
+        "nitrogen_fixer",
+        "forage",
+        "cover_crop",
+        "break_crop",
+        "main_crop",
+        "fallow"
+      ]
+    },
+    "SelectionStatus": {
+      "type": "string",
+      "enum": [
+        "suggested",
+        "selected",
+        "rejected"
+      ]
+    },
+    "SeverityLevel": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "SoilType": {
+      "type": "string",
+      "enum": [
+        "sandy",
+        "clay",
+        "loamy",
+        "silty",
+        "unknown"
+      ]
+    },
+    "SoilSource": {
+      "type": "string",
+      "enum": [
+        "farmer",
+        "unknown"
+      ]
+    },
+    "MarketPreference": {
+      "type": "string",
+      "enum": [
+        "local_market",
+        "export",
+        "subsistence",
+        "mixed"
+      ]
+    },
+    "WaterAvailability": {
+      "type": "string",
+      "enum": [
+        "abundant",
+        "moderate",
+        "limited",
+        "very_limited",
+        "rainfed_only"
+      ]
+    },
+    "WaterSource": {
+      "type": "string",
+      "enum": [
+        "rainwater",
+        "groundwater",
+        "well",
+        "dam_reservoir",
+        "irrigation_network",
+        "other",
+        "unknown"
+      ]
+    },
+    "IrrigationSystem": {
+      "type": "string",
+      "enum": [
+        "rainfed",
+        "drip",
+        "sprinkler",
+        "flood",
+        "other",
+        "unknown"
+      ]
+    },
+    "ScenarioOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "temp_delta_c": {
+          "type": "number",
+          "minimum": -5.0,
+          "maximum": 10.0,
+          "default": 0.0
+        },
+        "precip_pct_delta": {
+          "type": "number",
+          "minimum": -80.0,
+          "maximum": 100.0,
+          "default": 0.0
+        }
+      }
+    },
+    "Planning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_season",
+        "start_year",
+        "horizon_seasons"
+      ],
+      "properties": {
+        "start_season": {
+          "$ref": "#/$defs/Season"
+        },
+        "start_year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100
+        },
+        "horizon_seasons": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "cycle_mode": {
+          "$ref": "#/$defs/CycleMode",
+          "default": "annual_rotation"
+        },
+        "planting_month": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 12
+        },
+        "scenario_overrides": {
+          "$ref": "#/$defs/ScenarioOverrides"
+        }
+      }
+    },
+    "PriorityWeights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "water_saving",
+        "soil_improvement",
+        "income",
+        "risk_reduction",
+        "forage_value"
+      ],
+      "properties": {
+        "water_saving": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "soil_improvement": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "income": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "risk_reduction": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "forage_value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "FieldInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_id",
+        "field_name",
+        "location",
+        "area_hectares",
+        "crop_history",
+        "soil",
+        "water"
+      ],
+      "properties": {
+        "field_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "field_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "is_unverified_demo_parcel": {
+          "type": "boolean",
+          "default": false
+        },
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "latitude",
+            "longitude"
+          ],
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "boundary": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        },
+        "area_hectares": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "elevation_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -500,
+          "maximum": 9000
+        },
+        "crop_history": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "season",
+              "year"
+            ],
+            "anyOf": [
+              {
+                "required": [
+                  "crop_id"
+                ],
+                "properties": {
+                  "crop_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                }
+              },
+              {
+                "required": [
+                  "crop_name_raw"
+                ],
+                "properties": {
+                  "crop_name_raw": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "season": {
+                "$ref": "#/$defs/Season"
+              },
+              "year": {
+                "type": "integer",
+                "minimum": 1980,
+                "maximum": 2100
+              },
+              "planting_month": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1,
+                "maximum": 12
+              },
+              "crop_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 64
+              },
+              "crop_name_raw": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 120
+              },
+              "catalog_version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 64
+              },
+              "yield_tons_per_hectare": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "soil": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "soil_type",
+            "source"
+          ],
+          "properties": {
+            "soil_type": {
+              "$ref": "#/$defs/SoilType"
+            },
+            "source": {
+              "$ref": "#/$defs/SoilSource"
+            },
+            "soil_ph": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 3.0,
+              "maximum": 11.0
+            },
+            "organic_matter_percent": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0.0,
+              "maximum": 100.0
+            },
+            "soil_test_date": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            }
+          }
+        },
+        "water": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "availability",
+            "source",
+            "irrigation_system"
+          ],
+          "properties": {
+            "availability": {
+              "$ref": "#/$defs/WaterAvailability"
+            },
+            "source": {
+              "$ref": "#/$defs/WaterSource"
+            },
+            "source_other": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 200
+            },
+            "irrigation_system": {
+              "$ref": "#/$defs/IrrigationSystem"
+            }
+          }
+        }
+      }
+    },
+    "FarmAnalysisInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "catalog_version",
+        "dataset_version",
+        "language",
+        "farm",
+        "planning",
+        "priorities",
+        "fields"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/SchemaVersion"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "catalog_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "dataset_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "language": {
+          "$ref": "#/$defs/Language"
+        },
+        "farm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "farm_id",
+            "farm_name",
+            "country",
+            "region"
+          ],
+          "properties": {
+            "farm_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "farm_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "country": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "region": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "commune": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 120
+            }
+          }
+        },
+        "planning": {
+          "$ref": "#/$defs/Planning"
+        },
+        "priorities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "weights",
+            "market_preference",
+            "target_crop_ids",
+            "excluded_crop_ids",
+            "equipment_constraints"
+          ],
+          "properties": {
+            "weights": {
+              "$ref": "#/$defs/PriorityWeights"
+            },
+            "market_preference": {
+              "$ref": "#/$defs/MarketPreference"
+            },
+            "target_crop_ids": {
+              "type": "array",
+              "maxItems": 20,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "excluded_crop_ids": {
+              "type": "array",
+              "maxItems": 20,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            },
+            "equipment_constraints": {
+              "type": "array",
+              "maxItems": 20,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              }
+            }
+          }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/FieldInput"
+          }
+        }
+      }
+    },
+    "StrategyScores": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "water_efficiency",
+        "erosion_protection",
+        "organic_matter_gain",
+        "nitrogen_contribution",
+        "pest_cycle_disruption",
+        "income_forage_value",
+        "priority_fit",
+        "bare_field_days_per_year"
+      ],
+      "properties": {
+        "water_efficiency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "erosion_protection": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "organic_matter_gain": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "nitrogen_contribution": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "pest_cycle_disruption": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "income_forage_value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "priority_fit": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "bare_field_days_per_year": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        }
+      }
+    },
+    "SeasonPlan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "order",
+        "season",
+        "year",
+        "crop_id",
+        "crop_name",
+        "category",
+        "role",
+        "selection_status"
+      ],
+      "properties": {
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "season": {
+          "$ref": "#/$defs/Season"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100
+        },
+        "planting_month": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 12
+        },
+        "crop_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "crop_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "$ref": "#/$defs/CropCategory"
+        },
+        "role": {
+          "$ref": "#/$defs/CropRole"
+        },
+        "selection_status": {
+          "$ref": "#/$defs/SelectionStatus"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "BareFieldPeriod": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "start_month",
+        "end_month",
+        "evidence"
+      ],
+      "properties": {
+        "start_month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "end_month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "StressPeriod": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "type",
+        "months",
+        "severity",
+        "evidence"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "drought",
+            "heat",
+            "frost",
+            "waterlogging",
+            "salinity",
+            "nutrient"
+          ]
+        },
+        "months": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          }
+        },
+        "severity": {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "FieldInsights": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "bare_field_periods",
+        "stress_periods",
+        "climate_trend_summary"
+      ],
+      "properties": {
+        "bare_field_periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BareFieldPeriod"
+          }
+        },
+        "stress_periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StressPeriod"
+          }
+        },
+        "climate_trend_summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ReasonItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "code",
+        "text",
+        "params"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "EvidenceItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "data_source",
+        "parameter",
+        "observed_value",
+        "interpretation"
+      ],
+      "properties": {
+        "data_source": {
+          "$ref": "#/$defs/DataSource"
+        },
+        "source_mission": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Optional NASA/Earth-observation mission or sub-dataset identifier inside Schema: dataset (e.g., NASA_POWER, MODIS, SMAP, ECOSTRESS, GRACE, SRTM)."
+        },
+        "parameter": {
+          "$ref": "#/$defs/EvidenceParameter"
+        },
+        "observed_value": {
+          "type": [
+            "number",
+            "string",
+            "boolean"
+          ]
+        },
+        "unit": {
+          "$ref": "#/$defs/EvidenceUnit"
+        },
+        "period": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "derived": {
+          "type": "boolean",
+          "default": false
+        },
+        "interpretation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "BenefitItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "benefit_id",
+        "title",
+        "description"
+      ],
+      "properties": {
+        "benefit_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "RiskItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "risk_id",
+        "title",
+        "description",
+        "severity",
+        "mitigation"
+      ],
+      "properties": {
+        "risk_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        "likelihood": {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        "mitigation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Explanation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "reasons",
+        "evidence",
+        "benefits",
+        "risks",
+        "assumptions",
+        "information_gaps",
+        "needs_local_review"
+      ],
+      "properties": {
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReasonItem"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          }
+        },
+        "benefits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BenefitItem"
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RiskItem"
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "information_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "needs_local_review": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Strategy": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "strategy_id",
+        "name",
+        "is_existing_rotation",
+        "description",
+        "seasons",
+        "scores",
+        "confidence",
+        "explanation"
+      ],
+      "properties": {
+        "strategy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "is_existing_rotation": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seasons": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/$defs/SeasonPlan"
+          }
+        },
+        "scores": {
+          "$ref": "#/$defs/StrategyScores"
+        },
+        "confidence": {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        "explanation": {
+          "$ref": "#/$defs/Explanation"
+        }
+      }
+    },
+    "RequestedCropEvaluation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "requested_crop_id",
+        "outcome",
+        "included_in_strategy_ids",
+        "explanation"
+      ],
+      "properties": {
+        "requested_crop_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "included",
+            "replaced",
+            "excluded"
+          ]
+        },
+        "included_in_strategy_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replaced_by_crop_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparison": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          }
+        }
+      }
+    },
+    "DataQuality": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "missing_data",
+        "warnings",
+        "limitations"
+      ],
+      "properties": {
+        "completeness_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "confidence_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "missing_data": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "FieldPlan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "field_id",
+        "field_name",
+        "status",
+        "field_insights",
+        "strategies",
+        "suggested_strategy_id",
+        "requested_crop_results",
+        "data_quality"
+      ],
+      "properties": {
+        "field_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "partial"
+          ]
+        },
+        "partial_reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "field_insights": {
+          "$ref": "#/$defs/FieldInsights"
+        },
+        "strategies": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/Strategy"
+          }
+        },
+        "suggested_strategy_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "requested_crop_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequestedCropEvaluation"
+          }
+        },
+        "data_quality": {
+          "$ref": "#/$defs/DataQuality"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ok"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "suggested_strategy_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "strategies": {
+                "minItems": 3,
+                "maxItems": 5,
+                "contains": {
+                  "type": "object",
+                  "required": [
+                    "is_existing_rotation"
+                  ],
+                  "properties": {
+                    "is_existing_rotation": {
+                      "const": true
+                    }
+                  }
+                },
+                "minContains": 1,
+                "maxContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "partial"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "partial_reason"
+            ],
+            "properties": {
+              "partial_reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AnalysisResult": {
+      "type": "object",
+      "additionalProperties": true,
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "crops"
+            ]
+          }
+        ]
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "dataset_version_used",
+        "generated_at",
+        "status",
+        "language",
+        "ml_engine_version",
+        "overall_summary",
+        "disclaimer",
+        "field_plans",
+        "data_quality"
+      ],
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/SchemaVersion"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset_version_used": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "partial"
+          ]
+        },
+        "language": {
+          "$ref": "#/$defs/Language"
+        },
+        "ml_engine_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "overall_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "disclaimer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field_plans": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/FieldPlan"
+          }
+        },
+        "data_quality": {
+          "$ref": "#/$defs/DataQuality"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ok"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "field_plans": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CropItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "crop_id",
+        "names",
+        "category",
+        "roles",
+        "family"
+      ],
+      "properties": {
+        "crop_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "names": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "en",
+            "fr",
+            "ar"
+          ],
+          "properties": {
+            "en": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fr": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ar": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "category": {
+          "$ref": "#/$defs/CropCategory"
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/CropRole"
+          }
+        },
+        "family": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "CropCatalog": {
+      "type": "object",
+      "additionalProperties": true,
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "field_plans"
+            ]
+          }
+        ]
+      },
+      "required": [
+        "catalog_version",
+        "crops"
+      ],
+      "properties": {
+        "catalog_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "synced_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "crops": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/CropItem"
+          }
+        }
+      }
+    }
+  }
+}
