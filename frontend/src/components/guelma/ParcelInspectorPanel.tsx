@@ -23,6 +23,7 @@ import {
 } from "@/lib/i18n";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
+import { formatAreaHa, localizeFieldName } from "@/lib/i18n/dynamicText";
 import type { CropItem, FarmPublic, FieldDetailPublic, FieldPlan, Language } from "@/lib/schemas";
 
 interface ParcelInspectorPanelProps {
@@ -201,13 +202,13 @@ export function ParcelInspectorPanel({
             </span>
           </div>
           <h3 className="mt-1 truncate font-heading text-base font-semibold text-[var(--lg-fg)]">
-            {selectedField.field_name}
+            {localizeFieldName(selectedField.field_name, lang)}
           </h3>
           <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--lg-fg-muted)]">
             <span>{commune.name[lang] || commune.name.en}</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono font-semibold tabular-nums text-[var(--lg-accent)]">
-              {selectedField.area_hectares.toFixed(2)} ha
+              {formatAreaHa(selectedField.area_hectares, lang, 2)}
             </span>
           </p>
         </div>

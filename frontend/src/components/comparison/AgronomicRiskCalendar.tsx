@@ -107,7 +107,7 @@ export function AgronomicRiskCalendar({
             <ul className="mt-2 space-y-1.5 text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
               {insights.bare_field_periods.map((bp, i) => (
                 <li key={i}>
-                  <strong dir="ltr" className="text-[#111813] dark:text-[#F5F7F5]">
+                  <strong dir={lang === "ar" ? "auto" : "ltr"} className="text-[#111813] dark:text-[#F5F7F5]">
                     {months[bp.start_month - 1]}–{months[bp.end_month - 1]}:
                   </strong>{" "}
                   {localizePlainText(bp.evidence, lang, plainMode)}

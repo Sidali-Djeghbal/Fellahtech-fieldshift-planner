@@ -74,46 +74,25 @@ export function TopToolbar({
       <div className="topbar-group">
         {onBackToDashboard ? (
           <button
-            className="lg-capsule tap"
+            className="lg-capsule back-dock-btn tap"
             type="button"
             data-testid="proto-back-dashboard"
             onClick={onBackToDashboard}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              height: "36px",
-              padding: "0 12px",
-              borderRadius: "999px",
-              color: "#f4f7f4",
-              fontWeight: 600,
-              fontSize: "12px",
-              cursor: "pointer",
-              border: "1px solid rgba(255,255,255,0.14)",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
           >
             <span>{backLabel || UI_DICT[lang].common.backToCommandCenter}</span>
           </button>
         ) : null}
         <div className="brand-dock lg-capsule" aria-label={loc.ui.ariaPresetsRegion}>
           <div className="brand-id">
-            <svg
+            <img
+              src="/assets/logo.svg"
+              alt="FELLAH TECH"
               className="brand-glyph"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 21c-4.5-2.6-7-6.8-7-11.2C7.8 9.8 10.6 11.4 12 14c1.4-2.6 4.2-4.2 7-4.2 0 4.4-2.5 8.6-7 11.2z" />
-              <path d="M12 14V3" />
-            </svg>
+              width={24}
+              height={24}
+            />
             <div className="brand-title">
-              FieldShift<span>{loc.brandRegion}</span>
+              FELLAH TECH<span>{loc.brandRegion}</span>
             </div>
           </div>
 

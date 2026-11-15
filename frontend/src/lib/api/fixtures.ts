@@ -26,6 +26,9 @@ import type {
   WarningNotice,
 } from "@/lib/schemas";
 import {
+  GUELMA_DEMO_PARCEL_AREA_HA,
+  GUELMA_DEMO_PARCEL_BOUNDARY,
+  GUELMA_DEMO_PARCEL_CENTER,
   GUELMA_FALLBACK_BOUNDARY,
   isInsideGuelmaBoundary,
 } from "@/lib/geo/guelma";
@@ -94,11 +97,11 @@ export const FIXTURE_INPUT_9_1 = {
       field_name: "Guelma Team Demo Parcel (Unstudied)",
       is_unverified_demo_parcel: true,
       location: {
-        latitude: 36.52,
-        longitude: 7.52,
-        boundary: null,
+        latitude: GUELMA_DEMO_PARCEL_CENTER.latitude,
+        longitude: GUELMA_DEMO_PARCEL_CENTER.longitude,
+        boundary: GUELMA_DEMO_PARCEL_BOUNDARY,
       },
-      area_hectares: 12.5,
+      area_hectares: GUELMA_DEMO_PARCEL_AREA_HA,
       elevation_m: null,
       crop_history: [
         {
@@ -721,11 +724,11 @@ class FixtureBackendState {
       field_name: "Guelma Team Demo Parcel (Unstudied)",
       is_unverified_demo_parcel: true,
       location: {
-        latitude: 36.52,
-        longitude: 7.52,
-        boundary: null,
+        latitude: GUELMA_DEMO_PARCEL_CENTER.latitude,
+        longitude: GUELMA_DEMO_PARCEL_CENTER.longitude,
+        boundary: GUELMA_DEMO_PARCEL_BOUNDARY,
       },
-      area_hectares: 12.5,
+      area_hectares: GUELMA_DEMO_PARCEL_AREA_HA,
       elevation_m: null,
       soil: {
         soil_type: "unknown",
@@ -1089,8 +1092,8 @@ export async function handleFixtureRequest(
       demo_parcel: {
         field_id: "F1",
         field_name: "Guelma Team Demo Parcel (Unstudied)",
-        location: { latitude: 36.52, longitude: 7.52 },
-        area_hectares: 12.5,
+        location: { ...GUELMA_DEMO_PARCEL_CENTER },
+        area_hectares: GUELMA_DEMO_PARCEL_AREA_HA,
         is_unverified_demo_parcel: true,
         warnings: [DEMO_PARCEL_UNVERIFIED_WARNING],
       },
@@ -1115,8 +1118,8 @@ export async function handleFixtureRequest(
         demo_parcel: {
           field_id: "F1",
           field_name: "Guelma Team Demo Parcel (Unstudied)",
-          location: { latitude: 36.52, longitude: 7.52 },
-          area_hectares: 12.5,
+          location: { ...GUELMA_DEMO_PARCEL_CENTER },
+          area_hectares: GUELMA_DEMO_PARCEL_AREA_HA,
           is_unverified_demo_parcel: true,
           warnings: [DEMO_PARCEL_UNVERIFIED_WARNING],
         },

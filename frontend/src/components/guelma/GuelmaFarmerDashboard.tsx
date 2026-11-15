@@ -35,6 +35,7 @@ import {
   findNearestGuelmaCommune,
   GUELMA_FALLBACK_BOUNDARY,
   isInsideGuelmaBoundary,
+  localizeCommuneName,
 } from "@/lib/geo/guelma";
 import {
   IRRIGATION_SYSTEM_LABELS,
@@ -43,6 +44,13 @@ import {
 } from "@/lib/i18n";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
+import {
+  formatAreaHa,
+  formatParcelCount,
+  formatVerticesCount,
+  localizeFarmName,
+  localizeFieldName,
+} from "@/lib/i18n/dynamicText";
 import type {
   AnalysisEnvelope,
   CropItem,
@@ -501,7 +509,7 @@ export function GuelmaFarmerDashboard({
         <div>
           <div className="text-[11px] font-medium text-[#4A5A4E] dark:text-[#9CA89E]">{dict.kpiArea}</div>
           <div className="mt-1 font-mono text-2xl font-semibold tracking-tight text-[#15803D] tabular-nums dark:text-[#86EFAC] sm:text-[26px]">
-            {totalHa.toFixed(1)} ha
+            {formatAreaHa(totalHa, lang)}
           </div>
           <div className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
             {fields.length === 0
@@ -568,13 +576,13 @@ export function GuelmaFarmerDashboard({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="font-heading text-base font-semibold leading-[1.15] text-[#111813] dark:text-[#F5F7F5]">
-                      {farm.farm_name}
+                      {localizeFarmName(farm.farm_name, lang)}
                     </h3>
                     <span className="text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-                      {farm.commune || farm.region}
+                      {localizeCommuneName(farm.commune || farm.region, lang)}
                     </span>
                     <span className="fs-liquid-well rounded-full px-3 py-1 font-mono text-[11px] font-medium text-[#15803D] tabular-nums dark:text-[#86EFAC]">
-                      {farmFields.length} {dict.fieldsSuffix} · {farmTotalHa.toFixed(1)} ha
+                      {formatParcelCount(farmFields.length, lang)} · {formatAreaHa(farmTotalHa, lang)}
                     </span>
                   </div>
 
@@ -683,9 +691,9 @@ export function GuelmaFarmerDashboard({
                             <div className="flex items-center gap-1.5">
                               <h4
                                 className="truncate text-sm font-semibold text-[#111813] dark:text-[#F5F7F5]"
-                                title={field.field_name}
+                                title={localizeFieldName(field.field_name, lang)}
                               >
-                                {field.field_name}
+                                {localizeFieldName(field.field_name, lang)}
                               </h4>
                               <span className="fs-liquid-well shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                                 {field.field_id}
@@ -696,8 +704,8 @@ export function GuelmaFarmerDashboard({
                                 <MapPin size={11} weight="fill" aria-hidden="true" />
                                 {communeObj.name[lang] || communeObj.name.en}
                               </span>
-                              <span dir="ltr" className="font-mono tabular-nums">
-                                {field.area_hectares.toFixed(2)} ha
+                              <span dir={lang === "ar" ? "auto" : "ltr"} className="font-mono tabular-nums">
+                                {formatAreaHa(field.area_hectares, lang, 2)}
                               </span>
                             </div>
                           </div>
@@ -983,11 +991,11 @@ export function GuelmaFarmerDashboard({
                             {dict.kpiArea}
                           </div>
                           <div
-                            dir="ltr"
+                            dir={lang === "ar" ? "auto" : "ltr"}
                             className="mt-0.5 w-fit font-mono text-xl font-semibold text-[#15803D] tabular-nums dark:text-[#86EFAC]"
                             data-testid="kpi-area"
                           >
-                            {totalHa.toFixed(1)} ha
+                            {formatAreaHa(totalHa, lang)}
                           </div>
                           <div className="mt-0.5 truncate text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                             {fields.length === 0
@@ -1023,7 +1031,7 @@ export function GuelmaFarmerDashboard({
                           </h2>
                           {activeField ? (
                             <span className="truncate font-mono text-[11px] text-[#15803D] dark:text-[#86EFAC]">
-                              {activeField.field_name}
+                              {localizeFieldName(activeField.field_name, lang)}
                             </span>
                           ) : null}
                         </div>
@@ -1089,13 +1097,13 @@ export function GuelmaFarmerDashboard({
                               </span>
                               <span dir="auto" className="truncate">
                                 {activeField
-                                  ? `${activeField.field_name}`
+                                  ? localizeFieldName(activeField.field_name, lang)
                                   : ws.telemetry.readyStateActivity}
                               </span>
                             </span>
-                            <span dir="ltr" className="shrink-0 font-mono text-[10px] text-[#4A5A4E] tabular-nums dark:text-[#9CA89E]">
+                            <span dir={lang === "ar" ? "auto" : "ltr"} className="shrink-0 font-mono text-[10px] text-[#4A5A4E] tabular-nums dark:text-[#9CA89E]">
                               {activeField
-                                ? `${activeField.area_hectares.toFixed(1)} ha`
+                                ? formatAreaHa(activeField.area_hectares, lang)
                                 : ws.telemetry.readyStateTime}
                             </span>
                           </li>
@@ -1107,9 +1115,9 @@ export function GuelmaFarmerDashboard({
                               </span>
                               <span className="truncate">{ws.telemetry.boundaryReadyTitle}</span>
                             </span>
-                            <span dir="ltr" className="shrink-0 font-mono text-[10px] text-[#4A5A4E] tabular-nums dark:text-[#9CA89E]">
+                            <span dir={lang === "ar" ? "auto" : "ltr"} className="shrink-0 font-mono text-[10px] text-[#4A5A4E] tabular-nums dark:text-[#9CA89E]">
                               {activeField
-                                ? `${activeRingCount} pts`
+                                ? formatVerticesCount(activeRingCount, lang)
                                 : ws.telemetry.boundaryReadyTime}
                             </span>
                           </li>

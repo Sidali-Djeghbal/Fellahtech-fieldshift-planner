@@ -13,6 +13,14 @@ import {
   SEASON_LABELS,
   UI_DICT,
 } from "@/lib/i18n";
+import {
+  formatSeasonMonthShort,
+  localizeEvidenceValue,
+  localizeFieldName,
+  localizeStrategyDescription,
+  localizeStrategyName,
+  localizeUnit,
+} from "@/lib/i18n/dynamicText";
 import type { AnalysisEnvelope, CropItem, FieldPlan, Language, Strategy } from "@/lib/schemas";
 
 // High-contrast light-mode @media print 1-page brief
@@ -45,14 +53,23 @@ export function PrintableBrief({
       className="print-only-brief rounded-xl border-2 border-[#00291B] bg-white p-6 text-[#111827]"
     >
       <header className="border-b-2 border-[#137135] pb-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <h1 className="text-xl font-extrabold text-[#00291B]">{br.docHeading}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/assets/logo.svg"
+              alt="FELLAH TECH"
+              width={36}
+              height={36}
+              className="h-9 w-9 shrink-0 rounded-full object-contain"
+            />
+            <h1 className="text-xl font-extrabold text-[#00291B]">{br.docHeading}</h1>
+          </div>
           <span dir="ltr" className="text-xs font-bold text-[#137135]">
             {envelope.analysis_id} · {envelope.dataset_version}
           </span>
         </div>
         <p className="mt-1 text-xs text-[#374151]">
-          {br.metaField} <strong>{fieldPlan.field_name}</strong>{" "}
+          {br.metaField} <strong>{localizeFieldName(fieldPlan.field_name, lang)}</strong>{" "}
           <span dir="ltr">({fieldPlan.field_id})</span> · {br.metaEngine}{" "}
           <span dir="ltr">{envelope.result.ml_engine_version}</span>
         </p>
@@ -60,10 +77,14 @@ export function PrintableBrief({
 
       <section className="mt-4">
         <h2 className="text-sm font-bold text-[#137135]">
-          {br.strategyPrefix} {strategy.name}
+          {br.strategyPrefix} {localizeStrategyName(strategy.strategy_id, strategy.name, lang)}
         </h2>
         <p className="mt-1 text-xs text-[#374151]">
-          {localizePlainText(strategy.description, lang, plainMode)}
+          {localizePlainText(
+            localizeStrategyDescription(strategy.strategy_id, strategy.description, lang),
+            lang,
+            plainMode
+          )}
         </p>
         <div className="mt-2 grid grid-cols-4 gap-2 text-xs">
           <div className="rounded border border-gray-200 bg-gray-50 p-2">
@@ -104,7 +125,9 @@ export function PrintableBrief({
                 <td className="py-1">{s.order}</td>
                 <td className="py-1">
                   {SEASON_LABELS[lang][s.season]} {s.year} (
-                  {s.planting_month ? months[s.planting_month - 1] ?? `M${s.planting_month}` : "—"})
+                  {s.planting_month
+                    ? months[s.planting_month - 1] ?? formatSeasonMonthShort(s.planting_month, lang)
+                    : "—"})
                 </td>
                 <td className="py-1 font-bold text-[#00291B]">
                   {resolveCropDisplayName(s.crop_id, s.crop_name, catalogMap, lang)}
@@ -141,7 +164,10 @@ export function PrintableBrief({
               const srcLabel = DATA_SOURCE_LABELS[lang][ev.data_source] ?? ev.data_source;
               return (
                 <li key={i}>
-                  [{srcLabel}] {pLabel}: <span dir="ltr">{String(ev.observed_value)} {ev.unit ?? ""}</span>
+                  [{srcLabel}] {pLabel}:{" "}
+                  <span dir={lang === "ar" ? "auto" : "ltr"}>
+                    {localizeEvidenceValue(ev.observed_value, lang)} {localizeUnit(ev.unit, lang)}
+                  </span>
                 </li>
               );
             })}
@@ -150,7 +176,7 @@ export function PrintableBrief({
       </section>
 
       <footer className="mt-4 border-t border-gray-300 pt-2 text-[10px] text-[#6B7280]">
-        <strong>{br.disclaimerPrefix}</strong> {envelope.result.disclaimer}
+        <strong>{br.disclaimerPrefix}</strong> {localizePlainText(envelope.result.disclaimer, lang, plainMode)}
       </footer>
     </article>
   );

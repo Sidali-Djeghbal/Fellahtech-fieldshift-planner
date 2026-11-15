@@ -6,6 +6,10 @@ import {
   computePolygonCentroid,
   findNearestGuelmaCommune,
   GUELMA_COMMUNES,
+  GUELMA_DEMO_PARCEL_AREA_HA,
+  GUELMA_DEMO_PARCEL_BOUNDARY,
+  GUELMA_DEMO_PARCEL_CENTER,
+  GUELMA_DEMO_PARCEL_RING,
   GUELMA_FALLBACK_BOUNDARY,
   GUELMA_PARCEL_PRESETS,
   isInsideGuelmaBoundary,
@@ -94,6 +98,23 @@ describe("Wilaya of Guelma geography & CAD boundary helpers", () => {
       [7.46, 36.475],
     ];
     expect(ringSegmentsSelfIntersect(bowtie)).toBe(true);
+  });
+
+  it("defines a non-self-intersecting real cultivated GeoJSON polygon for unstudied demo parcel F1 inside Guelma", () => {
+    const pts = stripClosingPoint(GUELMA_DEMO_PARCEL_RING);
+    expect(pts.length).toBeGreaterThanOrEqual(5);
+    expect(ringSegmentsSelfIntersect(pts)).toBe(false);
+    expect(GUELMA_DEMO_PARCEL_BOUNDARY).toMatchObject({ type: "Polygon" });
+    expect(GUELMA_DEMO_PARCEL_AREA_HA).toBe(computePolygonAreaHectares(pts));
+    expect(GUELMA_DEMO_PARCEL_AREA_HA).toBeGreaterThan(5);
+    expect(
+      isInsideGuelmaBoundary(
+        GUELMA_DEMO_PARCEL_CENTER.latitude,
+        GUELMA_DEMO_PARCEL_CENTER.longitude,
+        GUELMA_FALLBACK_BOUNDARY,
+        pts
+      )
+    ).toBe(true);
   });
 });
 

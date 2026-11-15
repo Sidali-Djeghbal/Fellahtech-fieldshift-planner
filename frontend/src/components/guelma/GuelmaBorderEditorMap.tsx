@@ -31,6 +31,7 @@ import {
   GUELMA_PARCEL_PRESETS,
   haversineMeters,
   isInsideGuelmaBoundary,
+  localizeCommuneName,
   ringSegmentsSelfIntersect,
   ringToGeoJsonPolygon,
   stripClosingPoint,
@@ -41,6 +42,7 @@ import { dateStrFor, gibsUrl, measureCoordFromDem } from "@/lib/prototype/engine
 import { useResolvedTheme } from "@/app/providers";
 import { canUseWebgl } from "@/lib/geo/webgl";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
+import { formatAreaHa, formatMeters, formatVerticesCount } from "@/lib/i18n/dynamicText";
 import type { Language } from "@/lib/schemas";
 
 export interface BorderDraftResult {
@@ -562,7 +564,7 @@ export function GuelmaBorderEditorMap({
             "text-field": ["get", "label"],
             "text-size": 11,
             "text-allow-overlap": true,
-            "text-offset": [0, -0.7],
+            "text-offset": [0, -1.45],
           },
           paint: {
             "text-color": "#ECFDF5",
@@ -724,7 +726,23 @@ export function GuelmaBorderEditorMap({
       btn.type = "button";
       const isFirstSnap = !isClosed && idx === 0 && snapToFirst;
       const isSelected = idx === selectedIdx;
-      btn.title = isClosed ? `Corner ${idx + 1}` : idx === 0 ? "First corner (click to close)" : `Corner ${idx + 1}`;
+      btn.title = isClosed
+        ? lang === "ar"
+          ? `الزاوية ${idx + 1}`
+          : lang === "fr"
+          ? `Sommet ${idx + 1}`
+          : `Corner ${idx + 1}`
+        : idx === 0
+        ? lang === "ar"
+          ? "النقطة الأولى (انقر لإغلاق الحدود)"
+          : lang === "fr"
+          ? "Premier sommet (cliquer pour fermer)"
+          : "First corner (click to close)"
+        : lang === "ar"
+        ? `الزاوية ${idx + 1}`
+        : lang === "fr"
+        ? `Sommet ${idx + 1}`
+        : `Corner ${idx + 1}`;
       btn.style.cssText = `
         width: ${isFirstSnap ? "22px" : "20px"};
         height: ${isFirstSnap ? "22px" : "20px"};
@@ -793,7 +811,13 @@ export function GuelmaBorderEditorMap({
       midpoints.forEach((mp) => {
         const el = document.createElement("button");
         el.type = "button";
-        el.title = `Insert vertex on ${Math.round(mp.lengthMeters)} m edge`;
+        const edgeLen = formatMeters(mp.lengthMeters, lang);
+        el.title =
+          lang === "ar"
+            ? `إضافة نقطة على الضلع (${edgeLen})`
+            : lang === "fr"
+            ? `Ajouter un sommet sur l'arête de ${edgeLen}`
+            : `Insert vertex on ${edgeLen} edge`;
         el.textContent = "+";
         el.style.cssText = `
           width: 16px;
@@ -825,7 +849,7 @@ export function GuelmaBorderEditorMap({
         midpointMarkersRef.current.push(m);
       });
     }
-  }, [vertices, isClosed, selectedIdx, snapToFirst, webglFailed, pushSnapshot, handleDeleteVertex, syncMapGeoJson]);
+  }, [vertices, isClosed, selectedIdx, snapToFirst, webglFailed, lang, pushSnapshot, handleDeleteVertex, syncMapGeoJson]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1277,7 +1301,7 @@ export function GuelmaBorderEditorMap({
         {/* Quick Guelma Sample Borders Toolbar (Top-Left Overlay) */}
         <div className="pointer-events-none absolute start-3 top-3 z-20 flex flex-col gap-2">
           <div className="lg-surface lg-specular pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl p-2.5 shadow-xl">
-            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--lg-warn)]">
+            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--lg-accent)]">
               {t.quickPresetLabel}:
             </span>
             {GUELMA_PARCEL_PRESETS.slice(0, 5).map((p) => (
@@ -1288,13 +1312,13 @@ export function GuelmaBorderEditorMap({
                 data-testid={`quick-border-${p.id}`}
                 className="lg-capsule min-h-8 rounded-full px-3 py-1 text-[11px] font-medium text-[var(--lg-fg)] transition-[transform,background-color] active:scale-[0.96]"
               >
-                {p.commune} · {p.areaHectares} ha
+                {localizeCommuneName(p.commune, lang)} · {formatAreaHa(p.areaHectares, lang)}
               </button>
             ))}
           </div>
 
           <div className="lg-capsule pointer-events-auto flex max-w-sm flex-wrap items-center gap-2 rounded-xl px-4 py-2 text-[11px] text-[var(--lg-fg)]">
-            <Crosshair size={15} className="shrink-0 text-[var(--lg-warn)]" aria-hidden="true" />
+            <Crosshair size={15} className="shrink-0 text-[var(--lg-accent)]" aria-hidden="true" />
             <span>
               {isClosed
                 ? t.hintAdjustVertices
@@ -1332,20 +1356,25 @@ export function GuelmaBorderEditorMap({
           <div className="mt-2.5 grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
             <div className="lg-tile rounded-xl px-2.5 py-2">
               <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.areaLbl}</div>
-              <div className="mt-0.5 text-sm font-bold text-[var(--lg-warn)]" data-testid="cad-area-value">
-                {areaHectares > 0 ? `${areaHectares.toFixed(2)} ha` : "0.00 ha"}
+              <div
+                className={`mt-0.5 text-sm font-bold ${
+                  areaHectares > 0 ? "text-[var(--lg-accent)]" : "text-[var(--lg-fg-muted)]"
+                }`}
+                data-testid="cad-area-value"
+              >
+                {formatAreaHa(areaHectares, lang, 2)}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
               <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.perimLbl}</div>
               <div className="mt-0.5 text-sm font-bold text-[var(--lg-fg)]" data-testid="cad-perim-value">
-                {perimeterMeters} m
+                {formatMeters(perimeterMeters, lang)}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
               <div className="font-sans text-[10px] text-[var(--lg-fg-subtle)]">{t.verticesLbl}</div>
               <div className="mt-0.5 text-xs font-bold text-[var(--lg-fg)]" data-testid="cad-vertices-count">
-                {vertices.length} {isClosed ? dict.closedTag : ""}
+                {formatVerticesCount(vertices.length, lang)} {isClosed ? dict.closedTag : ""}
               </div>
             </div>
             <div className="lg-tile rounded-xl px-2.5 py-2">
@@ -1359,7 +1388,7 @@ export function GuelmaBorderEditorMap({
           {/* Non-binding DEM Reference & Centroid */}
           <div className="lg-tile mt-2 flex items-center justify-between rounded-xl px-2.5 py-1.5 text-[10px] text-[var(--lg-fg-muted)]">
             <span className="inline-flex items-center gap-1 font-mono tabular-nums" dir="ltr">
-              <MapPin size={12} className="text-[var(--lg-warn)]" aria-hidden="true" />
+              <MapPin size={12} className="text-[var(--lg-accent)]" aria-hidden="true" />
               {centroid
                 ? `${centroid.latitude.toFixed(4)}° N, ${centroid.longitude.toFixed(4)}° E`
                 : `${svgCenter[1].toFixed(4)}° N, ${svgCenter[0].toFixed(4)}° E`}

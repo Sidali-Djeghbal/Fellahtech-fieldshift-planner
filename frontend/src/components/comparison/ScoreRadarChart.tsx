@@ -2,6 +2,7 @@
 
 import React from "react";
 import { SCORE_LABELS, UI_DICT } from "@/lib/i18n";
+import { localizeStrategyName } from "@/lib/i18n/dynamicText";
 import type { Language, Strategy } from "@/lib/schemas";
 
 const AXES: Array<
@@ -144,7 +145,7 @@ export function ScoreRadarChart({
                 isDark ? "border-[#F59E0B]" : "border-gray-400"
               }`}
             />
-            {baseline.name}
+            {localizeStrategyName(baseline.strategy_id, baseline.name, lang)}
           </span>
         )}
         {focused && (
@@ -158,7 +159,7 @@ export function ScoreRadarChart({
                 isDark ? "bg-[#22C55E]" : "bg-[#137135]"
               }`}
             />
-            {focused.name}
+            {localizeStrategyName(focused.strategy_id, focused.name, lang)}
           </span>
         )}
       </div>

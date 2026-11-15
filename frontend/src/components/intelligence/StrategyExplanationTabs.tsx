@@ -15,6 +15,11 @@ import {
 } from "@phosphor-icons/react";
 import { SEVERITY_STYLE_MAP } from "@/lib/analysis/workspaceAnalysis";
 import { EVIDENCE_PARAM_LABELS, localizePlainText, UI_DICT } from "@/lib/i18n";
+import {
+  localizeEvidenceValue,
+  localizePeriod,
+  localizeUnit,
+} from "@/lib/i18n/dynamicText";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { EvidenceParameter, Explanation, Language } from "@/lib/schemas";
 
@@ -236,11 +241,11 @@ export function StrategyExplanationTabs({
                         <td className="px-3.5 py-2.5">
                           {ev.observed_value !== undefined && ev.observed_value !== null ? (
                             <span
-                              dir="ltr"
+                              dir={lang === "ar" ? "auto" : "ltr"}
                               className="tabular-nums font-mono font-semibold text-[#15803D] dark:text-[#86EFAC]"
                             >
-                              {String(ev.observed_value)}
-                              {ev.unit ? ` ${ev.unit}` : ""}
+                              {localizeEvidenceValue(ev.observed_value, lang)}
+                              {ev.unit ? ` ${localizeUnit(ev.unit, lang)}` : ""}
                             </span>
                           ) : (
                             <span className="text-[#4A5A4E] dark:text-[#9CA89E]">—</span>
@@ -252,7 +257,7 @@ export function StrategyExplanationTabs({
                               {ev.source_mission}
                             </code>
                           ) : null}
-                          {ev.period ? <span>{ev.period}</span> : null}
+                          {ev.period ? <span>{localizePeriod(ev.period, lang)}</span> : null}
                         </td>
                         <td className="px-3.5 py-2.5 leading-relaxed text-[#243227] dark:text-[#E4EBE5]">
                           {localizePlainText(ev.interpretation, lang, plainMode)}
@@ -282,7 +287,9 @@ export function StrategyExplanationTabs({
                     className="rounded-xl bg-white/75 p-4 text-xs ring-1 ring-[#15803D]/20 dark:bg-white/[0.05] dark:ring-[#4ADE80]/20"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h5 className="font-semibold text-[#111813] dark:text-[#F5F7F5]">{b.title}</h5>
+                      <h5 className="font-semibold text-[#111813] dark:text-[#F5F7F5]">
+                        {localizePlainText(b.title, lang, plainMode)}
+                      </h5>
                       {metric ? (
                         <span
                           dir="ltr"
@@ -317,7 +324,7 @@ export function StrategyExplanationTabs({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h5 className="flex items-center gap-1.5 font-semibold text-[#111813] dark:text-[#F5F7F5]">
                         <WarningOctagon size={15} weight="fill" className="shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
-                        <span>{r.title}</span>
+                        <span>{localizePlainText(r.title, lang, plainMode)}</span>
                       </h5>
                       <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold">
                         <span className={`rounded-full px-2.5 py-0.5 ${st.pillClass}`}>

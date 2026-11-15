@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { CalendarCheck, Leaf, NotePencil } from "@phosphor-icons/react";
 import { CATEGORY_STYLE_MAP, resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
-import { CROP_ROLE_LABELS, MONTH_SHORT, SEASON_LABELS } from "@/lib/i18n";
+import { CROP_ROLE_LABELS, localizePlainText, MONTH_SHORT, SEASON_LABELS } from "@/lib/i18n";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { CropItem, Language, SeasonPlan } from "@/lib/schemas";
 
@@ -157,7 +157,7 @@ export function CropRotationTimeline({
           <div>
             <span className="font-semibold">{t.notesLabel}: </span>
             <span className="text-[#4A5A4E] dark:text-[#9CA89E]">
-              {activeSeason.notes ? activeSeason.notes : t.noNotes}
+              {activeSeason.notes ? localizePlainText(activeSeason.notes, lang, false) : t.noNotes}
             </span>
           </div>
         </div>

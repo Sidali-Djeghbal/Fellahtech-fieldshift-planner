@@ -41,6 +41,7 @@ import type {
   ProtoState,
   StratId,
 } from "@/lib/prototype/types";
+import { useResolvedTheme } from "@/app/providers";
 import { useAppStore } from "@/store/useAppStore";
 import { BootSplash } from "./BootSplash";
 import { FieldInspectorWindow } from "./FieldInspectorWindow";
@@ -89,6 +90,7 @@ export function FieldShiftPrototypeApp({
   onEditBorders,
 }: FieldShiftPrototypeAppProps = {}) {
   const setStoreLang = useAppStore((s) => s.setLang);
+  const resolvedTheme = useResolvedTheme();
 
   const presets = useMemo(
     () => (externalPresets && externalPresets.length > 0 ? externalPresets : INITIAL_PRESETS),
@@ -1159,7 +1161,11 @@ export function FieldShiftPrototypeApp({
     .join(" ");
 
   return (
-    <div className={rootClassName} data-testid="fieldshift-prototype-root">
+    <div
+      className={rootClassName}
+      data-theme={resolvedTheme}
+      data-testid="fieldshift-prototype-root"
+    >
       <div ref={mapContainerRef} id="map" className="fs-map" />
       <div className="vignette" />
 

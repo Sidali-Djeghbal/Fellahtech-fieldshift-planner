@@ -12,6 +12,12 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
+import { localizePlainText } from "@/lib/i18n";
+import {
+  localizeDynamicPhrase,
+  localizeMissingField,
+  localizeStrategyName,
+} from "@/lib/i18n/dynamicText";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type {
   CropItem,
@@ -27,6 +33,7 @@ interface RequestedCropsAndQualitySectionProps {
   fieldPlan: FieldPlan;
   catalogMap: Map<string, CropItem>;
   lang: Language;
+  plainMode?: boolean;
 }
 
 export function RequestedCropsAndQualitySection({
@@ -35,6 +42,7 @@ export function RequestedCropsAndQualitySection({
   fieldPlan,
   catalogMap,
   lang,
+  plainMode = false,
 }: RequestedCropsAndQualitySectionProps) {
   const dict = INTELLIGENCE_I18N[lang];
   const rc = dict.requestedCrops;
@@ -94,9 +102,11 @@ export function RequestedCropsAndQualitySection({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <h4 className="text-sm font-semibold text-[#111813] dark:text-[#F5F7F5]">{cropName}</h4>
-                        <code dir="ltr" className="font-mono text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
-                          {item.requested_crop_id}
-                        </code>
+                        {lang === "en" ? (
+                          <code dir="ltr" className="font-mono text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
+                            {item.requested_crop_id}
+                          </code>
+                        ) : null}
                       </div>
 
                       <span
@@ -122,7 +132,9 @@ export function RequestedCropsAndQualitySection({
                       </p>
                     ) : null}
 
-                    <p className="mt-2.5 leading-relaxed text-[#243227] dark:text-[#E4EBE5]">{item.explanation}</p>
+                    <p className="mt-2.5 leading-relaxed text-[#243227] dark:text-[#E4EBE5]">
+                      {localizePlainText(item.explanation, lang, plainMode)}
+                    </p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-[#111813]/10 pt-2.5 text-[10px] dark:border-white/10">
                       <span className="font-medium text-[#4A5A4E] dark:text-[#9CA89E]">{rc.includedIn}:</span>
@@ -132,10 +144,10 @@ export function RequestedCropsAndQualitySection({
                         item.included_in_strategy_ids.map((sid) => (
                           <span
                             key={sid}
-                            dir="ltr"
-                            className="rounded-full bg-emerald-100 px-2 py-0.5 font-mono font-medium text-emerald-800 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]"
+                            dir={lang === "ar" ? "auto" : "ltr"}
+                            className="rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]"
                           >
-                            {sid}
+                            {localizeStrategyName(sid, sid, lang)}
                           </span>
                         ))
                       )}
@@ -177,12 +189,14 @@ export function RequestedCropsAndQualitySection({
             title={dq.farmTitle}
             quality={farmDataQuality}
             lang={lang}
+            plainMode={plainMode}
           />
           <QualityColumn
             testId="data-quality-field"
             title={`${dq.fieldTitle} (${fieldPlan.field_id})`}
             quality={fieldPlan.data_quality}
             lang={lang}
+            plainMode={plainMode}
           />
         </div>
       </section>
@@ -195,11 +209,13 @@ function QualityColumn({
   title,
   quality,
   lang,
+  plainMode = false,
 }: {
   testId: string;
   title: string;
   quality: DataQuality;
   lang: Language;
+  plainMode?: boolean;
 }) {
   const dq = INTELLIGENCE_I18N[lang].quality;
   const pct =
@@ -240,7 +256,7 @@ function QualityColumn({
 
         {quality.confidence_note ? (
           <p className="mt-3 rounded-xl bg-[#111813]/[0.04] px-3.5 py-2.5 text-[11px] leading-relaxed text-[#243227] dark:bg-white/[0.05] dark:text-[#E4EBE5]">
-            {quality.confidence_note}
+            {localizeDynamicPhrase(quality.confidence_note, lang)}
           </p>
         ) : null}
 
@@ -259,10 +275,10 @@ function QualityColumn({
               {quality.missing_data.map((m, i) => (
                 <li
                   key={i}
-                  dir="ltr"
-                  className="rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-[10px] font-medium text-amber-800 dark:bg-[#F59E0B]/15 dark:text-[#FCD34D]"
+                  dir={lang === "ar" ? "auto" : "ltr"}
+                  className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-[#F59E0B]/15 dark:text-[#FCD34D]"
                 >
-                  {m}
+                  {localizeMissingField(m, lang, plainMode)}
                 </li>
               ))}
             </ul>
@@ -279,7 +295,7 @@ function QualityColumn({
           ) : (
             <ul className="mt-1 list-disc space-y-1 ps-4 text-[11px] text-amber-900 dark:text-[#FDE68A]">
               {quality.warnings.map((w, i) => (
-                <li key={i}>{w}</li>
+                <li key={i}>{localizeDynamicPhrase(w, lang)}</li>
               ))}
             </ul>
           )}
@@ -294,7 +310,7 @@ function QualityColumn({
           ) : (
             <ul className="mt-1 list-disc space-y-1 ps-4 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
               {quality.limitations.map((lim, i) => (
-                <li key={i}>{lim}</li>
+                <li key={i}>{localizeDynamicPhrase(lim, lang)}</li>
               ))}
             </ul>
           )}

@@ -24,6 +24,7 @@ import {
 import { useResolvedTheme } from "@/app/providers";
 import { canUseWebgl } from "@/lib/geo/webgl";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
+import { formatAreaHa, localizeFieldName } from "@/lib/i18n/dynamicText";
 import type { FieldDetailPublic } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -299,8 +300,8 @@ export function GuelmaOverviewMap({
           fieldKey: key,
           farmId: f.farm_id,
           fieldId: f.field_id,
-          fieldName: f.field_name,
-          area: `${f.area_hectares.toFixed(1)} ha`,
+          fieldName: localizeFieldName(f.field_name, lang),
+          area: formatAreaHa(f.area_hectares, lang),
           selected: key === selectedFieldKey ? 1 : 0,
         },
         geometry: {
@@ -310,7 +311,7 @@ export function GuelmaOverviewMap({
       };
     });
     return { type: "FeatureCollection" as const, features };
-  }, [fields, selectedFieldKey]);
+  }, [fields, selectedFieldKey, lang]);
 
   const pointsGeoJson = useMemo(() => {
     return {
@@ -323,8 +324,8 @@ export function GuelmaOverviewMap({
             fieldKey: key,
             farmId: f.farm_id,
             fieldId: f.field_id,
-            fieldName: f.field_name,
-            area: `${f.area_hectares.toFixed(1)} ha`,
+            fieldName: localizeFieldName(f.field_name, lang),
+            area: formatAreaHa(f.area_hectares, lang),
             selected: key === selectedFieldKey ? 1 : 0,
           },
           geometry: {
@@ -334,7 +335,7 @@ export function GuelmaOverviewMap({
         };
       }),
     };
-  }, [fields, selectedFieldKey]);
+  }, [fields, selectedFieldKey, lang]);
 
   const fieldsGeoJsonRef = useRef(fieldsGeoJson);
   fieldsGeoJsonRef.current = fieldsGeoJson;
@@ -485,7 +486,7 @@ export function GuelmaOverviewMap({
           dotEl.className = "lg-pin-dot";
           const lblEl = document.createElement("span");
           lblEl.className = "lg-pin-lbl";
-          lblEl.textContent = `${latestSelected.field_name} · ${latestSelected.area_hectares.toFixed(1)} ha`;
+          lblEl.textContent = `${localizeFieldName(latestSelected.field_name, lang)} · ${formatAreaHa(latestSelected.area_hectares, lang)}`;
           pinLabelRef.current = lblEl;
           pinEl.append(dotEl, lblEl);
 
@@ -551,7 +552,7 @@ export function GuelmaOverviewMap({
           selectedField.location.latitude,
         ]);
         if (pinLabelRef.current) {
-          pinLabelRef.current.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+          pinLabelRef.current.textContent = `${localizeFieldName(selectedField.field_name, lang)} · ${formatAreaHa(selectedField.area_hectares, lang)}`;
         }
       } else {
         const pinEl = document.createElement("div");
@@ -560,7 +561,7 @@ export function GuelmaOverviewMap({
         dotEl.className = "lg-pin-dot";
         const lblEl = document.createElement("span");
         lblEl.className = "lg-pin-lbl";
-        lblEl.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+        lblEl.textContent = `${localizeFieldName(selectedField.field_name, lang)} · ${formatAreaHa(selectedField.area_hectares, lang)}`;
         pinLabelRef.current = lblEl;
         pinEl.append(dotEl, lblEl);
 
@@ -578,7 +579,7 @@ export function GuelmaOverviewMap({
 
     fitCurrentView(true);
     updateCalloutPin();
-  }, [fields, fieldsGeoJson, pointsGeoJson, selectedField, fitCurrentView, updateCalloutPin]);
+  }, [fields, fieldsGeoJson, pointsGeoJson, selectedField, lang, fitCurrentView, updateCalloutPin]);
 
   useEffect(() => {
     fitCurrentView(true);
@@ -601,7 +602,7 @@ export function GuelmaOverviewMap({
   }, []);
 
   const activePillLabel = selectedField
-    ? `${selectedField.field_name}`
+    ? `${localizeFieldName(selectedField.field_name, lang)}`
     : hudLabels?.communesChip ?? defaultHud.communesChip;
 
   return (

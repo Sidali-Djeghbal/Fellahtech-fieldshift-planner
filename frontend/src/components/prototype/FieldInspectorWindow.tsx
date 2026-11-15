@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { SOIL_TYPE_LABELS } from "@/lib/i18n";
+import { localizeCommuneName } from "@/lib/geo/guelma";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
 import { CLIMATES, MONTHS, SOILS } from "@/lib/prototype/data";
 import { ringAreaHa } from "@/lib/prototype/engine";
@@ -97,7 +98,7 @@ export function FieldInspectorWindow({
             ? SOIL_TYPE_LABELS[lang]?.[rawPreset.soilType as keyof (typeof SOIL_TYPE_LABELS)["en"]]
             : undefined) ?? SOIL_TYPE_LABELS[lang].loamy,
         omTrend: rawPreset.commune
-          ? `${rawPreset.commune} · ${GUELMA_WORKSPACE_I18N[lang].soilFarmerKnown}`
+          ? `${localizeCommuneName(rawPreset.commune, lang)} · ${GUELMA_WORKSPACE_I18N[lang].soilFarmerKnown}`
           : GUELMA_WORKSPACE_I18N[lang].soilFarmerKnown,
       }
     : loc.soils[rawPreset.id] || {

@@ -26,6 +26,9 @@ import {
   replaceField,
 } from "@/lib/api/endpoints";
 import {
+  GUELMA_DEMO_PARCEL_AREA_HA,
+  GUELMA_DEMO_PARCEL_CENTER,
+  GUELMA_DEMO_PARCEL_RING,
   GUELMA_FALLBACK_BOUNDARY,
   GUELMA_PARCEL_PRESETS,
   SETIF_OUTSIDE_TEST_COORD,
@@ -36,6 +39,7 @@ import {
 } from "@/lib/geo/guelma";
 import { UI_DICT } from "@/lib/i18n";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
+import { formatAreaHa, localizeFarmName } from "@/lib/i18n/dynamicText";
 import type { FieldWriteDraft } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -83,12 +87,12 @@ export default function SelectFieldPage() {
 
   const [newFarmName, setNewFarmName] = useState("");
   const [drawMode, setDrawMode] = useState(false);
-  const [parcelRing, setParcelRing] = useState<[number, number][]>([]);
+  const [parcelRing, setParcelRing] = useState<[number, number][]>(() => GUELMA_DEMO_PARCEL_RING);
   const [fieldId, setFieldId] = useState("F1");
   const [fieldName, setFieldName] = useState("Guelma Team Demo Parcel (Unstudied)");
-  const [latitude, setLatitude] = useState(36.52);
-  const [longitude, setLongitude] = useState(7.52);
-  const [areaHectares, setAreaHectares] = useState(12.5);
+  const [latitude, setLatitude] = useState(GUELMA_DEMO_PARCEL_CENTER.latitude);
+  const [longitude, setLongitude] = useState(GUELMA_DEMO_PARCEL_CENTER.longitude);
+  const [areaHectares, setAreaHectares] = useState(GUELMA_DEMO_PARCEL_AREA_HA);
   const [elevationInput, setElevationInput] = useState<string>("");
   const [isUnverifiedDemo, setIsUnverifiedDemo] = useState(true);
   const [editingExisting, setEditingExisting] = useState(true);
@@ -387,7 +391,7 @@ export default function SelectFieldPage() {
                     {preset.zoneName[lang]}
                   </span>
                   <span className="mt-1 font-mono text-[11px] font-medium tabular-nums text-[#15803D] dark:text-[#86EFAC]">
-                    {preset.areaHectares} ha · {preset.ring.length - 1} {t.verticesUnit}
+                    {formatAreaHa(preset.areaHectares, lang)} · {preset.ring.length - 1} {t.verticesUnit}
                   </span>
                 </button>
               ))}
@@ -417,7 +421,7 @@ export default function SelectFieldPage() {
                       : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
-                  {farm.farm_name} ({farm.field_count})
+                  {localizeFarmName(farm.farm_name, lang)} ({farm.field_count})
                 </button>
               ))}
             </div>

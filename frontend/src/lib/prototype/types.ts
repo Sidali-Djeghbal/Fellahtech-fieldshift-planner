@@ -68,6 +68,22 @@ export interface PresetCoord {
   lat: number;
 }
 
+export interface PresetFarmMeta {
+  farmName: string;
+  fieldId: string;
+  fieldName: string;
+  commune: string;
+  soilType: string;
+  irrigationSystem: string;
+  waterAvailability: string;
+  waterSource: string;
+  areaHa: number;
+  latestCropId?: string | null;
+  latestCropRaw?: string | null;
+  latestCropSeason?: string | null;
+  latestCropYear?: number | null;
+}
+
 export interface Preset {
   id: PresetId;
   short: string;
@@ -86,6 +102,7 @@ export interface Preset {
   soilPh?: string | null;
   soilOm?: string | null;
   areaHa?: number | null;
+  farmMeta?: PresetFarmMeta;
   ring: [number, number][];
   center: PresetCoord;
   liveSlope: number;

@@ -3,6 +3,7 @@ import {
   extractRingFromBoundary,
   findNearestGuelmaCommune,
 } from "@/lib/geo/guelma";
+import { buildLocalizedFarmPresetFields } from "@/lib/i18n/dynamicText";
 import type { FarmPublic, FieldDetailPublic } from "@/lib/schemas";
 import {
   CLIMATES,
@@ -316,15 +317,30 @@ export function fieldToPreset(
   const clim = CLIMATES[communeObj.climateZone];
   const elev = field.elevation_m ?? clim.powerElev;
   const latestCrop = field.crop_history[0];
-  const soilLabel =
-    field.soil.soil_type === "unknown" ? "Unknown soil" : `${field.soil.soil_type} soil`;
+  const commune = farm.commune ?? communeObj.name.en;
+  const farmMeta = {
+    farmName: farm.farm_name,
+    fieldId: field.field_id,
+    fieldName: field.field_name,
+    commune,
+    soilType: field.soil.soil_type,
+    irrigationSystem: field.water.irrigation_system,
+    waterAvailability: field.water.availability,
+    waterSource: field.water.source,
+    areaHa: field.area_hectares,
+    latestCropId: latestCrop?.crop_id ?? null,
+    latestCropRaw: latestCrop?.crop_name_raw ?? null,
+    latestCropSeason: latestCrop?.season ?? null,
+    latestCropYear: latestCrop?.year ?? null,
+  };
+  const localized = buildLocalizedFarmPresetFields(farmMeta, "en");
 
   return {
     id: `${farm.farm_id}::${field.field_id}`,
-    short: `${field.field_name.slice(0, 18)} (${field.field_id})`,
-    name: `${field.field_name} · ${farm.commune ?? communeObj.name.en}`,
-    zone: `${farm.farm_name} · ${soilLabel} · ${field.water.irrigation_system}`,
-    commune: farm.commune ?? communeObj.name.en,
+    short: localized.short,
+    name: localized.name,
+    zone: localized.zone,
+    commune,
     soilType: field.soil.soil_type,
     soilPh: field.soil.soil_ph !== null ? String(field.soil.soil_ph) : null,
     soilOm:
@@ -332,6 +348,7 @@ export function fieldToPreset(
         ? String(field.soil.organic_matter_percent)
         : null,
     areaHa: field.area_hectares,
+    farmMeta,
     climate: communeObj.climateZone,
     elev,
     slope: 4.5,
@@ -339,11 +356,7 @@ export function fieldToPreset(
     focusZoom: 16.2,
     pitch: 42,
     bearing: -12,
-    note: `${farm.farm_name} (${farm.commune ?? communeObj.name.en}, Guelma). Area ${field.area_hectares} ha, water availability: ${field.water.availability} (${field.water.source}).${
-      latestCrop
-        ? ` Latest recorded crop: ${latestCrop.crop_name_raw ?? latestCrop.crop_id} (${latestCrop.season} ${latestCrop.year}).`
-        : ""
-    }`,
+    note: localized.note,
     ring,
     center: { lon, lat },
     liveSlope: 4.5,

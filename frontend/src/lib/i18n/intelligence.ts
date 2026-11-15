@@ -473,7 +473,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     },
     section: {
       badge: "ML Intelligence Engine",
-      title: "FieldShift AI Agricultural Intelligence",
+      title: "FELLAH TECH AI Agricultural Intelligence",
       subtitle:
         "Satellite vegetation curves, seasonal hydrological balance, and explainable crop-rotation decisions grounded in Wilaya of Guelma agronomic records.",
       plainModeToggle: "Farmer Plain Mode",
@@ -512,7 +512,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     runner: {
       modalTitle: "Configure AI Crop-Rotation Analysis",
       modalSubtitle:
-        "Submits an asynchronous planning job via FieldShift API with your exact parcel geometry, soil/water declaration, and weighted agronomic priorities.",
+        "Submits an asynchronous planning job via FELLAH TECH API with your exact parcel geometry, soil/water declaration, and weighted agronomic priorities.",
       fieldsTitle: "1. Target Parcels Included in Analysis",
       planningTitle: "2. Planning Window & Crop Cycle",
       startSeason: "Starting Season",
@@ -826,7 +826,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     },
     section: {
       badge: "Moteur d'Intelligence ML",
-      title: "Intelligence Agronomique IA FieldShift",
+      title: "Intelligence Agronomique IA FELLAH TECH",
       subtitle:
         "Courbes satellitaires, bilan hydrique saisonnier et rotations explicables ancrées sur la Wilaya de Guelma.",
       plainModeToggle: "Mode Simplifié",
@@ -865,7 +865,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     runner: {
       modalTitle: "Configurer l'analyse IA de rotation",
       modalSubtitle:
-        "Soumet une tâche asynchrone via l'API FieldShift avec géométrie réelle, profil eau/sol et pondération des priorités.",
+        "Soumet une tâche asynchrone via l'API FELLAH TECH avec géométrie réelle, profil eau/sol et pondération des priorités.",
       fieldsTitle: "1. Parcelles cibles incluses",
       planningTitle: "2. Fenêtre de planification & cycle",
       startSeason: "Saison de départ",
@@ -1179,7 +1179,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     },
     section: {
       badge: "محرك الذكاء الزراعي",
-      title: "ذكاء FieldShift الزراعي لتحليل الدورات",
+      title: "ذكاء FELLAH TECH الزراعي لتحليل الدورات",
       subtitle:
         "مؤشرات الأقمار الصناعية، التوازن المائي الفصلي، وتوصيات تناوب زراعي مبررة علمياً لولاية قالمة.",
       plainModeToggle: "وضع الفلاح المبسط",
@@ -1218,7 +1218,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
     runner: {
       modalTitle: "إعداد تشغيل تحليل التناوب الزراعي الذكي",
       modalSubtitle:
-        "يرسل طلب تحليل غير متزامن عبر واجهة FieldShift باستخدام حدود قطعتك ومعطيات التربة والمياه وأوزان الأولويات.",
+        "يرسل طلب تحليل غير متزامن عبر واجهة FELLAH TECH باستخدام حدود قطعتك ومعطيات التربة والمياه وأوزان الأولويات.",
       fieldsTitle: "١. القطع المشمولة في التحليل",
       planningTitle: "٢. نافذة التخطيط ونمط الدورة",
       startSeason: "فصل البداية",

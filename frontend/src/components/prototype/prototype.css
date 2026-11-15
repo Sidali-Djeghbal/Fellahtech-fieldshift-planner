@@ -219,21 +219,24 @@
 }
 
 .fs-proto-root .boot-emblem {
-  width: 40px;
-  height: 40px;
+  width: 52px;
+  height: 52px;
   margin: 0 auto 14px;
-  border-radius: 12px;
+  border-radius: 999px;
+  padding: 2px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
 
+.fs-proto-root .boot-emblem img,
 .fs-proto-root .boot-emblem svg {
-  width: 19px;
-  height: 19px;
-  color: var(--gold);
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: contain;
 }
 
 .fs-proto-root .boot-mark {
@@ -321,18 +324,20 @@
   right: 16px;
   z-index: 20;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   pointer-events: none;
 }
 
 .fs-proto-root .topbar-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   pointer-events: auto;
-  min-width: 0;
+  max-width: 100%;
 }
 
 .fs-proto-root .brand-dock {
@@ -357,15 +362,19 @@
 }
 
 .fs-proto-root .brand-glyph {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
+  padding: 1px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+  object-fit: contain;
   flex: 0 0 auto;
-  color: var(--gold);
 }
 
 .fs-proto-root .brand-title {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -1887,31 +1896,7 @@
 }
 
 /* ---------- Responsive Breakpoints ---------- */
-@media (max-width: 1380px) {
-  .fs-proto-root .preset-btn {
-    padding: 0 8.5px;
-    font-size: 11.8px;
-  }
-  .fs-proto-root .layer-btn {
-    padding: 0 9px;
-    font-size: 11.8px;
-  }
-  .fs-proto-root .tool-btn {
-    padding: 0 9.5px;
-    font-size: 11.8px;
-  }
-  .fs-proto-root .lang-btn {
-    padding: 0 7.5px;
-  }
-}
-
-@media (max-width: 1180px) {
-  .fs-proto-root .lab-window {
-    width: 342px;
-  }
-  .fs-proto-root .inspector {
-    width: 324px;
-  }
+@media (max-width: 1640px) {
   .fs-proto-root .preset-pills {
     display: none;
   }
@@ -1923,26 +1908,94 @@
   .fs-proto-root .preset-select {
     appearance: none;
     -webkit-appearance: none;
+    max-width: 148px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 99px;
-    padding: 6px 26px 6px 11px;
+    padding: 6px 24px 6px 10px;
     color: var(--ink);
-    font-size: 12px;
+    font-size: 11.8px;
     font-weight: 600;
     cursor: pointer;
     outline: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23d8e2dc' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 9px center;
+    background-position: right 8px center;
   }
   [dir="rtl"] .fs-proto-root .preset-select {
-    padding: 6px 11px 6px 26px;
-    background-position: left 9px center;
+    padding: 6px 10px 6px 24px;
+    background-position: left 8px center;
+  }
+  .fs-proto-root[data-theme="light"] .preset-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%230f1a13' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   }
   .fs-proto-root .preset-select option {
     background: #101914;
     color: #f4f7f4;
+  }
+}
+
+@media (max-width: 1560px) {
+  .fs-proto-root .topbar {
+    gap: 6px 6px;
+  }
+  .fs-proto-root .topbar-group {
+    gap: 5px;
+  }
+  .fs-proto-root .preset-select {
+    max-width: 136px;
+  }
+  .fs-proto-root .brand-title {
+    font-size: 13px;
+  }
+  .fs-proto-root .brand-title span {
+    display: none;
+  }
+  .fs-proto-root .brand-id {
+    padding-inline-end: 8px;
+  }
+  .fs-proto-root .back-dock-btn {
+    padding: 0 9px;
+    font-size: 11.4px;
+    gap: 4px;
+  }
+  .fs-proto-root .layer-btn {
+    padding: 0 7.5px;
+    font-size: 11.2px;
+    gap: 4px;
+  }
+  .fs-proto-root .tool-btn {
+    padding: 0 7.5px;
+    font-size: 11.2px;
+    gap: 4px;
+  }
+  .fs-proto-root .lang-btn {
+    padding: 0 7px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 1320px) {
+  .fs-proto-root .lab-window,
+  .fs-proto-root .inspector,
+  .fs-proto-root .legend-pill {
+    top: 118px;
+  }
+  .fs-proto-root .lab-window,
+  .fs-proto-root .inspector {
+    max-height: calc(100dvh - 226px);
+  }
+}
+
+@media (max-width: 1180px) {
+  .fs-proto-root .lab-window {
+    width: 342px;
+  }
+  .fs-proto-root .inspector {
+    width: 324px;
   }
   .fs-proto-root .layer-btn {
     padding: 0 9px;
@@ -2713,4 +2766,365 @@
     display: none !important;
   }
 }
+
+.fs-proto-root .back-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Light Mode Liquid Glass Theme for 3D Field Simulation Canvas
+   ========================================================================== */
+.fs-proto-root[data-theme="light"] {
+  --bg: #eef4f0;
+  --ink: #0f1a13;
+  --ink-2: rgba(15, 26, 19, 0.80);
+  --ink-3: rgba(15, 26, 19, 0.60);
+  --ink-4: rgba(15, 26, 19, 0.44);
+
+  --glass-bg: rgba(247, 251, 248, 0.80);
+  --glass-bg-elev: rgba(248, 252, 249, 0.86);
+  --glass-capsule: rgba(248, 252, 249, 0.80);
+  --glass-fill: rgba(255, 255, 255, 0.62);
+  --glass-fill-hover: rgba(255, 255, 255, 0.86);
+  --glass-stroke: rgba(255, 255, 255, 0.88);
+  --glass-sep: rgba(11, 61, 46, 0.11);
+
+  --gold: #b45309;
+  --gold-tint: rgba(217, 119, 6, 0.14);
+  --gold-stroke: rgba(217, 119, 6, 0.40);
+  --leaf: #15803d;
+  --leaf-muted: #166534;
+  --leaf-tint: rgba(21, 128, 61, 0.13);
+  --clay: #b91c1c;
+  --clay-tint: rgba(220, 38, 38, 0.13);
+  --sky: #0369a1;
+
+  --shadow-window: 0 18px 44px -6px rgba(11, 40, 24, 0.22), 0 4px 12px rgba(11, 40, 24, 0.10);
+  --shadow-capsule: 0 10px 26px rgba(11, 40, 24, 0.16), 0 2px 8px rgba(11, 40, 24, 0.08);
+  color: var(--ink);
+}
+
+.fs-proto-root[data-theme="light"] .fs-map {
+  background: #e6eee8;
+}
+
+.fs-proto-root[data-theme="light"] .vignette {
+  background:
+    radial-gradient(120% 95% at 50% 48%, transparent 62%, rgba(11, 40, 24, 0.14) 100%),
+    linear-gradient(180deg, rgba(11, 40, 24, 0.10) 0%, transparent 15%, transparent 85%, rgba(11, 40, 24, 0.14) 100%);
+}
+
+.fs-proto-root[data-theme="light"] .lg-capsule,
+.fs-proto-root[data-theme="light"] .lg-window,
+.fs-proto-root[data-theme="light"] .lg-card,
+.fs-proto-root[data-theme="light"] .boot-card {
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.98),
+    inset 0 -1px 0 rgba(11, 61, 46, 0.06),
+    var(--shadow-window);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fs-proto-root[data-theme="light"] .lg-capsule,
+  .fs-proto-root[data-theme="light"] .lg-window,
+  .fs-proto-root[data-theme="light"] .boot-card {
+    background: rgba(247, 251, 248, 0.96);
+  }
+}
+
+.fs-proto-root[data-theme="light"] .lg-capsule::after {
+  background: rgba(11, 61, 46, 0.08);
+}
+
+.fs-proto-root[data-theme="light"] .boot-card {
+  background: rgba(247, 251, 248, 0.88);
+  border-color: rgba(255, 255, 255, 0.92);
+}
+
+.fs-proto-root[data-theme="light"] .boot-emblem {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(11, 61, 46, 0.16);
+}
+
+.fs-proto-root[data-theme="light"] .boot-mark {
+  color: #0f1a13;
+}
+
+.fs-proto-root[data-theme="light"] .boot-sub {
+  color: rgba(15, 26, 19, 0.56);
+}
+
+.fs-proto-root[data-theme="light"] .boot-track {
+  background: rgba(11, 61, 46, 0.12);
+}
+
+.fs-proto-root[data-theme="light"] .boot-note {
+  color: rgba(15, 26, 19, 0.65);
+}
+
+.fs-proto-root[data-theme="light"] .lang-btn:hover,
+.fs-proto-root[data-theme="light"] .preset-btn:hover,
+.fs-proto-root[data-theme="light"] .layer-btn:hover,
+.fs-proto-root[data-theme="light"] .tool-btn:hover,
+.fs-proto-root[data-theme="light"] .mini-chip:hover,
+.fs-proto-root[data-theme="light"] .cmp-col-btn:hover,
+.fs-proto-root[data-theme="light"] .const-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #09120d;
+}
+
+.fs-proto-root[data-theme="light"] .lang-btn[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .preset-btn[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .layer-btn[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .tool-btn[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .mob-btn[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .prio[aria-pressed="true"],
+.fs-proto-root[data-theme="light"] .insp-tab[aria-selected="true"] {
+  background: rgba(11, 61, 46, 0.90);
+  color: #ffffff;
+  border-color: rgba(11, 61, 46, 0.25);
+}
+
+.fs-proto-root[data-theme="light"] .layer-btn .dot,
+.fs-proto-root[data-theme="light"] .const-dot,
+.fs-proto-root[data-theme="light"] .dims i {
+  background: rgba(11, 61, 46, 0.22);
+}
+
+.fs-proto-root[data-theme="light"] .tool-btn.primary,
+.fs-proto-root[data-theme="light"] .btn-primary {
+  background: rgba(11, 61, 46, 0.92);
+  color: #ffffff;
+  border-color: rgba(167, 243, 208, 0.45);
+}
+
+.fs-proto-root[data-theme="light"] .tool-btn.primary:hover,
+.fs-proto-root[data-theme="light"] .btn-primary:hover {
+  background: rgba(15, 78, 58, 0.96);
+}
+
+.fs-proto-root[data-theme="light"] .legend-src,
+.fs-proto-root[data-theme="light"] .strat-tag,
+.fs-proto-root[data-theme="light"] .mini-chip,
+.fs-proto-root[data-theme="light"] .time-rain-pill,
+.fs-proto-root[data-theme="light"] .gloss-item {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(11, 61, 46, 0.11);
+  color: var(--ink-2);
+}
+
+.fs-proto-root[data-theme="light"] .seg-track,
+.fs-proto-root[data-theme="light"] .insp-tabs,
+.fs-proto-root[data-theme="light"] .scen-box,
+.fs-proto-root[data-theme="light"] .dims,
+.fs-proto-root[data-theme="light"] .overlap-card,
+.fs-proto-root[data-theme="light"] .audit-hero,
+.fs-proto-root[data-theme="light"] .cmp-wrap,
+.fs-proto-root[data-theme="light"] .fusion-wrap {
+  background: rgba(255, 255, 255, 0.56);
+  border-color: rgba(11, 61, 46, 0.10);
+}
+
+.fs-proto-root[data-theme="light"] .strat,
+.fs-proto-root[data-theme="light"] .stat-tile,
+.fs-proto-root[data-theme="light"] .health-card,
+.fs-proto-root[data-theme="light"] .dim-breakdown,
+.fs-proto-root[data-theme="light"] .prov-card {
+  background: rgba(255, 255, 255, 0.54);
+  border-color: rgba(11, 61, 46, 0.10);
+}
+
+.fs-proto-root[data-theme="light"] .strat:hover {
+  border-color: rgba(11, 61, 46, 0.24);
+}
+
+.fs-proto-root[data-theme="light"] .strat[aria-current="true"] {
+  background: rgba(21, 128, 61, 0.10);
+  border-color: rgba(21, 128, 61, 0.42);
+}
+
+.fs-proto-root[data-theme="light"] .strat-tag.curr {
+  background: rgba(217, 119, 6, 0.14);
+  color: #92400e;
+}
+
+.fs-proto-root[data-theme="light"] input[type="range"] {
+  background: rgba(11, 61, 46, 0.16);
+}
+
+.fs-proto-root[data-theme="light"] input[type="range"]::-webkit-slider-thumb {
+  background: #0b3d2e;
+  border: 2px solid #ffffff;
+}
+
+.fs-proto-root[data-theme="light"] input[type="range"]::-moz-range-thumb {
+  background: #0b3d2e;
+  border: 2px solid #ffffff;
+}
+
+.fs-proto-root[data-theme="light"] .dim-track,
+.fs-proto-root[data-theme="light"] .ov-stack {
+  background: rgba(11, 61, 46, 0.10);
+}
+
+.fs-proto-root[data-theme="light"] .time-header {
+  border-bottom-color: rgba(11, 61, 46, 0.11);
+}
+
+.fs-proto-root[data-theme="light"] .time-sync-btn {
+  border-color: rgba(217, 119, 6, 0.36);
+  background: rgba(217, 119, 6, 0.12);
+  color: #92400e;
+}
+
+.fs-proto-root[data-theme="light"] .time-sync-btn.live {
+  border-color: rgba(21, 128, 61, 0.38);
+  background: rgba(21, 128, 61, 0.12);
+  color: #166534;
+}
+
+.fs-proto-root[data-theme="light"] .play-btn {
+  background: rgba(11, 61, 46, 0.12);
+  color: #0f1a13;
+}
+
+.fs-proto-root[data-theme="light"] .time-rain-pill.wet {
+  background: rgba(3, 105, 161, 0.14);
+  color: #075985;
+}
+
+.fs-proto-root[data-theme="light"] .time-rain-pill.hot {
+  background: rgba(220, 38, 38, 0.12);
+  color: #991b1b;
+}
+
+.fs-proto-root[data-theme="light"] .time-tag.arid {
+  color: #b45309;
+}
+
+.fs-proto-root[data-theme="light"] .spark button {
+  background: rgba(11, 61, 46, 0.20);
+}
+
+.fs-proto-root[data-theme="light"] .spark button:hover {
+  background: rgba(11, 61, 46, 0.55);
+}
+
+.fs-proto-root[data-theme="light"] .disclaimer-line {
+  color: rgba(15, 26, 19, 0.62);
+}
+
+.fs-proto-root[data-theme="light"] .pin-lbl {
+  background: rgba(248, 252, 249, 0.90);
+  border-color: rgba(255, 255, 255, 0.94);
+  color: #0f1a13;
+  box-shadow: 0 6px 16px rgba(11, 40, 24, 0.22);
+}
+
+.fs-proto-root[data-theme="light"] .maplibregl-popup-content {
+  background: rgba(248, 252, 249, 0.92) !important;
+  color: #0f1a13 !important;
+  border: 1px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 12px 30px rgba(11, 40, 24, 0.22) !important;
+}
+
+.fs-proto-root[data-theme="light"] .preset-select {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(11, 61, 46, 0.16);
+  color: #0f1a13;
+}
+
+.fs-proto-root[data-theme="light"] .preset-select option {
+  background: #f4f8f5;
+  color: #0f1a13;
+}
+
+.fs-proto-root[data-theme="light"] .sky-alt {
+  background: rgba(248, 252, 249, 0.90);
+  border-color: rgba(255, 255, 255, 0.94);
+  color: #0f1a13;
+}
+
+.fs-proto-root[data-theme="light"] .const-btn {
+  border-color: rgba(11, 61, 46, 0.12);
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--ink);
+}
+
+.fs-proto-root[data-theme="light"] .const-btn[aria-pressed="true"] {
+  background: rgba(21, 128, 61, 0.14);
+  border-color: rgba(21, 128, 61, 0.42);
+  color: #14532d;
+}
+
+.fs-proto-root[data-theme="light"] .const-btn.is-irrig[aria-pressed="true"] {
+  background: rgba(3, 105, 161, 0.14);
+  border-color: rgba(3, 105, 161, 0.42);
+  color: #0c4a6e;
+}
+
+.fs-proto-root[data-theme="light"] .conf-tag.med {
+  background: rgba(217, 119, 6, 0.14);
+  color: #92400e;
+  border-color: rgba(217, 119, 6, 0.30);
+}
+
+.fs-proto-root[data-theme="light"] .conf-tag.low,
+.fs-proto-root[data-theme="light"] .cmp-warn {
+  color: #b91c1c;
+}
+
+.fs-proto-root[data-theme="light"] .conf-tag.low {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.28);
+}
+
+.fs-proto-root[data-theme="light"] .cmp-table td,
+.fs-proto-root[data-theme="light"] .fusion-table td {
+  border-bottom-color: rgba(11, 61, 46, 0.10);
+}
+
+.fs-proto-root[data-theme="light"] .cmp-col-btn.sel small {
+  color: #92400e;
+}
+
+.fs-proto-root[data-theme="light"] .cmp-sel-col,
+.fs-proto-root[data-theme="light"] .local-review-strip {
+  background: rgba(217, 119, 6, 0.10);
+  border-color: rgba(217, 119, 6, 0.25);
+}
+
+.fs-proto-root[data-theme="light"] .guide-modal {
+  background: rgba(15, 26, 19, 0.36);
+}
+
+.fs-proto-root[data-theme="light"] .math-box {
+  background: rgba(21, 128, 61, 0.08);
+  border-color: rgba(21, 128, 61, 0.24);
+}
+
+.fs-proto-root[data-theme="light"] .lab-scroll,
+.fs-proto-root[data-theme="light"] .insp-body {
+  scrollbar-color: rgba(11, 61, 46, 0.22) transparent;
+}
+
+.fs-proto-root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(11, 61, 46, 0.20);
+}
+
+.fs-proto-root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(11, 61, 46, 0.36);
+}
+
 

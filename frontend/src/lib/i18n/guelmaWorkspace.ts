@@ -232,7 +232,7 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       createTitle: "Complete Farm & Field Profile",
       editFieldTitle: "Edit Field Agronomic Profile",
       subtitle:
-        "Verified against FieldShift System Design (ENDPOINTS v3.2 · ADR-3 · ADR-5) for Wilaya of Guelma.",
+        "Verified against FELLAH TECH System Design (ENDPOINTS v3.2 · ADR-3 · ADR-5) for Wilaya of Guelma.",
       farmSection: "1. Farm Identity & Location",
       targetModeNew: "Create New Farm",
       targetModeExisting: "Add to Existing Farm",
@@ -392,7 +392,7 @@ export const GUELMA_WORKSPACE_I18N: Record<Language, GuelmaWorkspaceDictionary> 
       createTitle: "Informations Ferme & Parcelle",
       editFieldTitle: "Modifier les Informations de la Parcelle",
       subtitle:
-        "Conforme à l'architecture FieldShift (ENDPOINTS v3.2 · ADR-3 · ADR-5) pour la Wilaya de Guelma.",
+        "Conforme à l'architecture FELLAH TECH (ENDPOINTS v3.2 · ADR-3 · ADR-5) pour la Wilaya de Guelma.",
       farmSection: "1. Identité & Localisation de la Ferme",
       targetModeNew: "Nouvelle Ferme",
       targetModeExisting: "Ferme Existante",

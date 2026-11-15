@@ -3,6 +3,7 @@
 import React from "react";
 import { useResolvedTheme } from "@/app/providers";
 import { GUELMA_WORKSPACE_I18N } from "@/lib/i18n/guelmaWorkspace";
+import { formatAreaHa } from "@/lib/i18n/dynamicText";
 import { useAppStore } from "@/store/useAppStore";
 import {
   computePerimeterMeters,
@@ -148,7 +149,7 @@ export function FieldPolygonThumbnail({
       </svg>
       {areaHectares !== undefined ? (
         <span className="absolute bottom-1.5 end-1.5 rounded-md bg-[#0B3D2E]/85 px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-white backdrop-blur-sm dark:bg-black/70 dark:text-[#D1FAE5]">
-          {areaHectares.toFixed(1)} ha
+          {formatAreaHa(areaHectares, lang)}
         </span>
       ) : null}
     </div>

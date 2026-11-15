@@ -314,14 +314,14 @@ export const GUELMA_PARCEL_PRESETS: GuelmaParcelPreset[] = [
     },
     commune: "Guelma",
     climateZone: "seybouse_valley",
-    center: [7.465915, 36.475014],
-    areaHectares: 2.4,
+    center: [7.465901, 36.475021],
+    areaHectares: 2.3,
     ring: [
-      [7.465811, 36.476114],
-      [7.466969, 36.4757],
-      [7.465993, 36.473901],
-      [7.464888, 36.474341],
-      [7.465811, 36.476114],
+      [7.465812, 36.476112],
+      [7.466928, 36.4757],
+      [7.465965, 36.47392],
+      [7.464898, 36.474352],
+      [7.465812, 36.476112],
     ],
   },
   {
@@ -333,18 +333,23 @@ export const GUELMA_PARCEL_PRESETS: GuelmaParcelPreset[] = [
     },
     commune: "Héliopolis",
     climateZone: "heliopolis_hills",
-    center: [7.475853, 36.495139],
-    areaHectares: 7.9,
+    center: [7.476606, 36.495233],
+    areaHectares: 8.9,
     ring: [
-      [7.47685, 36.49692],
-      [7.47755, 36.49622],
-      [7.47788, 36.49562],
-      [7.47748, 36.49495],
-      [7.47522, 36.49352],
-      [7.47462, 36.49402],
-      [7.474, 36.49468],
-      [7.47322, 36.49518],
-      [7.47685, 36.49692],
+      [7.476805, 36.496915],
+      [7.47755, 36.49661],
+      [7.47791, 36.496225],
+      [7.47814, 36.49589],
+      [7.478245, 36.49558],
+      [7.4781, 36.49532],
+      [7.477975, 36.495025],
+      [7.47762, 36.494825],
+      [7.47645, 36.49424],
+      [7.47521, 36.49353],
+      [7.47462, 36.494025],
+      [7.474005, 36.494665],
+      [7.473245, 36.495185],
+      [7.476805, 36.496915],
     ],
   },
   {
@@ -356,22 +361,26 @@ export const GUELMA_PARCEL_PRESETS: GuelmaParcelPreset[] = [
     },
     commune: "Bouchegouf",
     climateZone: "bouchegouf_basin",
-    center: [7.72791, 36.461771],
-    areaHectares: 10.5,
+    center: [7.727654, 36.461627],
+    areaHectares: 10.4,
     ring: [
-      [7.72705, 36.46336],
+      [7.727055, 36.46336],
       [7.72855, 36.46338],
-      [7.72948, 36.46332],
-      [7.72988, 36.4616],
-      [7.73018, 36.46018],
-      [7.72895, 36.45998],
-      [7.728, 36.46],
-      [7.7273, 36.46032],
-      [7.7267, 36.4611],
-      [7.72622, 36.46225],
-      [7.72606, 36.46266],
-      [7.72655, 36.4631],
-      [7.72705, 36.46336],
+      [7.729475, 36.46332],
+      [7.72987, 36.4616],
+      [7.730155, 36.460215],
+      [7.728955, 36.460005],
+      [7.728005, 36.460015],
+      [7.72768, 36.46016],
+      [7.727345, 36.460355],
+      [7.72703, 36.46071],
+      [7.72672, 36.461125],
+      [7.72647, 36.461665],
+      [7.726345, 36.462035],
+      [7.726255, 36.462325],
+      [7.72602, 36.46266],
+      [7.726535, 36.4631],
+      [7.727055, 36.46336],
     ],
   },
   {
@@ -383,17 +392,20 @@ export const GUELMA_PARCEL_PRESETS: GuelmaParcelPreset[] = [
     },
     commune: "Oued Zenati",
     climateZone: "oued_zenati",
-    center: [7.150591, 36.320187],
-    areaHectares: 5.2,
+    center: [7.150448, 36.32013],
+    areaHectares: 4.8,
     ring: [
-      [7.14896, 36.32086],
-      [7.15202, 36.32128],
-      [7.1523, 36.32055],
-      [7.15226, 36.31962],
-      [7.1506, 36.31942],
-      [7.14908, 36.31938],
-      [7.14892, 36.3202],
-      [7.14896, 36.32086],
+      [7.149015, 36.32086],
+      [7.151985, 36.321275],
+      [7.152265, 36.32056],
+      [7.152205, 36.31964],
+      [7.15161, 36.319545],
+      [7.15061, 36.319435],
+      [7.14927, 36.31943],
+      [7.14926, 36.31982],
+      [7.14918, 36.32022],
+      [7.149075, 36.32052],
+      [7.149015, 36.32086],
     ],
   },
   {
@@ -405,19 +417,30 @@ export const GUELMA_PARCEL_PRESETS: GuelmaParcelPreset[] = [
     },
     commune: "Hammam Debagh",
     climateZone: "heliopolis_hills",
-    center: [7.270168, 36.465938],
-    areaHectares: 2.9,
+    center: [7.270488, 36.465766],
+    areaHectares: 3.0,
     ring: [
-      [7.26904, 36.46696],
-      [7.26972, 36.4669],
-      [7.27065, 36.46652],
-      [7.27182, 36.46552],
-      [7.27112, 36.46542],
-      [7.27082, 36.46515],
-      [7.26968, 36.46506],
-      [7.26962, 36.46595],
-      [7.26904, 36.46596],
-      [7.26904, 36.46696],
+      [7.269045, 36.466955],
+      [7.269665, 36.466885],
+      [7.27018, 36.4667],
+      [7.27058, 36.466525],
+      [7.270825, 36.46626],
+      [7.27098, 36.466055],
+      [7.270965, 36.465915],
+      [7.271165, 36.465835],
+      [7.27146, 36.46562],
+      [7.27166, 36.465445],
+      [7.271425, 36.465455],
+      [7.271125, 36.465435],
+      [7.271015, 36.46534],
+      [7.27084, 36.46515],
+      [7.270585, 36.464945],
+      [7.27022, 36.46482],
+      [7.2697, 36.46474],
+      [7.26966, 36.46535],
+      [7.26962, 36.46593],
+      [7.269045, 36.465955],
+      [7.269045, 36.466955],
     ],
   },
   {
@@ -609,6 +632,35 @@ export function computePolygonCentroid(
   };
 }
 
+/**
+ * Canonical unverified demo parcel ("Guelma Team Demo Parcel (Unstudied)", F1)
+ * fitted to a real cultivated cereal/legume parcel in the Seybouse alluvial plain
+ * (Boumahra Ahmed commune, Guelma).
+ */
+export const GUELMA_DEMO_PARCEL_RING: [number, number][] = [
+  [7.50648, 36.48051],
+  [7.50786, 36.48162],
+  [7.50919, 36.48266],
+  [7.51084, 36.48152],
+  [7.51122, 36.48121],
+  [7.50998, 36.47974],
+  [7.50906, 36.47871],
+  [7.50648, 36.48051],
+];
+
+export const GUELMA_DEMO_PARCEL_CENTER: { latitude: number; longitude: number } =
+  computePolygonCentroid(GUELMA_DEMO_PARCEL_RING) ?? {
+    latitude: 36.480853,
+    longitude: 7.509233,
+  };
+
+export const GUELMA_DEMO_PARCEL_AREA_HA: number = computePolygonAreaHectares(
+  GUELMA_DEMO_PARCEL_RING
+);
+
+export const GUELMA_DEMO_PARCEL_BOUNDARY: Record<string, unknown> =
+  ringToGeoJsonPolygon(GUELMA_DEMO_PARCEL_RING)!;
+
 export function computePolygonBbox(
   ring: [number, number][]
 ): [number, number, number, number] | null {
@@ -638,6 +690,40 @@ export function findNearestGuelmaCommune(lat: number, lon: number): GuelmaCommun
     }
   }
   return best;
+}
+
+function foldCommuneKey(raw: string): string {
+  return raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+export function localizeCommuneName(
+  commune: string | null | undefined,
+  lang: "en" | "fr" | "ar"
+): string {
+  if (!commune) return "";
+  const key = foldCommuneKey(commune);
+  const match = GUELMA_COMMUNES.find(
+    (c) =>
+      foldCommuneKey(c.name.en) === key ||
+      foldCommuneKey(c.name.fr) === key ||
+      foldCommuneKey(c.name.ar) === key ||
+      foldCommuneKey(c.id) === key
+  );
+  if (match) return match.name[lang] || match.name.en;
+  // Also handle non-accented / common spelling aliases
+  if (key === "heliopolis") {
+    const h = GUELMA_COMMUNES.find((c) => c.id === "heliopolis");
+    if (h) return h.name[lang];
+  }
+  if (key.includes("guelaat") || key.includes("bousbaa")) {
+    const g = GUELMA_COMMUNES.find((c) => c.id === "guelaat_bou_sbaa");
+    if (g) return g.name[lang];
+  }
+  return commune;
 }
 
 export function isInsideGuelmaBoundary(

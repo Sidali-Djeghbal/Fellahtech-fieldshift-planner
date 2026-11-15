@@ -46,6 +46,12 @@ import {
   localizePlainText,
 } from "@/lib/i18n";
 import { resolveCropDisplayName } from "@/lib/analysis/workspaceAnalysis";
+import {
+  formatSeasonMonthShort,
+  localizeFieldName,
+  localizeStrategyDescription,
+  localizeStrategyName,
+} from "@/lib/i18n/dynamicText";
 import type { Strategy } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -338,7 +344,7 @@ function ComparisonContent() {
             </p>
             <p className="mt-2 flex items-start gap-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
               <ShieldWarning size={15} className="mt-0.5 shrink-0 text-[#15803D] dark:text-[#86EFAC]" />
-              {envelope.result.disclaimer}
+              {localizePlainText(envelope.result.disclaimer, lang, plainMode)}
             </p>
           </section>
 
@@ -356,7 +362,7 @@ function ComparisonContent() {
                       : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
-                  {fp.field_id} · {fp.field_name} (
+                  {fp.field_id} · {localizeFieldName(fp.field_name, lang)} (
                   {ANALYSIS_JOB_STATUS_LABELS[lang][fp.status] ?? fp.status}
                   )
                 </button>
@@ -460,7 +466,7 @@ function ComparisonContent() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
-                            {strat.name}
+                            {localizeStrategyName(strat.strategy_id, strat.name, lang)}
                           </h3>
                           {isSuggested && (
                             <span className="inline-flex items-center gap-1 rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
@@ -494,7 +500,7 @@ function ComparisonContent() {
                           )}
                         </div>
                         <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-                          {strat.description}
+                          {localizeStrategyDescription(strat.strategy_id, strat.description, lang)}
                         </p>
                       </div>
 
@@ -525,7 +531,11 @@ function ComparisonContent() {
                             <span>
                               #{sn.order} · {SEASON_LABELS[lang][sn.season]} {sn.year}
                             </span>
-                            {sn.planting_month && <span dir="ltr">M{sn.planting_month}</span>}
+                            {sn.planting_month && (
+                              <span dir={lang === "ar" ? "auto" : "ltr"}>
+                                {formatSeasonMonthShort(sn.planting_month, lang)}
+                              </span>
+                            )}
                           </div>
                           <p className="mt-1 text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
                             {getLocalizedCropName(sn.crop_id, sn.crop_name)}
@@ -600,7 +610,7 @@ function ComparisonContent() {
                             {strat.explanation.benefits.map((b) => (
                               <li key={b.benefit_id}>
                                 <strong className="text-[#111813] dark:text-[#F5F7F5]">
-                                  {b.title}:
+                                  {localizePlainText(b.title, lang, plainMode)}:
                                 </strong>{" "}
                                 {localizePlainText(b.description, lang, plainMode)}
                               </li>
@@ -615,7 +625,7 @@ function ComparisonContent() {
                             {strat.explanation.risks.map((r) => (
                               <li key={r.risk_id}>
                                 <strong className="text-[#111813] dark:text-[#F5F7F5]">
-                                  {r.title}
+                                  {localizePlainText(r.title, lang, plainMode)}
                                 </strong>{" "}
                                 ({RISK_SEVERITY_LABELS[lang][r.severity] ?? r.severity}):{" "}
                                 {localizePlainText(r.description, lang, plainMode)}

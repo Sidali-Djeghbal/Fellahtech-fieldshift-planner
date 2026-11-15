@@ -67,6 +67,7 @@ import {
   validateSeasonMonthConsistency,
   validateWeightsSum,
 } from "@/lib/validation";
+import { GUELMA_DEMO_PARCEL_CENTER } from "@/lib/geo/guelma";
 import { useAppStore } from "@/store/useAppStore";
 
 interface CropHistoryRowState {
@@ -279,7 +280,8 @@ export default function FarmProfilePage() {
     };
   }, []);
 
-  const fieldLat = fieldDetailQuery.data?.location.latitude ?? 36.52;
+  const fieldLat =
+    fieldDetailQuery.data?.location.latitude ?? GUELMA_DEMO_PARCEL_CENTER.latitude;
   const weightsCheck = validateWeightsSum(weights, lang);
   const cropsCheck = validateDisjointCrops(targetCropIds, excludedCropIds, lang);
   const planningMonthCheck = validateSeasonMonthConsistency(

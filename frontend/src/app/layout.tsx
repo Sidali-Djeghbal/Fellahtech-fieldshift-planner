@@ -5,7 +5,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "FieldShift — Agricultural Intelligence & Crop Rotation Platform",
+  title: "FELLAH TECH — Agricultural Intelligence & Crop Rotation Platform",
   description:
     "Trilingual farmer-friendly crop-rotation decision-support interface anchored to Wilaya of Guelma, Algeria.",
 };

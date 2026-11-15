@@ -21,6 +21,7 @@ import {
   STRATEGY_SCORE_KEYS,
 } from "@/lib/analysis/workspaceAnalysis";
 import { SCORE_LABELS, UI_DICT } from "@/lib/i18n";
+import { localizeStrategyDescription, localizeStrategyName } from "@/lib/i18n/dynamicText";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type { CropItem, FieldPlan, Language, Strategy } from "@/lib/schemas";
 
@@ -117,7 +118,7 @@ export function StrategyComparisonSection({
                           aria-hidden="true"
                         />
                       ) : null}
-                      <span>{strat.name}</span>
+                      <span>{localizeStrategyName(strat.strategy_id, strat.name, lang)}</span>
                       {selStatus === "selected" ? (
                         <span className="font-mono text-[10px] opacity-90" aria-hidden="true">✓</span>
                       ) : null}
@@ -224,11 +225,11 @@ export function StrategyComparisonSection({
                     className="mt-3 block w-full rounded-lg text-start after:absolute after:inset-0 after:z-[1] after:rounded-3xl after:content-['']"
                   >
                     <h4 className="font-heading text-sm font-semibold leading-[1.2] text-[#111813] hover:text-[#15803D] dark:text-[#F5F7F5] dark:hover:text-[#86EFAC]">
-                      {strat.name}
+                      {localizeStrategyName(strat.strategy_id, strat.name, lang)}
                     </h4>
                   </button>
                   <p className="pointer-events-none mt-1.5 text-xs leading-relaxed text-[#4A5A4E] dark:text-[#9CA89E]">
-                    {strat.description}
+                    {localizeStrategyDescription(strat.strategy_id, strat.description, lang)}
                   </p>
 
                   {/* Liquid Well Metrics: Priority Fit & Bare Soil Days */}
@@ -346,7 +347,7 @@ export function StrategyComparisonSection({
                   <button
                     type="button"
                     onClick={() => onFocusStrategy(strat.strategy_id)}
-                    aria-label={`${strat.name} (${strat.seasons.length} ${UI_DICT[lang].comparison.seasonsUnitAria})`}
+                    aria-label={`${localizeStrategyName(strat.strategy_id, strat.name, lang)} (${strat.seasons.length} ${UI_DICT[lang].comparison.seasonsUnitAria})`}
                     className={`inline-flex min-h-10 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium transition-[transform,background-color,color] duration-150 ease-out active:not-disabled:scale-[0.96] ${
                       isFocused
                         ? "bg-[#22C55E]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
@@ -375,7 +376,7 @@ export function StrategyComparisonSection({
                 {focusedStrategy.strategy_id}
               </span>
               <h4 className="mt-0.5 font-heading text-base font-semibold leading-[1.15] text-[#111813] dark:text-[#F5F7F5]">
-                {focusedStrategy.name}
+                {localizeStrategyName(focusedStrategy.strategy_id, focusedStrategy.name, lang)}
               </h4>
             </div>
             <span className="fs-liquid-well rounded-full px-3 py-1 font-mono text-xs font-semibold tabular-nums text-[#15803D] dark:text-[#86EFAC]">

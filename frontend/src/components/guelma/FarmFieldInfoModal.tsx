@@ -20,7 +20,8 @@ import type { BorderDraftResult } from "@/components/guelma/GuelmaBorderEditorMa
 import { fetchAllCatalogItems } from "@/lib/api/endpoints";
 import { presentApiError } from "@/lib/api/errors";
 import { FIXTURE_CATALOG_ITEMS } from "@/lib/api/fixtures";
-import { GUELMA_COMMUNES } from "@/lib/geo/guelma";
+import { GUELMA_COMMUNES, localizeCommuneName } from "@/lib/geo/guelma";
+import { localizeFarmName } from "@/lib/i18n/dynamicText";
 import {
   IRRIGATION_SYSTEM_LABELS,
   SEASON_LABELS,
@@ -578,7 +579,7 @@ export function FarmFieldInfoModal({
                   >
                     {existingFarms.map((fm) => (
                       <option key={fm.farm_id} value={fm.farm_id}>
-                        {fm.farm_name} ({fm.commune || fm.region})
+                        {localizeFarmName(fm.farm_name, lang)} ({localizeCommuneName(fm.commune || fm.region, lang)})
                       </option>
                     ))}
                   </select>

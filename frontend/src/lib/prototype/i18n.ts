@@ -1,3 +1,4 @@
+import { buildLocalizedFarmPresetFields } from "@/lib/i18n/dynamicText";
 import { LEGENDS, MI, MN } from "./data";
 import type {
   ClimateData,
@@ -266,8 +267,8 @@ export interface LocaleDict {
 
 export const I18N: Record<Lang, LocaleDict> = {
   en: {
-    pageTitle: "FieldShift — Guelma Province",
-    bootSub: "FieldShift · Guelma Wilaya",
+    pageTitle: "FELLAH TECH — Guelma Province",
+    bootSub: "FELLAH TECH · Guelma Wilaya",
     bootConnect: "Connecting satellite & terrain",
     bootSlowTiles: "Loading Guelma province tiles…",
     bootSlowNet: "Slow network — streaming regional imagery",
@@ -613,7 +614,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     },
   },
   fr: {
-    pageTitle: "FieldShift — Wilaya de Guelma",
+    pageTitle: "FELLAH TECH — Wilaya de Guelma",
     bootSub: "Rotation des cultures · Guelma",
     bootConnect: "Connexion satellite et relief",
     bootSlowTiles: "Chargement des tuiles de Guelma…",
@@ -1055,7 +1056,7 @@ export const I18N: Record<Lang, LocaleDict> = {
     },
   },
   ar: {
-    pageTitle: "FieldShift · تحول الحقول — ولاية قالمة",
+    pageTitle: "FELLAH TECH — ولاية قالمة",
     bootSub: "تناوب المحاصيل · ولاية قالمة",
     bootConnect: "جاري الاتصال بالأقمار والتضاريس",
     bootSlowTiles: "جاري تحميل خرائط ولاية قالمة…",
@@ -1512,7 +1513,12 @@ export function getLoc(lang: Lang): LocaleDict {
 
 export function pLoc(p: Preset, loc: LocaleDict): Preset {
   const ov = loc.presets?.[p.id];
-  return ov ? { ...p, ...ov } : p;
+  if (ov) return { ...p, ...ov };
+  if (p.farmMeta) {
+    const lang: Lang = loc === I18N.fr ? "fr" : loc === I18N.ar ? "ar" : "en";
+    return { ...p, ...buildLocalizedFarmPresetFields(p.farmMeta, lang) };
+  }
+  return p;
 }
 
 export function sLoc(s: StrategyDef, loc: LocaleDict): StrategyDef {

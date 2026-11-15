@@ -12,7 +12,8 @@ import {
 } from "@phosphor-icons/react";
 import { useResolvedTheme } from "@/app/providers";
 import { DegradedReplayBanner, WarningsBanner } from "@/components/shared/ProvenanceBanners";
-import { localizePlainText } from "@/lib/i18n";
+import { ANALYSIS_JOB_STATUS_LABELS, localizePlainText, UI_DICT } from "@/lib/i18n";
+import { localizeFieldName } from "@/lib/i18n/dynamicText";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type {
   AnalysisEnvelope,
@@ -117,7 +118,12 @@ export function AnalysisOverviewCard({
               >
                 {completedRuns.map((run) => (
                   <option key={run.analysis_id} value={run.analysis_id!}>
-                    {run.analysis_id} · {run.status.toUpperCase()}
+                    {run.analysis_id} ·{" "}
+                    {run.status === "ok"
+                      ? UI_DICT[lang].common.okShort
+                      : run.status === "partial"
+                      ? ov.statusPartial
+                      : ANALYSIS_JOB_STATUS_LABELS[lang][run.status] ?? run.status.toUpperCase()}
                   </option>
                 ))}
               </select>
@@ -142,7 +148,7 @@ export function AnalysisOverviewCard({
               {ov.disclaimerHeading}
             </p>
             <p className="mt-1.5 text-[11px] leading-relaxed text-amber-900/85 dark:text-[#D1DBD3]">
-              {res.disclaimer}
+              {localizePlainText(res.disclaimer, lang, plainMode)}
             </p>
           </div>
         </div>
@@ -237,7 +243,7 @@ export function AnalysisOverviewCard({
                   }`}
                 >
                   <MapPin size={13} weight="fill" aria-hidden="true" />
-                  <span>{fp.field_name}</span>
+                  <span>{localizeFieldName(fp.field_name, lang)}</span>
                   <span
                     className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${
                       fp.status === "ok"
@@ -247,7 +253,7 @@ export function AnalysisOverviewCard({
                         : "bg-amber-100 text-amber-800 dark:bg-[#F59E0B]/18 dark:text-[#FCD34D]"
                     }`}
                   >
-                    {fp.field_id} · {fp.status.toUpperCase()}
+                    {fp.field_id} · {fp.status === "ok" ? UI_DICT[lang].common.okShort : ov.statusPartial}
                   </span>
                 </button>
               );

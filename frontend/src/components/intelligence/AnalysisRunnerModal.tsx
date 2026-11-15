@@ -15,6 +15,7 @@ import {
   SEASON_LABELS,
 } from "@/lib/i18n";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
+import { formatAreaHa, localizeFarmName, localizeFieldName } from "@/lib/i18n/dynamicText";
 import type {
   AnalysisSubmitRequest,
   CropItem,
@@ -247,7 +248,7 @@ export function AnalysisRunnerModal({
               <span>{r.modalTitle}</span>
             </h2>
             <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
-              {farm.farm_name} — {r.modalSubtitle}
+              {localizeFarmName(farm.farm_name, lang)} — {r.modalSubtitle}
             </p>
           </div>
           <button
@@ -298,9 +299,9 @@ export function AnalysisRunnerModal({
                         : "fs-liquid-pill text-[#111813] dark:text-[#F5F7F5]"
                     }`}
                   >
-                    <span>{fld.field_name}</span>
+                    <span>{localizeFieldName(fld.field_name, lang)}</span>
                     <span className="font-mono text-[10px] tabular-nums opacity-75">
-                      {fld.area_hectares.toFixed(1)} ha
+                      {formatAreaHa(fld.area_hectares, lang)}
                     </span>
                   </button>
                 );

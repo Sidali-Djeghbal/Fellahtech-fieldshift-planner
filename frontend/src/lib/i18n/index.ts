@@ -12,6 +12,8 @@ import type {
   WaterSource,
 } from "@/lib/schemas";
 
+import { localizeAnalysisText } from "./dynamicText";
+
 export interface UiDictionary {
   brandTitle: string;
   brandSubtitle: string;
@@ -297,7 +299,7 @@ export interface UiDictionary {
 
 export const UI_DICT: Record<Language, UiDictionary> = {
   en: {
-    brandTitle: "FIELD SHIFT",
+    brandTitle: "FELLAH TECH",
     brandSubtitle: "Agricultural Intelligence & Decision Support · Wilaya of Guelma",
     nav: {
       dashboard: "Dashboard",
@@ -566,7 +568,7 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       derivedSoilTypeLabel: "Derived SoilType:",
     },
     brief: {
-      docHeading: "FIELD SHIFT — 1-Page Field Rotation Brief",
+      docHeading: "FELLAH TECH — 1-Page Field Rotation Brief",
       strategyPrefix: "Strategy:",
       metaField: "Field:",
       metaDataset: "Dataset:",
@@ -591,7 +593,7 @@ export const UI_DICT: Record<Language, UiDictionary> = {
     },
   },
   fr: {
-    brandTitle: "FIELD SHIFT",
+    brandTitle: "FELLAH TECH",
     brandSubtitle: "Intelligence agricole & aide à la décision · Wilaya de Guelma",
     nav: {
       dashboard: "Tableau de bord",
@@ -805,8 +807,8 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       subtitle:
         "Consultez chaque donnée agriculteur et jeu de données régional utilisé ainsi que les données manquantes.",
       filterAll: "Toutes les sources",
-      filterFarmer: "Saisies agriculteur (farmer_input)",
-      filterDataset: "Jeu local / Observation (dataset)",
+      filterFarmer: "Saisies agriculteur",
+      filterDataset: "Jeu local / Satellite",
       fusionTitle: "Pourquoi fusionner références régionales et terrain ?",
       fusionBody:
         "Les grilles climatiques régionales ignorent votre forage ou goutte-à-goutte. L'association avec vos saisies locales garantit une recommandation réaliste.",
@@ -861,7 +863,7 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       derivedSoilTypeLabel: "Type de sol déduit :",
     },
     brief: {
-      docHeading: "FIELD SHIFT — Fiche Rotation 1 Page",
+      docHeading: "FELLAH TECH — Fiche Rotation 1 Page",
       strategyPrefix: "Stratégie :",
       metaField: "Parcelle :",
       metaDataset: "Jeu de données :",
@@ -886,7 +888,7 @@ export const UI_DICT: Record<Language, UiDictionary> = {
     },
   },
   ar: {
-    brandTitle: "FIELD SHIFT",
+    brandTitle: "FELLAH TECH",
     brandSubtitle: "الذكاء الزراعي ودعم اتخاذ القرار · ولاية قالمة",
     nav: {
       dashboard: "لوحة القيادة",
@@ -1099,8 +1101,8 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       subtitle:
         "تحقق من كل معطى أدخله الفلاح أو استُخرج من قاعدة البيانات المحلية مع عرض الفجوات بصدق.",
       filterAll: "كل المصادر",
-      filterFarmer: "مدخلات الفلاح (farmer_input)",
-      filterDataset: "قاعدة البيانات المحلية (dataset)",
+      filterFarmer: "مدخلات الفلاح",
+      filterDataset: "قاعدة البيانات المحلية",
       fusionTitle: "لماذا ندمج بيانات الأقمار الصناعية مع معطيات الفلاح؟",
       fusionBody:
         "خرائط المناخ الإقليمية لا ترى البئر الخاص بك أو شبكة التقطير أو محصول الخريف الماضي؛ دمج المعطيات يمنع الأخطاء.",
@@ -1155,7 +1157,7 @@ export const UI_DICT: Record<Language, UiDictionary> = {
       derivedSoilTypeLabel: "قوام التربة المستنتج:",
     },
     brief: {
-      docHeading: "FIELD SHIFT — ملخص التناوب الزراعي من صفحة واحدة",
+      docHeading: "FELLAH TECH — ملخص التناوب الزراعي من صفحة واحدة",
       strategyPrefix: "الاستراتيجية:",
       metaField: "القطعة:",
       metaDataset: "قاعدة البيانات:",
@@ -1504,41 +1506,7 @@ export function localizePlainText(
   lang: Language,
   plainMode: boolean
 ): string {
-  if (!plainMode) return text;
-  if (lang === "en") {
-    return text
-      .replace(/biological nitrogen fixation/gi, "natural soil nitrogen feeding")
-      .replace(/cereal monoculture pathogen carryover/gi, "root disease build-up from planting cereals every year")
-      .replace(/bare-field exposure/gi, "bare dry soil left uncovered")
-      .replace(/bare-soil loss/gi, "sun-dried bare soil loss")
-      .replace(/abiotic stress/gi, "weather and soil stress")
-      .replace(/evaporative deficit/gi, "sun-drying water loss")
-      .replace(/evaporative/gi, "sun-drying");
-  }
-  if (lang === "fr") {
-    return text
-      .replace(/fixation biologique de l'azote/gi, "enrichissement naturel en azote")
-      .replace(/pathogènes/gi, "maladies des racines")
-      .replace(/stress abiotique/gi, "stress climatique et du sol")
-      .replace(/déficit évaporatif/gi, "perte d'eau par évaporation")
-      .replace(/évaporatif/gi, "séchant au soleil");
-  }
-  if (lang === "ar") {
-    return text
-      .replace(/تثبيت النيتروجين البيولوجي/g, "تغذية التربة بالنيتروجين طبيعياً")
-      .replace(/الإجهاد اللاأحيائي/g, "إجهاد الطقس والتربة")
-      .replace(/مؤشر الإجهاد التبخري/g, "تجفيف الشمس للتربة المكشوفة")
-      .replace(/العجز التبخري/g, "فقدان الرطوبة بحرارة الشمس")
-      .replace(/انكشاف التربة العارية/g, "بقاء التربة مكشوفة بدون غطاء")
-      .replace(/biological nitrogen fixation/gi, "تغذية التربة بالنيتروجين طبيعياً")
-      .replace(/cereal monoculture pathogen carryover/gi, "تراكم أمراض الجذور من تكرار الحبوب")
-      .replace(/bare-field exposure|bare-soil loss/gi, "فقدان رطوبة التربة المكشوفة")
-      .replace(/evaporative deficit/gi, "فقدان الماء بحرارة الشمس")
-      .replace(/evaporative/gi, "تبخّري بالشمس")
-      .replace(/rotation analysis/gi, "تحليل التناوب الزراعي")
-      .replace(/legume-forage cover/gi, "غطاء البقوليات والأعلاف");
-  }
-  return text;
+  return localizeAnalysisText(text, lang, plainMode);
 }
 
 export const RISK_SEVERITY_LABELS: Record<Language, Record<"low" | "medium" | "high", string>> = {

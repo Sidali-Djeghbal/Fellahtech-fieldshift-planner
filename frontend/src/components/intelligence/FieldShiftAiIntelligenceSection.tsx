@@ -22,6 +22,7 @@ import { RequestedCropsAndQualitySection } from "@/components/intelligence/Reque
 import { StrategyComparisonSection } from "@/components/intelligence/StrategyComparisonSection";
 import { ApiErrorCard } from "@/components/shared/ProvenanceBanners";
 import { findFieldPlanForField } from "@/lib/analysis/workspaceAnalysis";
+import { localizeFieldName } from "@/lib/i18n/dynamicText";
 import { INTELLIGENCE_I18N } from "@/lib/i18n/intelligence";
 import type {
   AnalysisEnvelope,
@@ -331,7 +332,7 @@ export function FieldShiftAiIntelligenceSection({
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-600/30 bg-amber-50/90 px-5 py-3.5 text-xs text-amber-900 backdrop-blur-md dark:border-[#F59E0B]/30 dark:bg-[#F59E0B]/12 dark:text-[#FDE68A]">
               <div>
                 <p className="font-semibold">
-                  {activeField.field_name} ({activeField.field_id}) — {st.unlinkedFieldTitle}
+                  {localizeFieldName(activeField.field_name, lang)} ({activeField.field_id}) — {st.unlinkedFieldTitle}
                 </p>
                 <p className="mt-0.5 max-w-[65ch] text-amber-800/90 dark:text-[#D1DBD3]">{st.unlinkedFieldDesc}</p>
               </div>
@@ -371,6 +372,7 @@ export function FieldShiftAiIntelligenceSection({
                 fieldPlan={activeFieldPlan}
                 catalogMap={catalogMap}
                 lang={lang}
+                plainMode={plainMode}
               />
             </>
           ) : null}

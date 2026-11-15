@@ -4,12 +4,15 @@ import path from "path";
 import { UI_DICT } from "@/lib/i18n";
 
 describe("Brand Transformation & Token Sanitation", () => {
-  it("verifies i18n brand titles and subtitles contain zero NASA references", () => {
+  it("verifies i18n brand titles and subtitles use FELLAH TECH with zero NASA references", () => {
     for (const lang of ["en", "fr", "ar"] as const) {
       const dict = UI_DICT[lang];
-      expect(dict.brandTitle).toBe("FIELD SHIFT");
-      expect(dict.brandSubtitle).not.toMatch(/NASA|Space Apps|ناسا/i);
+      expect(dict.brandTitle).toBe("FELLAH TECH");
+      expect(dict.brief.docHeading).toContain("FELLAH TECH");
+      expect(dict.brandSubtitle).not.toMatch(/NASA|Space Apps|ناسا|FieldShift|FIELD SHIFT/i);
     }
+    const logoPath = path.resolve(__dirname, "../../public/assets/logo.svg");
+    expect(fs.existsSync(logoPath)).toBe(true);
   });
 
   it("ensures zero legacy NASA Space Apps tokens and colors exist in src/", () => {

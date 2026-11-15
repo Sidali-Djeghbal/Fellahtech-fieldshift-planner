@@ -15,13 +15,11 @@ import {
   Moon,
   Plant,
   Plus,
-  Polygon,
   Pulse,
   RocketLaunch,
   SquaresFour,
   Sun,
   Translate,
-  UserCircle,
 } from "@phosphor-icons/react";
 import { useResolvedTheme } from "@/app/providers";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -239,11 +237,11 @@ export function CommandCenterShell({
             <div className="px-2.5 py-2.5 sm:px-5 sm:py-3 lg:px-6">
               <div className="flex items-center justify-between gap-1.5 sm:gap-3">
                 {/* Brand Signature */}
-                <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3">
-                  <FieldShiftLogo size={26} className="shrink-0" />
+                <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                  <FieldShiftLogo size={32} />
                   <div className="flex items-center gap-2.5">
                     <span className="whitespace-nowrap font-heading text-xs font-bold tracking-tight text-[#111813] dark:text-[#F5F7F5] sm:text-sm">
-                      FIELD SHIFT
+                      {uiDict.brandTitle}
                     </span>
                     <span
                       className="hidden h-3.5 w-px bg-[#111813]/15 dark:bg-white/15 xl:inline-block"
@@ -292,46 +290,7 @@ export function CommandCenterShell({
                     ))}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleOpenAuth}
-                    data-testid="header-auth-btn"
-                    aria-label={intel.header.accountBtn}
-                    className="fs-liquid-pill hidden min-h-10 items-center gap-2 rounded-full px-3 text-xs font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5] lg:inline-flex xl:ps-3 xl:pe-3.5"
-                  >
-                    <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${
-                        authMode === "authenticated"
-                          ? "bg-[#15803D] dark:bg-[#22C55E]"
-                          : authMode === "guest"
-                            ? "bg-[#D97706] dark:bg-[#F59E0B]"
-                            : "bg-[#6B7A6F] dark:bg-[#9CA89E]"
-                      }`}
-                      aria-hidden="true"
-                    />
-                    <UserCircle
-                      size={15}
-                      className="text-[#15803D] dark:text-[#86EFAC]"
-                      aria-hidden="true"
-                    />
-                    <span className="hidden max-w-[110px] truncate xl:inline">
-                      {authMode === "authenticated"
-                        ? userEmail || intel.header.signedInBadge
-                        : authMode === "guest"
-                          ? intel.header.guestBadge
-                          : intel.header.accountBtn}
-                    </span>
-                  </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setSettingsOpen(true)}
-                    data-testid="header-settings-btn"
-                    aria-label={ws.nav.settings}
-                    className="fs-liquid-pill hidden h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#4A5A4E] active:not-disabled:scale-[0.96] dark:text-[#9CA89E] md:inline-flex"
-                  >
-                    <GearSix size={15} aria-hidden="true" />
-                  </button>
 
                   <button
                     type="button"
@@ -478,26 +437,6 @@ export function CommandCenterShell({
                   </Link>
                 )}
 
-                {isWorkspaceHome && onStartAddFarm ? (
-                  <button
-                    type="button"
-                    onClick={onStartAddFarm}
-                    title={ws.mapHud.drawParcelLabel}
-                    aria-label={ws.mapHud.drawParcelLabel}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                  >
-                    <Polygon size={18} aria-hidden="true" />
-                  </button>
-                ) : (
-                  <Link
-                    href="/?action=draw"
-                    title={ws.mapHud.drawParcelLabel}
-                    aria-label={ws.mapHud.drawParcelLabel}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                  >
-                    <Polygon size={18} aria-hidden="true" />
-                  </Link>
-                )}
 
                 {isWorkspaceHome && onSelectView ? (
                   <button
@@ -615,6 +554,7 @@ export function CommandCenterShell({
                 <button
                   type="button"
                   onClick={() => setSettingsOpen(true)}
+                  data-testid="rail-settings-btn"
                   title={ws.nav.settings}
                   aria-label={ws.nav.settings}
                   className="flex h-9 w-9 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"

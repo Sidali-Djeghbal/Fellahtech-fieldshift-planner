@@ -32,6 +32,15 @@ import {
   UI_DICT,
   localizePlainText,
 } from "@/lib/i18n";
+import {
+  localizeCropIdBadge,
+  localizeDynamicPhrase,
+  localizeEvidenceValue,
+  localizeMissingField,
+  localizePeriod,
+  localizeStrategyName,
+  localizeUnit,
+} from "@/lib/i18n/dynamicText";
 import type { DataSource, EvidenceItem, EvidenceParameter } from "@/lib/schemas";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -134,7 +143,10 @@ export default function EvidencePage() {
           const key = `${ev.data_source}:${ev.source_mission ?? ""}:${ev.parameter}:${String(ev.observed_value)}:${ev.period ?? ""}`;
           if (!seen.has(key)) {
             seen.add(key);
-            list.push({ ...ev, contextLabel: `${fp.field_id} · ${strat.name}` });
+            list.push({
+              ...ev,
+              contextLabel: `${fp.field_id} · ${localizeStrategyName(strat.strategy_id, strat.name, lang)}`,
+            });
           }
         }
       }
@@ -143,13 +155,16 @@ export default function EvidencePage() {
           const key = `${ev.data_source}:${ev.source_mission ?? ""}:${ev.parameter}:${String(ev.observed_value)}`;
           if (!seen.has(key)) {
             seen.add(key);
-            list.push({ ...ev, contextLabel: `${fp.field_id} · ${rq.requested_crop_id}` });
+            list.push({
+              ...ev,
+              contextLabel: `${fp.field_id} · ${localizeCropIdBadge(rq.requested_crop_id, lang)}`,
+            });
           }
         }
       }
     }
     return list;
-  }, [envelope]);
+  }, [envelope, lang]);
 
   const missions = useMemo(() => {
     const set = new Set<string>();
@@ -399,10 +414,13 @@ export default function EvidencePage() {
                   </div>
 
                   <div className="fs-liquid-well mt-3 flex flex-wrap items-baseline justify-between gap-2 rounded-2xl px-3.5 py-2.5">
-                    <span dir="ltr" className="font-mono text-lg font-bold tabular-nums text-[#111813] dark:text-[#F5F7F5]">
-                      {String(ev.observed_value)}{" "}
+                    <span
+                      dir={lang === "ar" ? "auto" : "ltr"}
+                      className="font-mono text-lg font-bold tabular-nums text-[#111813] dark:text-[#F5F7F5]"
+                    >
+                      {localizeEvidenceValue(ev.observed_value, lang)}{" "}
                       <span className="font-sans text-xs font-normal text-[#4A5A4E] dark:text-[#9CA89E]">
-                        {ev.unit ?? ""}
+                        {localizeUnit(ev.unit, lang)}
                       </span>
                     </span>
                     <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#15803D] dark:border-[#22C55E]/25 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
@@ -416,7 +434,11 @@ export default function EvidencePage() {
 
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                     <span>{ev.contextLabel}</span>
-                    {ev.period && <span dir="ltr">{ev.period}</span>}
+                    {ev.period && (
+                      <span dir={lang === "ar" ? "auto" : "ltr"}>
+                        {localizePeriod(ev.period, lang)}
+                      </span>
+                    )}
                   </div>
                 </article>
               );
@@ -443,7 +465,7 @@ export default function EvidencePage() {
               </div>
               {dq?.confidence_note && (
                 <p className="mt-3 text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
-                  {dq.confidence_note}
+                  {localizeDynamicPhrase(dq.confidence_note, lang)}
                 </p>
               )}
 
@@ -454,11 +476,11 @@ export default function EvidencePage() {
                 {(dq?.missing_data ?? []).map((md) => (
                   <span
                     key={md}
-                    dir="ltr"
+                    dir={lang === "ar" ? "auto" : "ltr"}
                     className="inline-flex items-center gap-1 rounded-full border border-red-300/80 bg-red-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-red-700 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300"
                   >
                     <Warning size={12} />
-                    {md}
+                    {localizeMissingField(md, lang, plainMode)}
                   </span>
                 ))}
               </div>
@@ -466,7 +488,7 @@ export default function EvidencePage() {
               {(dq?.limitations ?? []).length > 0 && (
                 <ul className="mt-3 list-disc space-y-1 ps-4 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
                   {dq?.limitations.map((lim, i) => (
-                    <li key={i}>{lim}</li>
+                    <li key={i}>{localizeDynamicPhrase(lim, lang)}</li>
                   ))}
                 </ul>
               )}

@@ -392,7 +392,7 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     await page.getByTestId("map-fit-extent-btn").click();
 
     // Open and close Workstation Settings drawer cleanly
-    const desktopSettingsBtn = page.getByTestId("header-settings-btn");
+    const desktopSettingsBtn = page.getByTestId("rail-settings-btn");
     if (await desktopSettingsBtn.isVisible()) {
       await desktopSettingsBtn.click();
     } else {
@@ -516,7 +516,7 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     }
 
     // 4. Settings Drawer 3-way selector persists Dark Mode across reload with zero FOUC
-    const desktopSettingsBtn = page.getByTestId("header-settings-btn");
+    const desktopSettingsBtn = page.getByTestId("rail-settings-btn");
     if (await desktopSettingsBtn.isVisible()) {
       await desktopSettingsBtn.click();
     } else {
