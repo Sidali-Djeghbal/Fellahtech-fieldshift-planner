@@ -103,6 +103,30 @@ class IrrigationSystem(StrEnum):
     UNKNOWN = "unknown"
 
 
+class CropCategory(StrEnum):
+    """Controlled agronomic crop categories matching `schema-v5.0.json#/$defs/CropCategory`."""
+
+    CEREALS = "cereals"
+    LEGUMES = "legumes"
+    OILSEEDS = "oilseeds"
+    VEGETABLES = "vegetables"
+    FORAGE = "forage"
+    COVER_CROPS = "cover_crops"
+    FALLOW = "fallow"
+
+
+class CropRole(StrEnum):
+    """Agronomic rotation roles matching `schema-v5.0.json#/$defs/CropRole`."""
+
+    CASH_CROP = "cash_crop"
+    NITROGEN_FIXER = "nitrogen_fixer"
+    FORAGE = "forage"
+    COVER_CROP = "cover_crop"
+    BREAK_CROP = "break_crop"
+    MAIN_CROP = "main_crop"
+    FALLOW = "fallow"
+
+
 class ErrorBody(BaseModel):
     """Structured error body matching openapi.yaml#/components/schemas/ErrorEnvelope."""
 

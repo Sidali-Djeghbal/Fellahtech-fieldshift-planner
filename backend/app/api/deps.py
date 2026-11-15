@@ -21,6 +21,7 @@ from app.core.rate_limit import (
     check_rate_limits,
 )
 from app.core.security import decode_access_token, hash_token
+from app.ml_client.manager import AsyncRedisStatusStore, MLProviderManager
 from app.repositories import user as user_repo
 
 
@@ -51,6 +52,19 @@ def get_redis(request: Request) -> AsyncRedisLike | None:
     return getattr(request.app.state, "redis", None)
 
 
+def get_ml_provider_manager(request: Request) -> MLProviderManager:
+    """Return initialized MLProviderManager from FastAPI application state."""
+    manager = getattr(request.app.state, "ml_provider_manager", None)
+    if isinstance(manager, MLProviderManager):
+        return manager
+    settings = get_settings(request)
+    raw_redis = getattr(request.app.state, "redis", None)
+    status_redis = raw_redis if isinstance(raw_redis, AsyncRedisStatusStore) else None
+    manager = MLProviderManager(settings, redis_client=status_redis)
+    request.app.state.ml_provider_manager = manager
+    return manager
+
+
 async def get_db(request: Request) -> AsyncIterator[AsyncSession]:
     """Yield an AsyncSession bound to the app sessionmaker with automatic error rollback."""
     sessionmaker = request.app.state.db_sessionmaker
@@ -65,6 +79,7 @@ async def get_db(request: Request) -> AsyncIterator[AsyncSession]:
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 RedisDep = Annotated[AsyncRedisLike | None, Depends(get_redis)]
 DbSessionDep = Annotated[AsyncSession, Depends(get_db)]
+MLProviderManagerDep = Annotated[MLProviderManager, Depends(get_ml_provider_manager)]
 
 
 def _extract_bearer_token(request: Request) -> str | None:

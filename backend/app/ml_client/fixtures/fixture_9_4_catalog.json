@@ -1,0 +1,54 @@
+{
+  "catalog_version": "2026.11",
+  "synced_at": "2026-11-14T08:00:00Z",
+  "crops": [
+    {
+      "crop_id": "durum_wheat",
+      "display_name": "Durum Wheat",
+      "names": { "en": "Durum Wheat", "fr": "Blé dur", "ar": "قمح صلب" },
+      "category": "cereals",
+      "roles": ["main_crop", "cash_crop"],
+      "family": "Poaceae"
+    },
+    {
+      "crop_id": "barley",
+      "display_name": "Barley",
+      "names": { "en": "Barley", "fr": "Orge", "ar": "شعير" },
+      "category": "cereals",
+      "roles": ["main_crop", "break_crop"],
+      "family": "Poaceae"
+    },
+    {
+      "crop_id": "chickpea",
+      "display_name": "Chickpea",
+      "names": { "en": "Chickpea", "fr": "Pois chiche", "ar": "حمص" },
+      "category": "legumes",
+      "roles": ["nitrogen_fixer", "cash_crop"],
+      "family": "Fabaceae"
+    },
+    {
+      "crop_id": "vetch_forage",
+      "display_name": "Vetch Forage",
+      "names": { "en": "Vetch Forage", "fr": "Vesce fourragère", "ar": "بيقية علفية" },
+      "category": "forage",
+      "roles": ["forage", "nitrogen_fixer"],
+      "family": "Fabaceae"
+    },
+    {
+      "crop_id": "sunflower",
+      "display_name": "Sunflower",
+      "names": { "en": "Sunflower", "fr": "Tournesol", "ar": "دوار الشمس" },
+      "category": "oilseeds",
+      "roles": ["cash_crop", "break_crop"],
+      "family": "Asteraceae"
+    },
+    {
+      "crop_id": "fallow",
+      "display_name": "Bare Fallow",
+      "names": { "en": "Bare Fallow", "fr": "Jachère", "ar": "أرض بور" },
+      "category": "fallow",
+      "roles": ["fallow"],
+      "family": "None"
+    }
+  ]
+}

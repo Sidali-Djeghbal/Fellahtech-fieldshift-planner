@@ -19,6 +19,7 @@ from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.rate_limit import AsyncRedisLike, create_redis_client
 from app.db.session import create_db_engine, create_sessionmaker
+from app.ml_client.manager import MLProviderManager
 
 _REQUEST_ID_HEADER = b"x-request-id"
 _DEPRECATION_HEADER = b"deprecation"
@@ -139,6 +140,14 @@ def create_app(
         if getattr(fastapi_app.state, "db_sessionmaker", None) is None:
             fastapi_app.state.db_sessionmaker = create_sessionmaker(fastapi_app.state.db_engine)
 
+        owned_ml_manager: MLProviderManager | None = None
+        if getattr(fastapi_app.state, "ml_provider_manager", None) is None:
+            owned_ml_manager = MLProviderManager(
+                resolved,
+                redis_client=fastapi_app.state.redis,
+            )
+            fastapi_app.state.ml_provider_manager = owned_ml_manager
+
         logger = structlog.get_logger("app.startup")
         await logger.ainfo(
             "backend_initialized",
@@ -148,6 +157,8 @@ def create_app(
         try:
             yield
         finally:
+            if owned_ml_manager is not None:
+                await owned_ml_manager.aclose()
             if owned_redis is not None:
                 await owned_redis.aclose()
             if owned_engine is not None:
