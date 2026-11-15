@@ -315,6 +315,17 @@ export function GuelmaOverviewMap({
           },
         });
         map.addLayer({
+          id: "workspace-fields-glow",
+          type: "line",
+          source: "workspace-fields",
+          paint: {
+            "line-color": ["case", ["==", ["get", "selected"], 1], "#4ADE80", "#EAB34D"],
+            "line-width": ["case", ["==", ["get", "selected"], 1], 10, 4],
+            "line-blur": ["case", ["==", ["get", "selected"], 1], 8, 4],
+            "line-opacity": ["case", ["==", ["get", "selected"], 1], 0.65, 0.25],
+          },
+        });
+        map.addLayer({
           id: "workspace-fields-line",
           type: "line",
           source: "workspace-fields",
@@ -516,25 +527,35 @@ export function GuelmaOverviewMap({
                     onClick={() => onSelectField(f.farm_id, f.field_id)}
                     style={{ cursor: "pointer" }}
                   >
+                    {isSel ? (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={16}
+                        fill={isDarkTheme ? "rgba(74, 222, 128, 0.20)" : "rgba(21, 128, 61, 0.16)"}
+                        stroke={isDarkTheme ? "rgba(74, 222, 128, 0.45)" : "rgba(21, 128, 61, 0.35)"}
+                        strokeWidth="1.2"
+                      />
+                    ) : null}
                     <circle
                       cx={cx}
                       cy={cy}
-                      r={isSel ? 12 : 8}
+                      r={isSel ? 9 : 6}
                       fill={
                         isSel
                           ? isDarkTheme
-                            ? "rgba(74, 222, 128, 0.35)"
-                            : "rgba(21, 128, 61, 0.25)"
-                          : "rgba(234, 179, 77, 0.24)"
+                            ? "rgba(74, 222, 128, 0.40)"
+                            : "rgba(21, 128, 61, 0.30)"
+                          : "rgba(234, 179, 77, 0.26)"
                       }
                     />
                     <circle
                       cx={cx}
                       cy={cy}
-                      r={isSel ? 6 : 4.5}
+                      r={isSel ? 5 : 3.5}
                       fill={isSel ? (isDarkTheme ? "#4ADE80" : "#15803D") : "#EAB34D"}
-                      stroke={isDarkTheme ? "#FFFFFF" : "#0B3D2E"}
-                      strokeWidth="1.8"
+                      stroke="#FFFFFF"
+                      strokeWidth="1.5"
                     />
                   </g>
                 );
@@ -565,14 +586,22 @@ export function GuelmaOverviewMap({
             <circle
               cx={calloutPin.x}
               cy={calloutPin.y}
-              r="7"
-              fill={isDarkTheme ? "rgba(74, 222, 128, 0.35)" : "rgba(21, 128, 61, 0.28)"}
+              r="10"
+              fill={isDarkTheme ? "rgba(74, 222, 128, 0.25)" : "rgba(21, 128, 61, 0.20)"}
+            />
+            <circle
+              cx={calloutPin.x}
+              cy={calloutPin.y}
+              r="6"
+              fill={isDarkTheme ? "rgba(74, 222, 128, 0.45)" : "rgba(21, 128, 61, 0.35)"}
             />
             <circle
               cx={calloutPin.x}
               cy={calloutPin.y}
               r="3.5"
-              fill={isDarkTheme || !webglFailed ? "#FFFFFF" : "#0B3D2E"}
+              fill={isDarkTheme || !webglFailed ? "#4ADE80" : "#0B3D2E"}
+              stroke="#FFFFFF"
+              strokeWidth="1.5"
             />
           </svg>
         ) : null}

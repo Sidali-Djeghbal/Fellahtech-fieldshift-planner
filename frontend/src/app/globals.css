@@ -362,7 +362,8 @@ body {
 }
 
 /* Specular Outer Reflection Sheen */
-.lg-specular::after {
+.lg-specular::after,
+.lg-capsule::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -381,6 +382,101 @@ body {
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
+}
+
+.lg-surface > *,
+.lg-capsule > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* MapLibre Liquid Glass HUD Integration from Prototype */
+.maplibregl-popup-content {
+  background: var(--fs-hud-bg) !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(28px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
+  border: 1px solid var(--fs-card-border) !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12px !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}
+
+.maplibregl-ctrl-group {
+  background: var(--fs-hud-bg) !important;
+  backdrop-filter: blur(28px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(185%) !important;
+  border: 1px solid var(--fs-card-border) !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24) !important;
+  overflow: hidden !important;
+}
+
+/* Map Pin & Pulse Animation from Prototype */
+@keyframes fsPinPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.28), 0 0 14px rgba(74, 222, 128, 0.75);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(74, 222, 128, 0.04), 0 0 22px rgba(74, 222, 128, 0.95);
+  }
+}
+
+.lg-pin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.lg-pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #eab34d;
+  border: 2px solid #ffffff;
+  flex: 0 0 auto;
+  animation: fsPinPulse 2.6s ease-in-out infinite;
+}
+
+.lg-pin-lbl {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--fs-hud-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--fs-card-border);
+  color: var(--text-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg-surface,
+  .lg-capsule {
+    background: rgba(12, 19, 16, 0.94);
+  }
+  :root:not([data-theme="dark"]) .lg-surface,
+  :root:not([data-theme="dark"]) .lg-capsule {
+    background: rgba(240, 246, 242, 0.96);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lg-surface,
+  .lg-capsule {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* Tier 0 — Atmospheric Optical Glass Canvas (Light / Dark) */

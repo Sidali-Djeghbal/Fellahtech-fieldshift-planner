@@ -502,6 +502,17 @@ export function GuelmaBorderEditorMap({
           },
         });
 
+        map.addLayer({
+          id: "draw-poly-glow",
+          type: "line",
+          source: "draw-poly",
+          paint: {
+            "line-color": "#4ADE80",
+            "line-width": 8,
+            "line-blur": 8,
+            "line-opacity": 0.45,
+          },
+        });
         map.addSource("draw-line", {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
@@ -1084,7 +1095,7 @@ export function GuelmaBorderEditorMap({
       </header>
 
       {/* Main Map Viewport */}
-      <div className="relative flex-1 overflow-hidden bg-[#0a1310]">
+      <div className="lg-map-frame lg-specular relative flex-1 overflow-hidden bg-[#0a1310] dark:bg-[#070d0a]">
         {!webglFailed ? (
           <div ref={mapContainerRef} className="h-full w-full" />
         ) : (

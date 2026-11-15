@@ -128,6 +128,18 @@ export function OrbitalFieldMap({
         });
 
         map.addLayer({
+          id: "active-parcel-glow",
+          type: "line",
+          source: "active-parcel",
+          paint: {
+            "line-color": "#4ADE80",
+            "line-width": 8,
+            "line-blur": 8,
+            "line-opacity": 0.55,
+          },
+        });
+
+        map.addLayer({
           id: "active-parcel-line",
           type: "line",
           source: "active-parcel",

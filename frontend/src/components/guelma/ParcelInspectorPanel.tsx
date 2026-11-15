@@ -10,6 +10,7 @@ import {
   PencilSimple,
   Play,
   Plus,
+  Polygon,
   Trash,
   X,
 } from "@phosphor-icons/react";
@@ -49,6 +50,7 @@ export function ParcelInspectorPanel({
   onOpenAnalysis,
   onScrollToPlan,
   onInspect3d,
+  onEditBorders,
   onEditInfo,
   onDeleteField,
   onCloseInspector,
@@ -337,11 +339,25 @@ export function ParcelInspectorPanel({
           <span>{insp.sim3dBtn}</span>
         </button>
 
+        {onEditBorders ? (
+          <button
+            type="button"
+            onClick={() => onEditBorders(selectedField)}
+            className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+            title={dict.editBordersBtn}
+            data-testid="inspector-edit-borders-btn"
+          >
+            <Polygon size={12} aria-hidden="true" />
+            <span>{insp.editBordersBtn}</span>
+          </button>
+        ) : null}
+
         <button
           type="button"
           onClick={() => onEditInfo(selectedField)}
           className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
           title={dict.editInfoBtn}
+          data-testid="inspector-edit-info-btn"
         >
           <PencilSimple size={12} aria-hidden="true" />
           <span>{insp.editInfoBtn}</span>
