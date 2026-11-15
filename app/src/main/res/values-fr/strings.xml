@@ -238,4 +238,78 @@
     <string name="season_summer">Été</string>
     <string name="season_autumn">Automne</string>
     <string name="season_winter">Hiver</string>
+
+    <!-- Phase 5: Analysis Workflow -->
+    <string name="analysis_config_title">Analyse Spectrale</string>
+    <string name="analysis_active_resume_banner">Une analyse est toujours en cours. Reprendre le suivi ?</string>
+    <string name="analysis_active_resume_action">Reprendre le suivi</string>
+    <string name="analysis_section_farm_fields">1. Ferme et parcelles</string>
+    <string name="analysis_select_farm">Sélectionner une ferme</string>
+    <string name="analysis_no_farms">Aucune ferme disponible. Créez d\'abord une ferme et une parcelle.</string>
+    <string name="analysis_select_fields">Sélectionner les parcelles (1–10)</string>
+    <string name="analysis_no_fields">Aucune parcelle enregistrée pour cette ferme.</string>
+    <string name="analysis_section_planning">2. Horizon et cycle</string>
+    <string name="analysis_start_season">Saison de départ</string>
+    <string name="analysis_start_year">Année de départ (2020–2100)</string>
+    <string name="analysis_horizon_label">Horizon : %1$d saisons</string>
+    <string name="analysis_cycle_mode">Mécanisme de rotation</string>
+    <string name="analysis_cycle_annual">Rotation annuelle</string>
+    <string name="analysis_cycle_consecutive">Saisons consécutives</string>
+    <string name="analysis_drought_sim">Simulation sécheresse (-20% pluie)</string>
+    <string name="analysis_section_priorities">3. Pondérations (0–100)</string>
+    <string name="analysis_weight_water">Économie d\'eau : %1$d/100</string>
+    <string name="analysis_weight_soil">Matière organique : %1$d/100</string>
+    <string name="analysis_weight_income">Rendement économique : %1$d/100</string>
+    <string name="analysis_weight_risk">Résilience sécheresse : %1$d/100</string>
+    <string name="analysis_weight_forage">Valeur fourragère : %1$d/100</string>
+    <string name="analysis_section_market">4. Marché et contraintes</string>
+    <string name="analysis_market_preference">Débouché commercial</string>
+    <string name="analysis_market_local">Marché local</string>
+    <string name="analysis_market_export">Exportation</string>
+    <string name="analysis_market_subsistence">Autoconsommation</string>
+    <string name="analysis_market_mixed">Mixte</string>
+    <string name="analysis_target_crops">Cultures cibles (optionnel)</string>
+    <string name="analysis_excluded_crops">Cultures exclues (optionnel)</string>
+    <string name="analysis_equipment_label">Contraintes d\'équipement (séparées par virgule)</string>
+    <string name="analysis_catalog_loading">Chargement du catalogue…</string>
+    <string name="analysis_submit_action">Lancer l\'analyse ML</string>
+    <string name="analysis_submitting">Envoi de l\'analyse…</string>
+    <string name="analysis_async_note">L\'analyse s\'exécute de manière asynchrone via l\'API backend.</string>
+
+    <string name="analysis_val_farm_required">Sélectionnez une ferme à analyser.</string>
+    <string name="analysis_val_fields_count">Sélectionnez entre 1 et 10 parcelles.</string>
+    <string name="analysis_val_year_invalid">L\'année doit être comprise entre 2020 et 2100.</string>
+    <string name="analysis_val_horizon_invalid">L\'horizon doit être compris entre 1 et 6 saisons.</string>
+    <string name="analysis_val_weights_invalid">Chaque pondération doit être comprise entre 0 et 100.</string>
+    <string name="analysis_val_crop_overlap">Une culture ne peut pas être à la fois cible et exclue.</string>
+
+    <string name="analysis_progress_title">Suivi de l\'analyse</string>
+    <string name="analysis_status_pending">En file d\'attente</string>
+    <string name="analysis_status_running">Exécution des modèles…</string>
+    <string name="analysis_status_ok">Terminée</string>
+    <string name="analysis_status_partial">Terminée (Partielle)</string>
+    <string name="analysis_status_failed">Échouée</string>
+    <string name="analysis_status_cancelled">Annulée</string>
+    <string name="analysis_request_id_label">ID requête : %1$s</string>
+    <string name="analysis_cancel_action">Annuler l\'analyse</string>
+    <string name="analysis_cancelling">Annulation…</string>
+    <string name="analysis_view_result">Voir les résultats</string>
+    <string name="analysis_back_to_config">Nouvelle analyse</string>
+
+    <string name="analysis_result_title">Audit et recommandations</string>
+    <string name="analysis_degraded_banner">Mode dégradé (%1$s) — %2$d s</string>
+    <string name="analysis_overall_summary">Synthèse générale</string>
+    <string name="analysis_partial_reason">Raison partielle : %1$s</string>
+    <string name="analysis_suggested_badge">RECOMMANDÉE</string>
+    <string name="analysis_existing_badge">ROTATION ACTUELLE</string>
+    <string name="analysis_priority_fit">Adéquation : %1$.0f/100</string>
+    <string name="analysis_rotation_sequence">Séquence de rotation</string>
+    <string name="analysis_why_recommended">Explications et risques</string>
+    <string name="analysis_disclaimer_title">Avertissement</string>
+
+    <string name="analysis_error_guest_limit">Quota d\'analyse invité atteint. Créez un compte pour continuer.</string>
+    <string name="analysis_error_rate_limited">Trop de requêtes. Nouvelle tentative en cours…</string>
+    <string name="analysis_error_insufficient_data">Données insuffisantes pour les parcelles sélectionnées.</string>
+    <string name="analysis_error_not_found">Requête ou résultat d\'analyse introuvable.</string>
+    <string name="analysis_error_catalog_mismatch">Catalogue mis à jour sur le serveur. Rechargement effectué.</string>
 </resources>

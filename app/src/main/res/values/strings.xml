@@ -238,4 +238,78 @@
     <string name="season_summer">Summer</string>
     <string name="season_autumn">Autumn</string>
     <string name="season_winter">Winter</string>
+
+    <!-- Phase 5: Analysis Workflow -->
+    <string name="analysis_config_title">Spectral Analysis</string>
+    <string name="analysis_active_resume_banner">An analysis job is still in progress. Resume tracking?</string>
+    <string name="analysis_active_resume_action">Resume Tracking</string>
+    <string name="analysis_section_farm_fields">1. Farm &amp; Field Selection</string>
+    <string name="analysis_select_farm">Select Farm</string>
+    <string name="analysis_no_farms">No farms available. Create a farm and register at least one field first.</string>
+    <string name="analysis_select_fields">Select Fields (1–10)</string>
+    <string name="analysis_no_fields">No fields registered for this farm yet.</string>
+    <string name="analysis_section_planning">2. Planning Scope &amp; Cycle</string>
+    <string name="analysis_start_season">Start Season</string>
+    <string name="analysis_start_year">Start Year (2020–2100)</string>
+    <string name="analysis_horizon_label">Planning Horizon: %1$d Seasons</string>
+    <string name="analysis_cycle_mode">Rotational Mechanism</string>
+    <string name="analysis_cycle_annual">Annual Crop Rotation</string>
+    <string name="analysis_cycle_consecutive">Consecutive Seasons</string>
+    <string name="analysis_drought_sim">Drought Simulation (-20% Rainfall)</string>
+    <string name="analysis_section_priorities">3. Priority Weights (0–100)</string>
+    <string name="analysis_weight_water">Water Saving: %1$d/100</string>
+    <string name="analysis_weight_soil">Soil Organic Matter: %1$d/100</string>
+    <string name="analysis_weight_income">Economic Yield: %1$d/100</string>
+    <string name="analysis_weight_risk">Drought Resilience: %1$d/100</string>
+    <string name="analysis_weight_forage">Livestock Forage: %1$d/100</string>
+    <string name="analysis_section_market">4. Market &amp; Crop Constraints</string>
+    <string name="analysis_market_preference">Market Preference</string>
+    <string name="analysis_market_local">Local Market</string>
+    <string name="analysis_market_export">Export</string>
+    <string name="analysis_market_subsistence">Subsistence</string>
+    <string name="analysis_market_mixed">Mixed</string>
+    <string name="analysis_target_crops">Target Crops (optional)</string>
+    <string name="analysis_excluded_crops">Excluded Crops (optional)</string>
+    <string name="analysis_equipment_label">Equipment / Input Constraints (comma-separated, optional)</string>
+    <string name="analysis_catalog_loading">Loading crop catalog…</string>
+    <string name="analysis_submit_action">Run ML Rotation Lab</string>
+    <string name="analysis_submitting">Submitting Analysis…</string>
+    <string name="analysis_async_note">Analysis runs asynchronously via backend REST API.</string>
+
+    <string name="analysis_val_farm_required">Select a farm to analyze.</string>
+    <string name="analysis_val_fields_count">Select between 1 and 10 fields.</string>
+    <string name="analysis_val_year_invalid">Start year must be between 2020 and 2100.</string>
+    <string name="analysis_val_horizon_invalid">Planning horizon must be between 1 and 6 seasons.</string>
+    <string name="analysis_val_weights_invalid">All priority weights must be between 0 and 100.</string>
+    <string name="analysis_val_crop_overlap">A crop cannot be both targeted and excluded.</string>
+
+    <string name="analysis_progress_title">Analysis Job Progress</string>
+    <string name="analysis_status_pending">Queued (Pending)</string>
+    <string name="analysis_status_running">Running Agronomic Models…</string>
+    <string name="analysis_status_ok">Completed</string>
+    <string name="analysis_status_partial">Completed (Partial)</string>
+    <string name="analysis_status_failed">Failed</string>
+    <string name="analysis_status_cancelled">Cancelled</string>
+    <string name="analysis_request_id_label">Request ID: %1$s</string>
+    <string name="analysis_cancel_action">Cancel Analysis</string>
+    <string name="analysis_cancelling">Cancelling…</string>
+    <string name="analysis_view_result">View Analysis Results</string>
+    <string name="analysis_back_to_config">New Analysis</string>
+
+    <string name="analysis_result_title">Strategy Audit &amp; Results</string>
+    <string name="analysis_degraded_banner">Stale Replay Mode (%1$s) — %2$d s old</string>
+    <string name="analysis_overall_summary">Overall Summary</string>
+    <string name="analysis_partial_reason">Partial Reason: %1$s</string>
+    <string name="analysis_suggested_badge">SUGGESTED</string>
+    <string name="analysis_existing_badge">EXISTING ROTATION</string>
+    <string name="analysis_priority_fit">Priority Fit: %1$.0f/100</string>
+    <string name="analysis_rotation_sequence">Rotation Sequence</string>
+    <string name="analysis_why_recommended">Why Recommended &amp; Risks</string>
+    <string name="analysis_disclaimer_title">Decision-Support Disclaimer</string>
+
+    <string name="analysis_error_guest_limit">Guest analysis quota reached. Register or sign in for more analyses.</string>
+    <string name="analysis_error_rate_limited">Too many requests. Waiting before next check…</string>
+    <string name="analysis_error_insufficient_data">Insufficient agronomic or historical data for the selected fields.</string>
+    <string name="analysis_error_not_found">Analysis request or result was not found.</string>
+    <string name="analysis_error_catalog_mismatch">Crop catalog updated on server. Reloaded latest catalog.</string>
 </resources>

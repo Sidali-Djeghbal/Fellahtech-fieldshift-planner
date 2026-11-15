@@ -238,4 +238,78 @@
     <string name="season_summer">الصيف</string>
     <string name="season_autumn">الخريف</string>
     <string name="season_winter">الشتاء</string>
+
+    <!-- Phase 5: Analysis Workflow -->
+    <string name="analysis_config_title">التحليل الطيفي</string>
+    <string name="analysis_active_resume_banner">يوجد طلب تحليل قيد التنفيذ. هل تريد استئناف المتابعة؟</string>
+    <string name="analysis_active_resume_action">استئناف المتابعة</string>
+    <string name="analysis_section_farm_fields">1. اختيار المزرعة والحقول</string>
+    <string name="analysis_select_farm">اختر المزرعة</string>
+    <string name="analysis_no_farms">لا توجد مزارع متاحة. أنشئ مزرعة وحقلاً أولاً.</string>
+    <string name="analysis_select_fields">اختر الحقول (1–10)</string>
+    <string name="analysis_no_fields">لا توجد حقول مسجلة لهذه المزرعة.</string>
+    <string name="analysis_section_planning">2. نطاق التخطيط والدورة</string>
+    <string name="analysis_start_season">موسم البداية</string>
+    <string name="analysis_start_year">سنة البداية (2020–2100)</string>
+    <string name="analysis_horizon_label">أفق التخطيط: %1$d مواسم</string>
+    <string name="analysis_cycle_mode">آلية التناوب</string>
+    <string name="analysis_cycle_annual">تناوب سنوي</string>
+    <string name="analysis_cycle_consecutive">مواسم متتالية</string>
+    <string name="analysis_drought_sim">محاكاة الجفاف (-20% أمطار)</string>
+    <string name="analysis_section_priorities">3. أوزان الأولويات (0–100)</string>
+    <string name="analysis_weight_water">توفير المياه: %1$d/100</string>
+    <string name="analysis_weight_soil">المادة العضوية للتربة: %1$d/100</string>
+    <string name="analysis_weight_income">العائد الاقتصادي: %1$d/100</string>
+    <string name="analysis_weight_risk">مقاومة الجفاف: %1$d/100</string>
+    <string name="analysis_weight_forage">قيمة الأعلاف: %1$d/100</string>
+    <string name="analysis_section_market">4. السوق والقيود</string>
+    <string name="analysis_market_preference">وجهة التسويق</string>
+    <string name="analysis_market_local">السوق المحلي</string>
+    <string name="analysis_market_export">التصدير</string>
+    <string name="analysis_market_subsistence">الاكتفاء الذاتي</string>
+    <string name="analysis_market_mixed">مختلط</string>
+    <string name="analysis_target_crops">المحاصيل المستهدفة (اختياري)</string>
+    <string name="analysis_excluded_crops">المحاصيل المستبعدة (اختياري)</string>
+    <string name="analysis_equipment_label">قيود المعدات (مفصولة بفاصلة، اختياري)</string>
+    <string name="analysis_catalog_loading">جارٍ تحميل دليل المحاصيل…</string>
+    <string name="analysis_submit_action">تشغيل تحليل التناوب</string>
+    <string name="analysis_submitting">جارٍ إرسال التحليل…</string>
+    <string name="analysis_async_note">يتم تنفيذ التحليل بشكل غير متزامن عبر الخادم.</string>
+
+    <string name="analysis_val_farm_required">اختر مزرعة للتحليل.</string>
+    <string name="analysis_val_fields_count">اختر من 1 إلى 10 حقول.</string>
+    <string name="analysis_val_year_invalid">يجب أن تكون سنة البداية بين 2020 و2100.</string>
+    <string name="analysis_val_horizon_invalid">يجب أن يكون أفق التخطيط بين 1 و6 مواسم.</string>
+    <string name="analysis_val_weights_invalid">يجب أن تكون جميع الأوزان بين 0 و100.</string>
+    <string name="analysis_val_crop_overlap">لا يمكن استهداف المحصول واستبعاده في آن واحد.</string>
+
+    <string name="analysis_progress_title">تقدم طلب التحليل</string>
+    <string name="analysis_status_pending">في قائمة الانتظار</string>
+    <string name="analysis_status_running">جارٍ تشغيل النماذج الزراعية…</string>
+    <string name="analysis_status_ok">مكتمل</string>
+    <string name="analysis_status_partial">مكتمل (جزئي)</string>
+    <string name="analysis_status_failed">فشل</string>
+    <string name="analysis_status_cancelled">ملغى</string>
+    <string name="analysis_request_id_label">معرّف الطلب: %1$s</string>
+    <string name="analysis_cancel_action">إلغاء التحليل</string>
+    <string name="analysis_cancelling">جارٍ الإلغاء…</string>
+    <string name="analysis_view_result">عرض نتائج التحليل</string>
+    <string name="analysis_back_to_config">تحليل جديد</string>
+
+    <string name="analysis_result_title">تدقيق الاستراتيجيات والنتائج</string>
+    <string name="analysis_degraded_banner">وضع العرض الاحتياطي (%1$s) — منذ %2$d ث</string>
+    <string name="analysis_overall_summary">الملخص العام</string>
+    <string name="analysis_partial_reason">سبب الاكتمال الجزئي: %1$s</string>
+    <string name="analysis_suggested_badge">مقترحة</string>
+    <string name="analysis_existing_badge">التناوب الحالي</string>
+    <string name="analysis_priority_fit">التوافق: %1$.0f/100</string>
+    <string name="analysis_rotation_sequence">تسلسل التناوب</string>
+    <string name="analysis_why_recommended">أسباب التوصية والمخاطر</string>
+    <string name="analysis_disclaimer_title">إخلاء مسؤولية</string>
+
+    <string name="analysis_error_guest_limit">تم بلوغ حد التحليل للضيف. سجل حساباً للمتابعة.</string>
+    <string name="analysis_error_rate_limited">طلبات كثيرة جداً. جارٍ الانتظار قبل المحاولة التالية…</string>
+    <string name="analysis_error_insufficient_data">بيانات غير كافية للحقول المحددة.</string>
+    <string name="analysis_error_not_found">طلب التحليل أو النتيجة غير موجودة.</string>
+    <string name="analysis_error_catalog_mismatch">تم تحديث دليل المحاصيل على الخادم. أعيد تحميل الدليل.</string>
 </resources>

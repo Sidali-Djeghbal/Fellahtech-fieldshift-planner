@@ -54,6 +54,12 @@ import com.example.myapplication.core.designsystem.component.FieldShiftTopBar
 import com.example.myapplication.core.designsystem.theme.FieldShiftTheme
 import com.example.myapplication.core.network.ApiEndpointConfig
 import com.example.myapplication.domain.auth.SessionState
+import com.example.myapplication.feature.analysis.AnalysisConfigScreen
+import com.example.myapplication.feature.analysis.AnalysisConfigViewModel
+import com.example.myapplication.feature.analysis.AnalysisProgressScreen
+import com.example.myapplication.feature.analysis.AnalysisProgressViewModel
+import com.example.myapplication.feature.analysis.AnalysisResultScreen
+import com.example.myapplication.feature.analysis.AnalysisResultViewModel
 import com.example.myapplication.feature.auth.AuthEntryScreen
 import com.example.myapplication.feature.farms.FarmDetailScreen
 import com.example.myapplication.feature.farms.FarmFormScreen
@@ -224,6 +230,8 @@ private fun AuthenticatedAppScaffold(
     val activeDestination = when {
         currentRoute.startsWith(FieldShiftTopLevelDestination.FARMS.route) ->
             FieldShiftTopLevelDestination.FARMS
+        currentRoute.startsWith(FieldShiftTopLevelDestination.ANALYSIS.route) ->
+            FieldShiftTopLevelDestination.ANALYSIS
         else -> FieldShiftTopLevelDestination.entries.firstOrNull {
             it.route == currentRoute
         } ?: FieldShiftTopLevelDestination.DASHBOARD
@@ -276,6 +284,19 @@ private fun AuthenticatedAppScaffold(
                                 onCreateFarmClick = { navController.navigate(FarmRoutes.CREATE) },
                                 onFarmClick = { farmId ->
                                     navController.navigate(FarmRoutes.detail(farmId))
+                                }
+                            )
+                        }
+                        FieldShiftTopLevelDestination.ANALYSIS -> {
+                            val configViewModel: AnalysisConfigViewModel = hiltViewModel()
+                            AnalysisConfigScreen(
+                                language = selectedLanguage,
+                                viewModel = configViewModel,
+                                onJobQueued = { requestId ->
+                                    navController.navigate(AnalysisRoutes.progress(requestId))
+                                },
+                                onResumeActiveRequest = { requestId ->
+                                    navController.navigate(AnalysisRoutes.progress(requestId))
                                 }
                             )
                         }
@@ -436,6 +457,39 @@ private fun AuthenticatedAppScaffold(
                             popUpTo(FieldRoutes.detail(farmId, saved.fieldId)) { inclusive = true }
                         }
                     }
+                )
+            }
+
+            composable(
+                route = AnalysisRoutes.PROGRESS,
+                arguments = listOf(navArgument(AnalysisRoutes.ARG_REQUEST_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val requestId = backStackEntry.arguments?.getString(AnalysisRoutes.ARG_REQUEST_ID)
+                    .orEmpty()
+                val progressViewModel: AnalysisProgressViewModel = hiltViewModel()
+                AnalysisProgressScreen(
+                    requestId = requestId,
+                    viewModel = progressViewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onResultReady = { analysisId ->
+                        navController.navigate(AnalysisRoutes.result(analysisId)) {
+                            popUpTo(AnalysisRoutes.progress(requestId)) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(
+                route = AnalysisRoutes.RESULT,
+                arguments = listOf(navArgument(AnalysisRoutes.ARG_ANALYSIS_ID) { type = NavType.StringType })
+            ) { backStackEntry ->
+                val analysisId = backStackEntry.arguments?.getString(AnalysisRoutes.ARG_ANALYSIS_ID)
+                    .orEmpty()
+                val resultViewModel: AnalysisResultViewModel = hiltViewModel()
+                AnalysisResultScreen(
+                    analysisId = analysisId,
+                    viewModel = resultViewModel,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }

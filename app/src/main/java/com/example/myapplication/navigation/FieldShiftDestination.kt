@@ -72,3 +72,13 @@ object FieldRoutes {
     fun edit(farmId: String, fieldId: String): String = "farms/$farmId/fields/edit/$fieldId"
 }
 
+object AnalysisRoutes {
+    const val ARG_REQUEST_ID = "requestId"
+    const val ARG_ANALYSIS_ID = "analysisId"
+    const val PROGRESS = "analysis/progress/{$ARG_REQUEST_ID}"
+    const val RESULT = "analysis/result/{$ARG_ANALYSIS_ID}"
+
+    fun progress(requestId: String): String = "analysis/progress/$requestId"
+    fun result(analysisId: String): String = "analysis/result/$analysisId"
+}
+
