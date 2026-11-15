@@ -1,0 +1,18 @@
+check_id,metric,measured_value,expected,status,notes
+QA_01_BOUNDARY_VALIDITY,geometry_valid,True,True,PASS,Area=3683.2311 km2 in EPSG:32632
+QA_02_IMAGE_AVAILABILITY,total_scenes_2017_2025,3592,>0 (multi-year),PASS,"Dec 2016 scenes=1, 2017-2025 scenes=3592"
+QA_03_CLOUD_PROB_COVERAGE,cloud_prob_match_pct,99.05,>=95%,PASS,COPERNICUS/S2_CLOUD_PROBABILITY joined via system:index
+QA_04_MONTHLY_COMPLETENESS,exported_months_2017_2025,108,108 months,PASS,"Complete>=90%: 107, Partial(<90%): ['2017-01']"
+QA_05_MISSING_PERIODS,empty_months,0,0,PASS,0 empty months; 2017-01 flagged PARTIAL_LOW_COVERAGE (1.4173%)
+QA_06_VALID_OBS_PER_PIXEL,min_monthly_mean_valid_obs_10m,0.0142,>0,PASS,Median across 108 months=7.47 obs/px
+QA_07_SPATIAL_COVERAGE,coverage_range_10m_pct,1.4173..100.0000,0 < pct <= 100.0%,PASS,2017-01=1.4173% (1 scene); remaining 107 months=95.94%..100.0000%
+QA_08_NODATA_HANDLING,phaseB_crop_exterior_zero_count,0,0 (exterior == -9999),PASS,Verified on Phase B 10m & 20m boundary crops (Phase A pre-fix rasters left untouched)
+QA_09_INDEX_PHYSICAL_RANGE,monthly_medians_outside_-1_1,0,0,PASS,"EVI_denom > 0.1 & SR >= 0 applied; excluded 534,281 obs across 108 months without silent clipping"
+QA_10_REFLECTANCE_SCALING,max_monthly_EVI_median,0.4842,"within [-1, 1]",PASS,Confirmed 0.0001 scaling across all 108 months
+QA_11_RESOLUTION_CONSISTENCY,available_rasters_matching_10m_20m,6/6,100%,PASS,"NDVI/EVI=10m, NDMI/NDRE=20m preserved; additional Phase C GeoTIFFs pending quota reset"
+QA_12_PROJECTION_CONSISTENCY,available_rasters_EPSG_32632,6/6,EPSG:32632,PASS,All existing GeoTIFFs verified in EPSG:32632
+QA_13_DUPLICATE_TIMESTAMPS,duplicate_year_month_rows,0,0,PASS,0 duplicate monthly timestamps
+QA_14_SCL2_DARK_PIXEL_EVAL,median_monthly_scl2_share_pct,0.3962,Monitored (<15%),PASS,Range=0.008%..7.951%
+QA_15_EVI_UNCLIPPED_TAIL,raw_EVI_px_range_across_108m,"[-2.529, 10.691]",Diagnostic only (unclipped),PASS,"p5..p95 medians=[0.029..0.796]; 1,262 composite px masked by D<=0.1"
+QA_16_NODATA_EXTERIOR_CHECK,phaseB_crops_strict_-9999_exterior,2/2,0 zero-fill exterior pixels,PASS,Phase B crops verified -9999 outside Guelma; full-domain Phase C GeoTIFFs pending quota reset
+QA_17_QUOTA_COMPLIANCE_GATE,deferred_gee_exports_status,RESTRICTED_MODE_HALTED,Halt cleanly on quota limit,CHECK,"Seasonal (32), Annual (9), and additional GeoTIFFs halted cleanly when spry-framework-514800-j2 hit restricted mode"

@@ -1,0 +1,377 @@
+{
+  "phase": "Phase A \u2014 Single-Month Processing Test (March 2024)",
+  "executed_utc": "2026-11-15T01:01:04.025100+00:00",
+  "boundary_source": "local:data/boundaries/processed/guelma_wilaya_boundary.geojson.gpkg",
+  "target_crs": "EPSG:32632",
+  "drive_folder": "FieldShift_Sentinel2_PhaseA_2024_03",
+  "total_batch_eecu_seconds": 21564.0148,
+  "warnings": [],
+  "tasks": [
+    {
+      "name": "sentinel2_2024_03_scenes",
+      "kind": "table",
+      "expected_file": "sentinel2_2024_03_scenes.csv",
+      "task_id": "GSVECQAKU77AWHTBJ4ATTGZN",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 0.4206111431121826,
+      "run_seconds": 2.79,
+      "total_wall_seconds": 9.02,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1D_Zotwezc4qdp3c21aWs0EZEbylxnG7f"
+      ]
+    },
+    {
+      "name": "sentinel2_2024_03_summary",
+      "kind": "table",
+      "expected_file": "sentinel2_2024_03_summary.csv",
+      "task_id": "EKR6T3VFFW3CQPVJPGJ6XJ75",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 12221.3408203125,
+      "run_seconds": 32.49,
+      "total_wall_seconds": 37.1,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1OWK8M0M0BRfJDm9_-HH6fm96iXz6e5lH"
+      ]
+    },
+    {
+      "name": "sentinel2_2024_03_indices_10m",
+      "kind": "image",
+      "expected_file": "sentinel2_2024_03_indices_10m.tif",
+      "task_id": "KC3XZEVQIN7BYGEKE3TS64K7",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 4749.669921875,
+      "run_seconds": 341.29,
+      "total_wall_seconds": 348.93,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1OWK8M0M0BRfJDm9_-HH6fm96iXz6e5lH"
+      ]
+    },
+    {
+      "name": "sentinel2_2024_03_valid_obs_10m",
+      "kind": "image",
+      "expected_file": "sentinel2_2024_03_valid_obs_10m.tif",
+      "task_id": "F56UAFUN6D6ZL3FCND4DPIKD",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 2724.10302734375,
+      "run_seconds": 246.08,
+      "total_wall_seconds": 252.21,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1OWK8M0M0BRfJDm9_-HH6fm96iXz6e5lH"
+      ]
+    },
+    {
+      "name": "sentinel2_2024_03_indices_20m",
+      "kind": "image",
+      "expected_file": "sentinel2_2024_03_indices_20m.tif",
+      "task_id": "HDCU6PPKHD4YJJJFVMST6LU3",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 1008.9827880859375,
+      "run_seconds": 202.36,
+      "total_wall_seconds": 207.17,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1OWK8M0M0BRfJDm9_-HH6fm96iXz6e5lH"
+      ]
+    },
+    {
+      "name": "sentinel2_2024_03_valid_obs_20m",
+      "kind": "image",
+      "expected_file": "sentinel2_2024_03_valid_obs_20m.tif",
+      "task_id": "KDFJL64D5VMIF2JEAQSEB6RZ",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 859.4976196289062,
+      "run_seconds": 1001.93,
+      "total_wall_seconds": 1038.96,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1OWK8M0M0BRfJDm9_-HH6fm96iXz6e5lH"
+      ]
+    }
+  ],
+  "verified_files": {
+    "sentinel2_2024_03_indices_10m.tif": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_indices_10m.tif",
+      "exists": true,
+      "size_bytes": 433741461,
+      "size_mb": 413.6481,
+      "readable": true,
+      "crs": "EPSG:32632",
+      "res_x_m": 10.0,
+      "res_y_m": 10.0,
+      "width": 9146,
+      "height": 7131,
+      "band_count": 2,
+      "dtypes": [
+        "float32",
+        "float32"
+      ],
+      "nodata": -9999.0,
+      "band_stats": [
+        {
+          "band_index": 1,
+          "description": "NDVI",
+          "valid_pixels": 36852326,
+          "nodata_pixels": 28367800,
+          "zero_obs_pixels": null,
+          "min": -0.738,
+          "p05": 0.2271,
+          "median": 0.6948,
+          "mean": 0.6411,
+          "p95": 0.8882,
+          "max": 0.9724
+        },
+        {
+          "band_index": 2,
+          "description": "EVI",
+          "valid_pixels": 36852326,
+          "nodata_pixels": 28367800,
+          "zero_obs_pixels": null,
+          "min": -11.6737,
+          "p05": 0.1645,
+          "median": 0.4579,
+          "mean": 0.4693,
+          "p95": 0.7833,
+          "max": 16.0164
+        }
+      ]
+    },
+    "sentinel2_2024_03_indices_20m.tif": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_indices_20m.tif",
+      "exists": true,
+      "size_bytes": 112378016,
+      "size_mb": 107.172,
+      "readable": true,
+      "crs": "EPSG:32632",
+      "res_x_m": 20.0,
+      "res_y_m": 20.0,
+      "width": 4574,
+      "height": 3566,
+      "band_count": 2,
+      "dtypes": [
+        "float32",
+        "float32"
+      ],
+      "nodata": -9999.0,
+      "band_stats": [
+        {
+          "band_index": 1,
+          "description": "NDMI",
+          "valid_pixels": 9218154,
+          "nodata_pixels": 7092730,
+          "zero_obs_pixels": null,
+          "min": -0.6406,
+          "p05": -0.0805,
+          "median": 0.223,
+          "mean": 0.2143,
+          "p95": 0.4879,
+          "max": 0.8432
+        },
+        {
+          "band_index": 2,
+          "description": "NDRE",
+          "valid_pixels": 9218154,
+          "nodata_pixels": 7092730,
+          "zero_obs_pixels": null,
+          "min": -0.7798,
+          "p05": 0.1602,
+          "median": 0.4753,
+          "mean": 0.4493,
+          "p95": 0.6619,
+          "max": 0.8358
+        }
+      ]
+    },
+    "sentinel2_2024_03_scenes.csv": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_scenes.csv",
+      "exists": true,
+      "size_bytes": 5779,
+      "size_mb": 0.0055,
+      "readable": true,
+      "rows": 35,
+      "columns": [
+        "system:index",
+        "cloudy_pixel_percentage",
+        "has_cloud_prob",
+        "mgrs_tile",
+        "sensing_date",
+        "system_index",
+        ".geo"
+      ],
+      "unique_tiles": [
+        "32SLE",
+        "32SLF",
+        "32SMF"
+      ],
+      "cloud_prob_matched": 35
+    },
+    "sentinel2_2024_03_summary.csv": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_summary.csv",
+      "exists": true,
+      "size_bytes": 1116,
+      "size_mb": 0.0011,
+      "readable": true,
+      "rows": 1,
+      "columns": [
+        "system:index",
+        "EVI_count",
+        "EVI_max",
+        "EVI_mean",
+        "EVI_median",
+        "EVI_min",
+        "EVI_stdDev",
+        "NDMI_count",
+        "NDMI_max",
+        "NDMI_mean",
+        "NDMI_median",
+        "NDMI_min",
+        "NDMI_stdDev",
+        "NDRE_count",
+        "NDRE_max",
+        "NDRE_mean",
+        "NDRE_median",
+        "NDRE_min",
+        "NDRE_stdDev",
+        "NDVI_count",
+        "NDVI_max",
+        "NDVI_mean",
+        "NDVI_median",
+        "NDVI_min",
+        "NDVI_stdDev",
+        "cloud_prob_matched_images",
+        "end_date",
+        "image_count",
+        "retained_pixel_obs_20m",
+        "scl2_pixel_obs_20m",
+        "start_date",
+        "total_pixels_10m",
+        "total_pixels_20m",
+        "valid_obs_10m_max",
+        "valid_obs_10m_mean",
+        "valid_obs_10m_min",
+        "valid_obs_20m_max",
+        "valid_obs_20m_mean",
+        "valid_obs_20m_min",
+        "year_month",
+        ".geo"
+      ],
+      "summary_metrics": {
+        "system:index": 0,
+        "EVI_count": 36852326,
+        "EVI_max": 16.016393442622967,
+        "EVI_mean": 0.4693558987124858,
+        "EVI_median": 0.43699142852621475,
+        "EVI_min": -11.673728813559178,
+        "EVI_stdDev": 0.17858962355987884,
+        "NDMI_count": 9218154,
+        "NDMI_max": 0.8431818181818181,
+        "NDMI_mean": 0.214344024864017,
+        "NDMI_median": 0.22266299229472042,
+        "NDMI_min": -0.640625,
+        "NDMI_stdDev": 0.16928906919004333,
+        "NDRE_count": 9218154,
+        "NDRE_max": 0.8357522031111184,
+        "NDRE_mean": 0.44936654765768697,
+        "NDRE_median": 0.4726770820177956,
+        "NDRE_min": -0.779783393501805,
+        "NDRE_stdDev": 0.14996808329148584,
+        "NDVI_count": 36852326,
+        "NDVI_max": 0.9723947603771318,
+        "NDVI_mean": 0.6411513993643714,
+        "NDVI_median": 0.6914317004851233,
+        "NDVI_min": -0.738045738045738,
+        "NDVI_stdDev": 0.2009188271557535,
+        "cloud_prob_matched_images": 35,
+        "end_date": "2024-03-31",
+        "image_count": 35,
+        "retained_pixel_obs_20m": 81784908.6941176,
+        "scl2_pixel_obs_20m": 244531.16078431372,
+        "start_date": "2024-03-01",
+        "total_pixels_10m": 36832434,
+        "total_pixels_20m": 9208084,
+        "valid_obs_10m_max": 24,
+        "valid_obs_10m_mean": 8.876951936190368,
+        "valid_obs_10m_min": 0,
+        "valid_obs_20m_max": 24,
+        "valid_obs_20m_mean": 8.881884790076253,
+        "valid_obs_20m_min": 0,
+        "year_month": "2024-03",
+        ".geo": "{\"type\":\"MultiPoint\",\"coordinates\":[]}",
+        "NDVI_valid_pct": 100.054,
+        "NDVI_missing_pct": -0.054,
+        "EVI_valid_pct": 100.054,
+        "NDMI_valid_pct": 100.1094,
+        "NDMI_missing_pct": -0.1094,
+        "NDRE_valid_pct": 100.1094,
+        "scl2_share_of_retained_pct": 0.299
+      }
+    },
+    "sentinel2_2024_03_valid_obs_10m.tif": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_valid_obs_10m.tif",
+      "exists": true,
+      "size_bytes": 9179469,
+      "size_mb": 8.7542,
+      "readable": true,
+      "crs": "EPSG:32632",
+      "res_x_m": 10.0,
+      "res_y_m": 10.0,
+      "width": 9146,
+      "height": 7131,
+      "band_count": 1,
+      "dtypes": [
+        "int32"
+      ],
+      "nodata": -9999.0,
+      "band_stats": [
+        {
+          "band_index": 1,
+          "description": "valid_obs_10m",
+          "valid_pixels": 65220126,
+          "nodata_pixels": 0,
+          "zero_obs_pixels": 28367800,
+          "min": 0.0,
+          "p05": 0.0,
+          "median": 7.0,
+          "mean": 5.0159,
+          "p95": 11.0,
+          "max": 24.0
+        }
+      ]
+    },
+    "sentinel2_2024_03_valid_obs_20m.tif": {
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseA_2024_03/sentinel2_2024_03_valid_obs_20m.tif",
+      "exists": true,
+      "size_bytes": 2765293,
+      "size_mb": 2.6372,
+      "readable": true,
+      "crs": "EPSG:32632",
+      "res_x_m": 20.0,
+      "res_y_m": 20.0,
+      "width": 4574,
+      "height": 3566,
+      "band_count": 1,
+      "dtypes": [
+        "int32"
+      ],
+      "nodata": -9999.0,
+      "band_stats": [
+        {
+          "band_index": 1,
+          "description": "valid_obs_20m",
+          "valid_pixels": 16310884,
+          "nodata_pixels": 0,
+          "zero_obs_pixels": 7092730,
+          "min": 0.0,
+          "p05": 0.0,
+          "median": 7.0,
+          "mean": 5.0197,
+          "p95": 11.0,
+          "max": 24.0
+        }
+      ]
+    }
+  }
+}

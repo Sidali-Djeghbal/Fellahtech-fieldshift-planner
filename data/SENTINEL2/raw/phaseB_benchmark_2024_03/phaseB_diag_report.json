@@ -1,0 +1,186 @@
+{
+  "executed_utc": "2026-11-15T01:12:39.064083+00:00",
+  "drive_folder_id": "1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq",
+  "warnings": [
+    "unclosed <ssl.SSLSocket fd=9, family=2, type=1, proto=6, laddr=('10.79.175.221', 47486), raddr=('172.217.119.4', 443)>"
+  ],
+  "tasks": [
+    {
+      "name": "phaseB_2024_03_evi_diagnostics",
+      "file_prefix": "phaseB_2024_03_evi_diagnostics",
+      "kind": "table",
+      "task_id": "6V4J7C7FJTPLBOBRSSJHAW5K",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 18272.802734375,
+      "run_seconds": 73.91,
+      "total_wall_seconds": 76.66,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq"
+      ]
+    },
+    {
+      "name": "phaseB_2024_03_crop_valid_obs_10m",
+      "file_prefix": "phaseB_2024_03_crop_valid_obs_10m",
+      "kind": "image",
+      "task_id": "AHXNVLSBONZDT52JM23GKZZR",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 17.00684928894043,
+      "run_seconds": 64.88,
+      "total_wall_seconds": 68.67,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq"
+      ]
+    },
+    {
+      "name": "phaseB_2024_03_crop_valid_obs_20m",
+      "file_prefix": "phaseB_2024_03_crop_valid_obs_20m",
+      "kind": "image",
+      "task_id": "7ZVYQAOFX47WUJSLERP4X4UN",
+      "state": "COMPLETED",
+      "error_message": null,
+      "batch_eecu_usage_seconds": 11.341434478759766,
+      "run_seconds": 56.38,
+      "total_wall_seconds": 62.26,
+      "destination_uris": [
+        "https://drive.google.com/#folders/1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq"
+      ]
+    }
+  ],
+  "downloaded_files": {
+    "phaseB_2024_03_evi_diagnostics.csv": {
+      "task_name": "phaseB_2024_03_evi_diagnostics",
+      "drive_folder_id": "1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq",
+      "drive_file_id": "1YZWHShOlbQLPvEYEDIS944qvCD6efh7e",
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseB_benchmark_2024_03/phaseB_2024_03_evi_diagnostics.csv",
+      "size_bytes": 1629,
+      "size_mb": 0.0016,
+      "md5_checksum": "50a3c92f2caa3aa09b1e018c4a422f73",
+      "checksum_verified": true
+    },
+    "phaseB_2024_03_crop_valid_obs_10m.tif": {
+      "task_name": "phaseB_2024_03_crop_valid_obs_10m",
+      "drive_folder_id": "1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq",
+      "drive_file_id": "13Ozfa1_Zu_1u1kx9RskHFRDh8-vxgEeW",
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseB_benchmark_2024_03/phaseB_2024_03_crop_valid_obs_10m.tif",
+      "size_bytes": 175908,
+      "size_mb": 0.1678,
+      "md5_checksum": "7ede109d60082ffff3723c184a755644",
+      "checksum_verified": true
+    },
+    "phaseB_2024_03_crop_valid_obs_20m.tif": {
+      "task_name": "phaseB_2024_03_crop_valid_obs_20m",
+      "drive_folder_id": "1m8c2eavFEhGkLTo-QemLKOeb7H9no1Hq",
+      "drive_file_id": "1q_KZ1o5B8UY3P7hO7I5pmnN9wq2Fmb1t",
+      "path": "/home/lokman/Desktop/FeildShit-SI-Model/data/SENTINEL2/raw/phaseB_benchmark_2024_03/phaseB_2024_03_crop_valid_obs_20m.tif",
+      "size_bytes": 36893,
+      "size_mb": 0.0352,
+      "md5_checksum": "021d8ee553237515a6cfce82d455bc11",
+      "checksum_verified": true
+    }
+  },
+  "evi_diagnostics_row": {
+    "system:index": 0,
+    "any_sr_neg": 0.0,
+    "b2_neg": 0.0,
+    "b4_neg": 0.0,
+    "b8_neg": 0.0,
+    "base_abs_gt_2": 79.0,
+    "base_gt_1": 5683.0,
+    "base_lt_m1": 32.0,
+    "denom_le_0": 364.0,
+    "denom_le_005": 497.0,
+    "denom_le_010": 689.0,
+    "denom_le_020": 1301.0,
+    "evi_base_count": 36831907,
+    "evi_base_max": 16.016393442622967,
+    "evi_base_mean": 0.4693563320011508,
+    "evi_base_min": -11.673728813559178,
+    "evi_base_p1": 0.09785142308887176,
+    "evi_base_p5": 0.1919003968666384,
+    "evi_base_p50": 0.43699144585789984,
+    "evi_base_p95": 0.8013689957926851,
+    "evi_base_p99": 0.9090059986234947,
+    "evi_base_stdDev": 0.17858604859706362,
+    "evi_denom_max": 3.4081,
+    "evi_denom_min": -0.3628,
+    "evi_denom_p0": 1.13378672635878,
+    "evi_denom_p1": 1.2276601638901206,
+    "evi_denom_p100": 2.163891064528594,
+    "evi_denom_p5": 1.2582332543711832,
+    "evi_denom_p50": 1.4140669252981022,
+    "evi_denom_p95": 1.6639129242672466,
+    "evi_denom_p99": 1.8826707368517561,
+    "evi_t005_count": 36831890,
+    "evi_t005_max": 8.883333333333303,
+    "evi_t005_mean": 0.46936099866269915,
+    "evi_t005_min": -1.88072726309656,
+    "evi_t005_p1": 0.10061117319569565,
+    "evi_t005_p5": 0.15709118379646367,
+    "evi_t005_p50": 0.46772119704351606,
+    "evi_t005_p95": 0.7791139711565641,
+    "evi_t005_p99": 0.899721241439975,
+    "evi_t005_stdDev": 0.1785031048418513,
+    "evi_t010_count": 36831883,
+    "evi_t010_max": 5.375983434926731,
+    "evi_t010_mean": 0.46935913156447473,
+    "evi_t010_min": -2.5287356321839076,
+    "evi_t010_p1": 0.08175481666926164,
+    "evi_t010_p5": 0.17213176108947675,
+    "evi_t010_p50": 0.4529439152592299,
+    "evi_t010_p95": 0.7962579080759393,
+    "evi_t010_p99": 0.8891371557132025,
+    "evi_t010_stdDev": 0.17847230942221565,
+    "excl_sr_or_005": 497.0,
+    "excl_sr_or_010": 689.0,
+    "obs_total": 326957262.0,
+    "t005_abs_gt_2": 70.0,
+    "t005_gt_1": 5700.0,
+    "t005_lt_m1": 1.0,
+    "t010_abs_gt_2": 57.0,
+    "t010_gt_1": 5692.0,
+    "t010_lt_m1": 1.0,
+    ".geo": "{\"type\":\"MultiPoint\",\"coordinates\":[]}"
+  },
+  "nodata_crop_checks": {
+    "phaseB_2024_03_crop_valid_obs_10m.tif": {
+      "crs": "EPSG:32632",
+      "res_m": [
+        10.0,
+        10.0
+      ],
+      "shape": [
+        1000,
+        1000
+      ],
+      "nodata_tag": -9999.0,
+      "outside_polygon_pixels": 305916,
+      "outside_polygon_all_equal_minus9999": true,
+      "outside_polygon_zero_count": 0,
+      "inside_polygon_pixels": 694084,
+      "inside_polygon_min_valid_obs": 1,
+      "inside_polygon_max_valid_obs": 11,
+      "inside_polygon_nodata_count": 3
+    },
+    "phaseB_2024_03_crop_valid_obs_20m.tif": {
+      "crs": "EPSG:32632",
+      "res_m": [
+        20.0,
+        20.0
+      ],
+      "shape": [
+        500,
+        500
+      ],
+      "nodata_tag": -9999.0,
+      "outside_polygon_pixels": 76479,
+      "outside_polygon_all_equal_minus9999": false,
+      "outside_polygon_zero_count": 0,
+      "inside_polygon_pixels": 173521,
+      "inside_polygon_min_valid_obs": 2,
+      "inside_polygon_max_valid_obs": 10,
+      "inside_polygon_nodata_count": 1
+    }
+  }
+}

@@ -1,0 +1,16 @@
+dataset,column_name,dtype,unit,description
+sentinel2_monthly_indices_2017_2025.csv,year_month,string,-,"Calendar year-month (YYYY-MM), 108 months 2017-01..2025-12"
+sentinel2_monthly_indices_2017_2025.csv,image_count,int,scenes,Distinct COPERNICUS/S2_SR_HARMONIZED scenes intersecting Guelma
+sentinel2_monthly_indices_2017_2025.csv,cloud_prob_matched_images,int,scenes,Scenes matched to S2_CLOUD_PROBABILITY
+sentinel2_monthly_indices_2017_2025.csv,NDVI_mean / NDVI_median / NDVI_stdDev / NDVI_min / NDVI_max / NDVI_p5 / NDVI_p95,float,unitless,10 m monthly spatial statistics of pixel-median NDVI
+sentinel2_monthly_indices_2017_2025.csv,EVI_mean / EVI_median / EVI_stdDev / EVI_min / EVI_max / EVI_p5 / EVI_p95,float,unitless,"10 m unclipped EVI (B2,B4,B8>=0 & denom>0.1)"
+sentinel2_monthly_indices_2017_2025.csv,NDMI_mean / NDMI_median / NDMI_stdDev / NDMI_min / NDMI_max / NDMI_p5 / NDMI_p95,float,unitless,20 m canopy water proxy (B8-B11)/(B8+B11)
+sentinel2_monthly_indices_2017_2025.csv,NDRE_mean / NDRE_median / NDRE_stdDev / NDRE_min / NDRE_max / NDRE_p5 / NDRE_p95,float,unitless,20 m red-edge chlorophyll index (B8A-B5)/(B8A+B5)
+sentinel2_monthly_indices_2017_2025.csv,NDVI_valid_pixels / NDVI_valid_pct / NDVI_missing_pct,int/float,px / %,"Unmasked composite pixel counts & coverage vs 36,832,135 binary domain px"
+sentinel2_monthly_indices_2017_2025.csv,EVI_excluded_composite_pixels / evi_obs_excluded_total_10m,int,px / obs,Pixels/observations excluded by EVI SR>=0 & denom>0.1 guard
+sentinel2_monthly_indices_2017_2025.csv,mean_valid_obs_per_px_10m / _20m,float,obs/px,Mean cloud-free observations per Guelma pixel (distinct from scene count)
+sentinel2_monthly_indices_2017_2025.csv,scl2_share_pct,float,%,Share of retained 20 m pixel-observations classified as SCL=2 (Dark area pixels)
+sentinel2_monthly_indices_2017_2025.csv,completeness_status,string,-,"COMPLETE (>=90%), PARTIAL_LOW_COVERAGE (<90%, e.g. 2017-01=1.42%), or EMPTY"
+sentinel2_scenes_2017_2025.csv,system_index / date / mgrs_tile / spacecraft / cloudy_pixel_percentage / has_cloud_prob,mixed,-,"Full metadata table for all 3,593 scenes (Dec 2016 - Dec 2025)"
+sentinel2_seasonal_from_monthly_2017_2025.csv,aggregation_basis,string,-,Explicit flag: mean of monthly regional medians (GEE pixel composites pending quota reset)
+sentinel2_annual_from_monthly_2017_2025.csv,aggregation_basis,string,-,Explicit flag: mean of 12 monthly regional medians (GEE pixel composites pending quota reset)

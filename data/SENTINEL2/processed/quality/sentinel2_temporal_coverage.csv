@@ -1,0 +1,7 @@
+product,source,expected,completed,complete_periods,incomplete_periods,status
+Monthly statistics (2017-01..2025-12),GEE Batch (Phase C verified),108,108,107,1,COMPLETED (2017-01 partial at 1.42% / 1 scene)
+Scene metadata inventory (2016-12..2025-12),GEE Batch (Phase C verified),3593,3593,3592,0,COMPLETED
+Monthly GeoTIFFs — Phase A March 2024,GEE Batch (Phase A baseline),4,4,4,0,COMPLETED (untouched baseline in phaseA_2024_03; Phase B NoData crops validated separately)
+Seasonal pixel composites & tables (2018-2025),GEE Batch (Deferred),32,0,0,32,PENDING_GEE_QUOTA_RESET (exploratory monthly-aggregated seasonal CSV available)
+"Annual pixel composites & GeoTIFFs (2017, 2025)",GEE Batch (Deferred),4,0,0,4,PENDING_GEE_QUOTA_RESET (exploratory monthly-aggregated annual CSV available)
+"Additional representative monthly GeoTIFFs (2019-04, 2022-07, 2025-04) & 2017-2025 20m coverage",GEE Batch (Deferred),7,0,0,7,PENDING_GEE_QUOTA_RESET

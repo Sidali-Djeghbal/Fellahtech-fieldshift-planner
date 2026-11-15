@@ -1,0 +1,619 @@
+{
+  "gee_project": "langchainllm-60c67",
+  "gee_asset": "projects/langchainllm-60c67/assets/guelma_wilaya_boundary",
+  "asset_feature_count": 1,
+  "asset_area_km2": 3683.3711,
+  "s2_collection": "COPERNICUS/S2_SR_HARMONIZED",
+  "cloud_prob_collection": "COPERNICUS/S2_CLOUD_PROBABILITY",
+  "total_s2_images_2016_12_to_2025_12": 3593,
+  "total_s2_images_2017_01_to_2025_12": 3592,
+  "total_cloud_prob_images": 4087,
+  "s2_images_with_cloud_prob_match": 3559,
+  "cloud_prob_match_pct": 99.05,
+  "available_bands": [
+    "B1",
+    "B2",
+    "B3",
+    "B4",
+    "B5",
+    "B6",
+    "B7",
+    "B8",
+    "B8A",
+    "B9",
+    "B11",
+    "B12",
+    "AOT",
+    "WVP",
+    "SCL",
+    "TCI_R",
+    "TCI_G",
+    "TCI_B",
+    "MSK_CLDPRB",
+    "MSK_SNWPRB",
+    "QA10",
+    "QA20",
+    "QA60",
+    "MSK_CLASSI_OPAQUE",
+    "MSK_CLASSI_CIRRUS",
+    "MSK_CLASSI_SNOW_ICE"
+  ],
+  "band_native_scales_m": {
+    "B2": 10,
+    "B3": 10,
+    "B4": 10,
+    "B5": 20,
+    "B6": 20,
+    "B7": 20,
+    "B8": 10,
+    "B8A": 20,
+    "B11": 20,
+    "B12": 20,
+    "SCL": 20,
+    "QA60": 60
+  },
+  "scl_class_2_evaluation": {
+    "winter_2023_01": {
+      "retained_pixel_obs": 80025937,
+      "scl2_pixel_obs": 585719,
+      "scl2_share_of_retained_pct": 0.732
+    },
+    "spring_2023_04": {
+      "retained_pixel_obs": 71357956,
+      "scl2_pixel_obs": 288228,
+      "scl2_share_of_retained_pct": 0.404
+    },
+    "summer_2023_07": {
+      "retained_pixel_obs": 97890276,
+      "scl2_pixel_obs": 66059,
+      "scl2_share_of_retained_pct": 0.067
+    }
+  },
+  "monthly_image_availability": [
+    {
+      "image_count": 1,
+      "month": 12,
+      "year": 2016
+    },
+    {
+      "image_count": 1,
+      "month": 1,
+      "year": 2017
+    },
+    {
+      "image_count": 6,
+      "month": 2,
+      "year": 2017
+    },
+    {
+      "image_count": 8,
+      "month": 3,
+      "year": 2017
+    },
+    {
+      "image_count": 14,
+      "month": 4,
+      "year": 2017
+    },
+    {
+      "image_count": 22,
+      "month": 5,
+      "year": 2017
+    },
+    {
+      "image_count": 28,
+      "month": 6,
+      "year": 2017
+    },
+    {
+      "image_count": 28,
+      "month": 7,
+      "year": 2017
+    },
+    {
+      "image_count": 24,
+      "month": 8,
+      "year": 2017
+    },
+    {
+      "image_count": 19,
+      "month": 9,
+      "year": 2017
+    },
+    {
+      "image_count": 28,
+      "month": 10,
+      "year": 2017
+    },
+    {
+      "image_count": 23,
+      "month": 11,
+      "year": 2017
+    },
+    {
+      "image_count": 31,
+      "month": 12,
+      "year": 2017
+    },
+    {
+      "image_count": 36,
+      "month": 1,
+      "year": 2018
+    },
+    {
+      "image_count": 35,
+      "month": 2,
+      "year": 2018
+    },
+    {
+      "image_count": 31,
+      "month": 3,
+      "year": 2018
+    },
+    {
+      "image_count": 35,
+      "month": 4,
+      "year": 2018
+    },
+    {
+      "image_count": 32,
+      "month": 5,
+      "year": 2018
+    },
+    {
+      "image_count": 36,
+      "month": 6,
+      "year": 2018
+    },
+    {
+      "image_count": 38,
+      "month": 7,
+      "year": 2018
+    },
+    {
+      "image_count": 34,
+      "month": 8,
+      "year": 2018
+    },
+    {
+      "image_count": 33,
+      "month": 9,
+      "year": 2018
+    },
+    {
+      "image_count": 35,
+      "month": 10,
+      "year": 2018
+    },
+    {
+      "image_count": 31,
+      "month": 11,
+      "year": 2018
+    },
+    {
+      "image_count": 35,
+      "month": 12,
+      "year": 2018
+    },
+    {
+      "image_count": 36,
+      "month": 1,
+      "year": 2019
+    },
+    {
+      "image_count": 36,
+      "month": 2,
+      "year": 2019
+    },
+    {
+      "image_count": 36,
+      "month": 3,
+      "year": 2019
+    },
+    {
+      "image_count": 35,
+      "month": 4,
+      "year": 2019
+    },
+    {
+      "image_count": 31,
+      "month": 5,
+      "year": 2019
+    },
+    {
+      "image_count": 32,
+      "month": 6,
+      "year": 2019
+    },
+    {
+      "image_count": 32,
+      "month": 7,
+      "year": 2019
+    },
+    {
+      "image_count": 31,
+      "month": 8,
+      "year": 2019
+    },
+    {
+      "image_count": 35,
+      "month": 9,
+      "year": 2019
+    },
+    {
+      "image_count": 36,
+      "month": 10,
+      "year": 2019
+    },
+    {
+      "image_count": 31,
+      "month": 11,
+      "year": 2019
+    },
+    {
+      "image_count": 36,
+      "month": 12,
+      "year": 2019
+    },
+    {
+      "image_count": 36,
+      "month": 1,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 2,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 3,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 4,
+      "year": 2020
+    },
+    {
+      "image_count": 35,
+      "month": 5,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 6,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 7,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 8,
+      "year": 2020
+    },
+    {
+      "image_count": 33,
+      "month": 9,
+      "year": 2020
+    },
+    {
+      "image_count": 30,
+      "month": 10,
+      "year": 2020
+    },
+    {
+      "image_count": 33,
+      "month": 11,
+      "year": 2020
+    },
+    {
+      "image_count": 36,
+      "month": 12,
+      "year": 2020
+    },
+    {
+      "image_count": 34,
+      "month": 1,
+      "year": 2021
+    },
+    {
+      "image_count": 28,
+      "month": 2,
+      "year": 2021
+    },
+    {
+      "image_count": 33,
+      "month": 3,
+      "year": 2021
+    },
+    {
+      "image_count": 35,
+      "month": 4,
+      "year": 2021
+    },
+    {
+      "image_count": 37,
+      "month": 5,
+      "year": 2021
+    },
+    {
+      "image_count": 33,
+      "month": 6,
+      "year": 2021
+    },
+    {
+      "image_count": 33,
+      "month": 7,
+      "year": 2021
+    },
+    {
+      "image_count": 41,
+      "month": 8,
+      "year": 2021
+    },
+    {
+      "image_count": 36,
+      "month": 9,
+      "year": 2021
+    },
+    {
+      "image_count": 30,
+      "month": 10,
+      "year": 2021
+    },
+    {
+      "image_count": 30,
+      "month": 11,
+      "year": 2021
+    },
+    {
+      "image_count": 35,
+      "month": 12,
+      "year": 2021
+    },
+    {
+      "image_count": 40,
+      "month": 1,
+      "year": 2022
+    },
+    {
+      "image_count": 34,
+      "month": 2,
+      "year": 2022
+    },
+    {
+      "image_count": 27,
+      "month": 3,
+      "year": 2022
+    },
+    {
+      "image_count": 32,
+      "month": 4,
+      "year": 2022
+    },
+    {
+      "image_count": 36,
+      "month": 5,
+      "year": 2022
+    },
+    {
+      "image_count": 31,
+      "month": 6,
+      "year": 2022
+    },
+    {
+      "image_count": 33,
+      "month": 7,
+      "year": 2022
+    },
+    {
+      "image_count": 35,
+      "month": 8,
+      "year": 2022
+    },
+    {
+      "image_count": 31,
+      "month": 9,
+      "year": 2022
+    },
+    {
+      "image_count": 32,
+      "month": 10,
+      "year": 2022
+    },
+    {
+      "image_count": 30,
+      "month": 11,
+      "year": 2022
+    },
+    {
+      "image_count": 31,
+      "month": 12,
+      "year": 2022
+    },
+    {
+      "image_count": 42,
+      "month": 1,
+      "year": 2023
+    },
+    {
+      "image_count": 30,
+      "month": 2,
+      "year": 2023
+    },
+    {
+      "image_count": 32,
+      "month": 3,
+      "year": 2023
+    },
+    {
+      "image_count": 30,
+      "month": 4,
+      "year": 2023
+    },
+    {
+      "image_count": 32,
+      "month": 5,
+      "year": 2023
+    },
+    {
+      "image_count": 30,
+      "month": 6,
+      "year": 2023
+    },
+    {
+      "image_count": 30,
+      "month": 7,
+      "year": 2023
+    },
+    {
+      "image_count": 33,
+      "month": 8,
+      "year": 2023
+    },
+    {
+      "image_count": 30,
+      "month": 9,
+      "year": 2023
+    },
+    {
+      "image_count": 32,
+      "month": 10,
+      "year": 2023
+    },
+    {
+      "image_count": 35,
+      "month": 11,
+      "year": 2023
+    },
+    {
+      "image_count": 31,
+      "month": 12,
+      "year": 2023
+    },
+    {
+      "image_count": 37,
+      "month": 1,
+      "year": 2024
+    },
+    {
+      "image_count": 31,
+      "month": 2,
+      "year": 2024
+    },
+    {
+      "image_count": 35,
+      "month": 3,
+      "year": 2024
+    },
+    {
+      "image_count": 31,
+      "month": 4,
+      "year": 2024
+    },
+    {
+      "image_count": 35,
+      "month": 5,
+      "year": 2024
+    },
+    {
+      "image_count": 30,
+      "month": 6,
+      "year": 2024
+    },
+    {
+      "image_count": 38,
+      "month": 7,
+      "year": 2024
+    },
+    {
+      "image_count": 35,
+      "month": 8,
+      "year": 2024
+    },
+    {
+      "image_count": 31,
+      "month": 9,
+      "year": 2024
+    },
+    {
+      "image_count": 32,
+      "month": 10,
+      "year": 2024
+    },
+    {
+      "image_count": 34,
+      "month": 11,
+      "year": 2024
+    },
+    {
+      "image_count": 36,
+      "month": 12,
+      "year": 2024
+    },
+    {
+      "image_count": 34,
+      "month": 1,
+      "year": 2025
+    },
+    {
+      "image_count": 28,
+      "month": 2,
+      "year": 2025
+    },
+    {
+      "image_count": 45,
+      "month": 3,
+      "year": 2025
+    },
+    {
+      "image_count": 44,
+      "month": 4,
+      "year": 2025
+    },
+    {
+      "image_count": 46,
+      "month": 5,
+      "year": 2025
+    },
+    {
+      "image_count": 43,
+      "month": 6,
+      "year": 2025
+    },
+    {
+      "image_count": 49,
+      "month": 7,
+      "year": 2025
+    },
+    {
+      "image_count": 51,
+      "month": 8,
+      "year": 2025
+    },
+    {
+      "image_count": 45,
+      "month": 9,
+      "year": 2025
+    },
+    {
+      "image_count": 51,
+      "month": 10,
+      "year": 2025
+    },
+    {
+      "image_count": 46,
+      "month": 11,
+      "year": 2025
+    },
+    {
+      "image_count": 52,
+      "month": 12,
+      "year": 2025
+    }
+  ]
+}

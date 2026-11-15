@@ -1,0 +1,228 @@
+{
+  "project": "Field Shift (NASA Space Apps Challenge 2026)",
+  "study_area": "Guelma Wilaya, Algeria",
+  "period": "2017-01-01 to 2025-12-31",
+  "generated_utc": "2026-11-15T02:06:19.864005+00:00",
+  "package_versions": {
+    "python": "3.14.7",
+    "pandas": "3.1.1",
+    "numpy": "2.5.4",
+    "geopandas": "1.2.0",
+    "shapely": "2.2.0",
+    "pyproj": "3.8.0",
+    "rasterio": "1.5.2",
+    "matplotlib": "3.11.2",
+    "scipy": "1.18.1",
+    "ee": "1.7.52"
+  },
+  "local_boundary_audit": {
+    "boundary_file": "data/boundaries/processed/guelma_wilaya_boundary.geojson.gpkg",
+    "source_crs": "EPSG:4326",
+    "target_crs": "EPSG:32632",
+    "geometry_valid": true,
+    "bounds_wgs84": [
+      6.941607,
+      36.025888,
+      7.961421,
+      36.674328
+    ],
+    "bounds_utm32n": [
+      315490.79,
+      3988515.34,
+      406942.61,
+      4059813.11
+    ],
+    "utm_area_km2": 3683.2311,
+    "geodesic_area_km2": 3684.2536
+  },
+  "gee_config": {
+    "project_id": "spry-framework-514800-j2",
+    "registration_state": "REGISTERED_NOT_COMMERCIALLY",
+    "collection": "COPERNICUS/S2_SR_HARMONIZED",
+    "cloud_probability_collection": "COPERNICUS/S2_CLOUD_PROBABILITY",
+    "target_crs": "EPSG:32632",
+    "reflectance_scale_factor": 0.0001,
+    "cloud_probability_threshold_pct": 40,
+    "evi_denominator_threshold": 0.1,
+    "nodata_value": -9999,
+    "scl_excluded_classes": {
+      "0": "No data",
+      "1": "Saturated or defective",
+      "3": "Cloud shadows",
+      "8": "Cloud medium probability",
+      "9": "Cloud high probability",
+      "10": "Thin cirrus",
+      "11": "Snow or ice"
+    },
+    "scl_retained_classes": {
+      "2": "Dark area pixels (retained by default to preserve topographic/moist soil signal; evaluated in QA)",
+      "4": "Vegetation",
+      "5": "Not vegetated",
+      "6": "Water",
+      "7": "Unclassified"
+    }
+  },
+  "measured_eecu_consumption_seconds": {
+    "phaseA_march2024_baseline": 21564.0148,
+    "phaseB_diagnostics_and_benchmark": 24124.7731,
+    "phaseC_108months_and_scenes": 658054.0291,
+    "total_measured_all_phases": 703742.817,
+    "total_measured_eecu_hours": 195.48
+  },
+  "phaseC_status": {
+    "detected_utc": "2026-11-15T01:55:50.492488+00:00",
+    "project": "spry-framework-514800-j2",
+    "state": "RESTRICTED_MODE_QUOTA_EXCEEDED",
+    "message": "Your project has exceeded its noncommercial compute quota and is now in restricted mode.",
+    "pending_tasks_not_launched": [
+      "phaseC_seasonal_2017..2025 (9 annual batches = 36 seasons)",
+      "phaseC_annual_2017..2025 (9 annual summary rows)",
+      "selected monthly GeoTIFFs (2019-04, 2022-07, 2024-03, 2025-04 at 10m/20m)",
+      "annual GeoTIFFs (2017, 2025 at 10m/20m)",
+      "multi-year seasonal GeoTIFFs (winter/spring/summer/autumn 2018-2025 at 10m/20m)",
+      "valid_obs_count_2017_2025_20m GeoTIFF"
+    ],
+    "deferred_tasks_count": 39,
+    "estimated_remaining_eecu_seconds": [
+      557000,
+      921000
+    ],
+    "estimated_rasters_only_eecu_seconds": [
+      143000,
+      264000
+    ]
+  },
+  "bands": {
+    "B2": {
+      "name": "Blue",
+      "resolution_m": 10
+    },
+    "B3": {
+      "name": "Green",
+      "resolution_m": 10
+    },
+    "B4": {
+      "name": "Red",
+      "resolution_m": 10
+    },
+    "B5": {
+      "name": "Red Edge 1",
+      "resolution_m": 20
+    },
+    "B6": {
+      "name": "Red Edge 2",
+      "resolution_m": 20
+    },
+    "B7": {
+      "name": "Red Edge 3",
+      "resolution_m": 20
+    },
+    "B8": {
+      "name": "Near Infrared (NIR)",
+      "resolution_m": 10
+    },
+    "B8A": {
+      "name": "Narrow NIR",
+      "resolution_m": 20
+    },
+    "B11": {
+      "name": "SWIR 1",
+      "resolution_m": 20
+    },
+    "B12": {
+      "name": "SWIR 2",
+      "resolution_m": 20
+    },
+    "SCL": {
+      "name": "Scene Classification Layer",
+      "resolution_m": 20
+    },
+    "QA60": {
+      "name": "Cloud mask bitmask",
+      "resolution_m": 60
+    }
+  },
+  "vegetation_indices": {
+    "NDVI": {
+      "formula": "(B8 - B4) / (B8 + B4)",
+      "bands": [
+        "B8",
+        "B4"
+      ],
+      "analysis_resolution_m": 10,
+      "physical_range": [
+        -1.0,
+        1.0
+      ],
+      "purpose": "Vegetation greenness and photosynthetic activity (not direct crop yield)"
+    },
+    "EVI": {
+      "formula": "2.5 * (B8 - B4) / (B8 + 6*B4 - 7.5*B2 + 1)",
+      "bands": [
+        "B8",
+        "B4",
+        "B2"
+      ],
+      "analysis_resolution_m": 10,
+      "physical_range": [
+        -1.0,
+        1.0
+      ],
+      "purpose": "Vegetation canopy monitoring with reduced soil/atmospheric sensitivity"
+    },
+    "NDMI": {
+      "formula": "(B8 - B11) / (B8 + B11)",
+      "bands": [
+        "B8",
+        "B11"
+      ],
+      "analysis_resolution_m": 20,
+      "physical_range": [
+        -1.0,
+        1.0
+      ],
+      "purpose": "Vegetation moisture content indicator (B8 aggregated to 20 m; NOT direct soil moisture)"
+    },
+    "NDRE": {
+      "formula": "(B8A - B5) / (B8A + B5)",
+      "bands": [
+        "B8A",
+        "B5"
+      ],
+      "analysis_resolution_m": 20,
+      "physical_range": [
+        -1.0,
+        1.0
+      ],
+      "purpose": "Red-edge canopy chlorophyll/nitrogen sensitivity at native 20 m resolution"
+    }
+  },
+  "updated_audit_utc": "2026-11-15T02:14:40.672379+00:00",
+  "phaseC_final_audit": {
+    "audit_outcome": "READY_FOR_WILAYA_PANEL_INTEGRATION_SUBWILAYA_RASTERS_DEFERRED",
+    "monthly_rows_verified": 108,
+    "monthly_complete_ge_90pct": 107,
+    "monthly_partial_lt_90pct": [
+      "2017-01 (1.4173%, 1 scene)"
+    ],
+    "scenes_verified_2016_12_to_2025_12": 3593,
+    "scenes_verified_2017_2025": 3592,
+    "qa_checks_pass_check_fail": {
+      "PASS": 16,
+      "CHECK": 1,
+      "FAIL": 0
+    },
+    "exploratory_derived_tables_explicitly_labeled": [
+      "data/SENTINEL2/processed/seasonal/sentinel2_seasonal_from_monthly_2017_2025.csv",
+      "data/SENTINEL2/processed/annual/sentinel2_annual_from_monthly_2017_2025.csv"
+    ],
+    "audit_reports": [
+      "data/SENTINEL2/processed/metadata/final_sentinel2_audit_report.md",
+      "data/SENTINEL2/processed/quality/monthly_dataset_validation_report.md",
+      "data/SENTINEL2/processed/metadata/seasonal_annual_limitations_report.md",
+      "data/SENTINEL2/processed/metadata/cross_dataset_integration_specification.md",
+      "data/SENTINEL2/processed/quality/deferred_gee_task_inventory.md",
+      "data/SENTINEL2/processed/quality/deferred_gee_task_inventory.csv"
+    ]
+  }
+}
