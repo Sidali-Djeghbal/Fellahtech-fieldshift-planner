@@ -30,7 +30,7 @@ from app.ml_client.base import (
 from app.schemas.catalog import MLCatalogPayload
 
 _FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
-_SEASONS_ORDER: tuple[str, ...] = ("spring", "summer", "autumn", "winter")
+_SEASONS_ORDER: tuple[str, ...] = ("winter", "spring", "summer", "autumn")
 _DEFAULT_SEASON_MONTH: dict[str, int] = {
     "spring": 3,
     "summer": 6,
