@@ -1084,7 +1084,7 @@ export function GuelmaBorderEditorMap({
       </header>
 
       {/* Main Map Viewport */}
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden bg-[#0a1310]">
         {!webglFailed ? (
           <div ref={mapContainerRef} className="h-full w-full" />
         ) : (
@@ -1252,10 +1252,13 @@ export function GuelmaBorderEditorMap({
           </svg>
         )}
 
+        {/* Liquid Glass Atmospheric Vignette overlay from Prototype */}
+        <div className="lg-vignette" />
+
         {/* Quick Guelma Sample Borders Toolbar (Top-Left Overlay) */}
         <div className="pointer-events-none absolute start-3 top-3 z-20 flex flex-col gap-2">
-          <div className="fs-hud-glass pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl p-2 shadow-xl">
-            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#15803D] dark:text-[#86EFAC]">
+          <div className="lg-surface lg-specular pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl p-2.5 shadow-xl">
+            <span className="px-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#15803D] dark:text-[#4ADE80]">
               {t.quickPresetLabel}:
             </span>
             {GUELMA_PARCEL_PRESETS.slice(0, 5).map((p) => (
@@ -1264,15 +1267,15 @@ export function GuelmaBorderEditorMap({
                 type="button"
                 onClick={() => handleApplyQuickPreset(p.id)}
                 data-testid={`quick-border-${p.id}`}
-                className="min-h-9 rounded-xl border border-[#111813]/12 bg-[#111813]/[0.05] px-2.5 py-1 text-[11px] font-medium text-[#111813] transition-[background-color,border-color] hover:border-[#15803D]/50 hover:bg-[#111813]/[0.10] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#F5F7F5] dark:hover:border-[#86EFAC]/40 dark:hover:bg-white/[0.14]"
+                className="lg-capsule min-h-9 px-2.5 py-1 text-[11px] font-medium text-[#111813] transition-[transform,background-color] active:scale-[0.96] dark:text-[#F5F7F5]"
               >
                 {p.commune} · {p.areaHectares} ha
               </button>
             ))}
           </div>
 
-          <div className="pointer-events-auto flex max-w-sm flex-wrap items-center gap-2 rounded-xl border border-[#111813]/10 bg-white/90 px-4 py-2 text-[11px] text-[#243227] backdrop-blur-md dark:border-white/10 dark:bg-[#121713]/85 dark:text-[#D1DBD3]">
-            <Crosshair size={15} className="shrink-0 text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
+          <div className="lg-capsule pointer-events-auto flex max-w-sm flex-wrap items-center gap-2 rounded-xl px-4 py-2 text-[11px] text-[#243227] dark:text-[#D1DBD3]">
+            <Crosshair size={15} className="shrink-0 text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>
               {isClosed
                 ? t.hintAdjustVertices
@@ -1284,7 +1287,7 @@ export function GuelmaBorderEditorMap({
         </div>
 
         {/* Precision Telemetry & CAD Action Dock (Bottom / Side HUD) */}
-        <aside className="fs-hud-glass pointer-events-auto absolute bottom-3 end-3 z-20 w-[330px] max-w-[calc(100vw-24px)] rounded-2xl p-3.5 shadow-[0_24px_60px_rgba(11,61,46,0.16)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.65)]">
+        <aside className="lg-surface lg-specular pointer-events-auto absolute bottom-3 end-3 z-20 w-[330px] max-w-[calc(100vw-24px)] rounded-2xl p-3.5 shadow-[0_24px_60px_rgba(11,61,46,0.16)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.65)]">
           {/* Verification Status Pill */}
           <div
             className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ${

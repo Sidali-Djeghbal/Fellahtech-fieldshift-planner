@@ -252,6 +252,137 @@ body {
   color: var(--text-primary);
 }
 
+/* =========================================================================
+   Interactive Map — Liquid Glass UI Primitive Suite (from Prototype)
+   ========================================================================= */
+
+/* Atmospheric Map Frame with Specular Highlight Rim */
+.lg-map-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background-color: #0a1310;
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px -12px rgba(0, 0, 0, 0.38);
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+}
+
+:root:not([data-theme="dark"]) .lg-map-frame {
+  background-color: #0d1a14;
+  outline-color: rgba(17, 24, 19, 0.14);
+}
+
+/* Cinematic Atmospheric Map Vignette */
+.lg-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background:
+    radial-gradient(120% 95% at 50% 48%, transparent 52%, rgba(4, 9, 7, 0.44) 100%),
+    linear-gradient(180deg, rgba(4, 9, 7, 0.34) 0%, transparent 14%, transparent 84%, rgba(4, 9, 7, 0.45) 100%);
+}
+
+:root:not([data-theme="dark"]) .lg-vignette {
+  background:
+    radial-gradient(120% 95% at 50% 48%, transparent 58%, rgba(11, 61, 46, 0.24) 100%),
+    linear-gradient(180deg, rgba(11, 61, 46, 0.20) 0%, transparent 14%, transparent 86%, rgba(11, 61, 46, 0.24) 100%);
+}
+
+/* Liquid Glass Floating Capsule HUD Primitive */
+.lg-capsule {
+  position: relative;
+  border-radius: 9999px;
+  background: var(--fs-hud-bg);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.24),
+    0 2px 8px rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--fs-card-border);
+  color: var(--text-primary);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.22s ease;
+}
+
+.lg-capsule:hover {
+  background: var(--fs-pill-hover-bg);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.lg-capsule:active {
+  transform: scale(0.96);
+}
+
+/* Active High-Contrast State for Glass Capsule */
+.lg-capsule-active {
+  background: #0b3d2e;
+  color: #ffffff;
+  box-shadow:
+    0 4px 14px -2px rgba(11, 61, 46, 0.45),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.35);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+:root[data-theme="dark"] .lg-capsule-active {
+  background: #ffffff;
+  color: #111713;
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Liquid Glass Elevated Surface Primitive */
+.lg-surface {
+  position: relative;
+  background: var(--fs-hud-bg);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.26),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px -12px rgba(0, 0, 0, 0.32),
+    0 4px 14px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--fs-card-border);
+  color: var(--text-primary);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease,
+    box-shadow 0.28s ease;
+}
+
+/* Specular Outer Reflection Sheen */
+.lg-specular::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    142deg,
+    rgba(255, 255, 255, 0.36) 0%,
+    rgba(215, 245, 228, 0.16) 28%,
+    rgba(255, 255, 255, 0.04) 62%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
 /* Tier 0 — Atmospheric Optical Glass Canvas (Light / Dark) */
 .fs-workstation-canvas {
   background-color: var(--fs-canvas-bg);

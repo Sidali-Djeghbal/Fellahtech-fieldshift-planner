@@ -180,11 +180,11 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     await assertNoHorizontalOverflow(page, "/evidence");
 
     // 9. Trilingual RTL Switcher check (en -> ar -> en)
-    await page.getByTestId("lang-ar").click();
+    await page.getByTestId("dash-lang-ar").click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
-    await page.getByTestId("lang-en").click();
+    await page.getByTestId("dash-lang-en").click();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
 

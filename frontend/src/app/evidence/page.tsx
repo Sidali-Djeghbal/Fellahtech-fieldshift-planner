@@ -11,6 +11,7 @@ import {
   UserCheck,
   Warning,
 } from "@phosphor-icons/react";
+import { useResolvedTheme } from "@/app/providers";
 import {
   ApiErrorCard,
   DegradedReplayBanner,
@@ -60,6 +61,7 @@ function classifyParamGroup(p: EvidenceParameter): Exclude<ParamGroup, "all"> {
 }
 
 export default function EvidencePage() {
+  const resolvedTheme = useResolvedTheme();
   const {
     lang,
     plainMode,
@@ -163,36 +165,83 @@ export default function EvidencePage() {
   const completenessPct = Math.round((dq?.completeness_score ?? 0) * 100);
 
   return (
-    <div className="space-y-5">
+    <div className="fs-view-enter space-y-5">
       <div>
-        <h1 className="font-heading text-2xl font-extrabold text-[#111827]">{t.title}</h1>
-        <p className="mt-1 text-xs text-[#6B7280]">{t.subtitle}</p>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
+          {t.title}
+        </h1>
+        <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
       </div>
 
-      {analysisQuery.error && <ApiErrorCard error={analysisQuery.error} lang={lang} />}
+      {analysisQuery.error && (
+        <ApiErrorCard error={analysisQuery.error} lang={lang} theme={resolvedTheme} />
+      )}
+
+      {!envelope && !analysisQuery.error && (
+        <section className="fs-liquid-panel rounded-3xl p-6 text-[#111813] dark:text-[#F5F7F5]">
+          {hasSession && resolvedAnalysisId && analysisQuery.isLoading ? (
+            <p className="text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+              Loading evidence ledger...
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  No analysis evidence loaded yet
+                </h2>
+                <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+                  Run an AI rotation analysis in Farm Profile or launch the demo sandbox from the header to inspect dataset provenance.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/farm-profile"
+                  className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold"
+                >
+                  Open Farm Profile
+                </Link>
+                <Link
+                  href="/"
+                  className="fs-liquid-pill rounded-full px-4 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
+                >
+                  Command Center
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {envelope && (
         <>
-          <DegradedReplayBanner degradedMode={envelope.degraded_mode} lang={lang} />
-          <WarningsBanner warnings={envelope.warnings} lang={lang} />
+          <DegradedReplayBanner
+            degradedMode={envelope.degraded_mode}
+            lang={lang}
+            theme={resolvedTheme}
+          />
+          <WarningsBanner warnings={envelope.warnings} lang={lang} theme={resolvedTheme} />
 
           {/* Multi-Scale Fusion Explainer */}
-          <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+          <section className="fs-liquid-microclimate rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
             <div className="flex items-start gap-3">
-              <Stack size={24} className="mt-0.5 shrink-0 text-[#137135]" />
+              <Stack size={24} className="mt-0.5 shrink-0 text-[#15803D] dark:text-[#86EFAC]" />
               <div>
-                <h2 className="font-heading text-base font-bold text-[#111827]">{t.fusionTitle}</h2>
-                <p className="mt-1 text-xs leading-relaxed text-[#374151]">{t.fusionBody}</p>
+                <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  {t.fusionTitle}
+                </h2>
+                <p className="mt-1 text-xs leading-relaxed text-[#3E4C42] dark:text-[#D1DDD3]">
+                  {t.fusionBody}
+                </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-                  <span className="rounded bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[#00291B]">
+                  <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-1 text-[#0B3D2E] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                     dataset_version_used:{" "}
-                    <strong dir="ltr" className="text-[#00291B]">
+                    <strong dir="ltr" className="font-mono">
                       {envelope.result.dataset_version_used}
                     </strong>
                   </span>
-                  <span className="rounded bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[#00291B]">
+                  <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-1 text-[#0B3D2E] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                     ml_engine_version:{" "}
-                    <strong dir="ltr" className="text-[#00291B]">
+                    <strong dir="ltr" className="font-mono">
                       {envelope.result.ml_engine_version}
                     </strong>
                   </span>
@@ -202,16 +251,16 @@ export default function EvidencePage() {
           </section>
 
           {/* Provenance Filter Bar */}
-          <section className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm text-[#111827]">
+          <section className="fs-liquid-panel rounded-3xl p-4 sm:p-5 text-[#111813] dark:text-[#F5F7F5]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setSourceFilter("all")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                     sourceFilter === "all"
-                      ? "bg-[#00291B] text-white shadow-xs"
-                      : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                      ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   {t.filterAll} ({collectedEvidence.length})
@@ -220,10 +269,10 @@ export default function EvidencePage() {
                   type="button"
                   data-testid="filter-farmer-input"
                   onClick={() => setSourceFilter("farmer_input")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                     sourceFilter === "farmer_input"
-                      ? "bg-[#00291B] text-white shadow-xs"
-                      : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                      ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   {t.filterFarmer}
@@ -232,10 +281,10 @@ export default function EvidencePage() {
                   type="button"
                   data-testid="filter-dataset"
                   onClick={() => setSourceFilter("dataset")}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                     sourceFilter === "dataset"
-                      ? "bg-[#00291B] text-white shadow-xs"
-                      : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                      ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   {t.filterDataset}
@@ -249,10 +298,10 @@ export default function EvidencePage() {
                       key={grp}
                       type="button"
                       onClick={() => setGroupFilter(grp)}
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition ${
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold capitalize transition ${
                         groupFilter === grp
-                          ? "bg-[#137135] text-white"
-                          : "border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                          ? "bg-[#15803D] text-white shadow-xs dark:bg-[#22C55E] dark:text-[#081A0E]"
+                          : "fs-liquid-pill text-[#4A5A4E] dark:text-[#9CA89E]"
                       }`}
                     >
                       {grp.replace("_", " & ")}
@@ -263,15 +312,17 @@ export default function EvidencePage() {
             </div>
 
             {missions.length > 0 && (
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-200 pt-3">
-                <span className="text-[11px] text-[#6B7280]">Agronomic tag:</span>
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#111813]/10 pt-3 dark:border-white/10">
+                <span className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+                  Agronomic tag:
+                </span>
                 <button
                   type="button"
                   onClick={() => setMissionFilter("all")}
-                  className={`rounded px-2 py-0.5 text-[11px] transition ${
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
                     missionFilter === "all"
-                      ? "bg-[#00291B] text-white font-semibold"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-[#0B3D2E] font-semibold text-white dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   All
@@ -281,10 +332,10 @@ export default function EvidencePage() {
                     key={m}
                     type="button"
                     onClick={() => setMissionFilter(m)}
-                    className={`rounded px-2 py-0.5 text-[11px] transition ${
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] transition ${
                       missionFilter === m
-                        ? "bg-[#00291B] text-white font-semibold"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-[#0B3D2E] font-semibold text-white dark:bg-[#FFFFFF] dark:text-[#111713]"
+                        : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                     }`}
                   >
                     {m}
@@ -303,16 +354,16 @@ export default function EvidencePage() {
                 <article
                   key={idx}
                   data-testid={`evidence-card-${ev.data_source}`}
-                  className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm text-[#111827]"
+                  className="fs-liquid-panel rounded-3xl p-4 sm:p-5 text-[#111813] dark:text-[#F5F7F5]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       {isFarmer ? (
-                        <UserCheck size={18} className="text-[#137135]" />
+                        <UserCheck size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
                       ) : (
-                        <Database size={18} className="text-[#137135]" />
+                        <Database size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
                       )}
-                      <h3 className="font-heading text-sm font-bold text-[#111827]">
+                      <h3 className="font-heading text-sm font-bold text-[#111813] dark:text-[#F5F7F5]">
                         {plainMode ? pLabel.plain : pLabel.tech}
                       </h3>
                     </div>
@@ -320,34 +371,38 @@ export default function EvidencePage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                          isFarmer ? "bg-[#FEF3C7] text-[#D97706]" : "bg-[#DCFCE7] text-[#15803D]"
+                          isFarmer
+                            ? "bg-amber-500/15 text-amber-800 dark:bg-amber-500/20 dark:text-[#FCD34D]"
+                            : "bg-[#15803D]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
                         }`}
                       >
                         {ev.data_source}
                       </span>
                       {ev.source_mission && (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
+                        <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2 py-0.5 text-[10px] font-semibold text-[#3E4C42] dark:border-white/15 dark:bg-white/[0.08] dark:text-[#D1DDD3]">
                           {ev.source_mission}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50/70 px-3 py-2">
-                    <span dir="ltr" className="tabular-nums text-lg font-extrabold text-[#111827]">
+                  <div className="fs-liquid-well mt-3 flex flex-wrap items-baseline justify-between gap-2 rounded-2xl px-3.5 py-2.5">
+                    <span dir="ltr" className="font-mono text-lg font-bold tabular-nums text-[#111813] dark:text-[#F5F7F5]">
                       {String(ev.observed_value)}{" "}
-                      <span className="text-xs font-normal text-[#6B7280]">{ev.unit ?? ""}</span>
+                      <span className="font-sans text-xs font-normal text-[#4A5A4E] dark:text-[#9CA89E]">
+                        {ev.unit ?? ""}
+                      </span>
                     </span>
-                    <span className="rounded bg-white border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-[#137135]">
+                    <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#15803D] dark:border-[#22C55E]/25 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                       {ev.derived ? t.derivedBadge : t.directBadge}
                     </span>
                   </div>
 
-                  <p className="mt-2.5 text-xs leading-relaxed text-[#374151]">
+                  <p className="mt-2.5 text-xs leading-relaxed text-[#3E4C42] dark:text-[#D1DDD3]">
                     {localizePlainText(ev.interpretation, lang, plainMode)}
                   </p>
 
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#6B7280]">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                     <span>{ev.contextLabel}</span>
                     {ev.period && <span dir="ltr">{ev.period}</span>}
                   </div>
@@ -359,27 +414,36 @@ export default function EvidencePage() {
           {/* Data Quality Ledger & Spatial Context */}
           <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             {/* Quality & Gaps */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+            <div className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
               <div className="flex items-center justify-between">
-                <h2 className="font-heading text-base font-bold text-[#111827]">{t.qualityTitle}</h2>
-                <span className="tabular-nums rounded-full bg-[#DCFCE7] text-[#15803D] px-3 py-0.5 text-xs font-bold">
+                <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  {t.qualityTitle}
+                </h2>
+                <span className="tabular-nums rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-0.5 text-xs font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                   {completenessPct}%
                 </span>
               </div>
-              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full bg-[#137135]" style={{ width: `${completenessPct}%` }} />
+              <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-[#111813]/10 dark:bg-white/10">
+                <div
+                  className="h-full rounded-full bg-[#15803D] dark:bg-[#22C55E]"
+                  style={{ width: `${completenessPct}%` }}
+                />
               </div>
               {dq?.confidence_note && (
-                <p className="mt-3 text-xs text-[#374151]">{dq.confidence_note}</p>
+                <p className="mt-3 text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
+                  {dq.confidence_note}
+                </p>
               )}
 
-              <p className="mt-4 text-xs font-bold text-red-700">{t.missingDataTitle}</p>
+              <p className="mt-4 text-xs font-bold text-red-700 dark:text-red-300">
+                {t.missingDataTitle}
+              </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {(dq?.missing_data ?? []).map((md) => (
                   <span
                     key={md}
                     dir="ltr"
-                    className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-[11px] font-semibold text-red-700"
+                    className="inline-flex items-center gap-1 rounded-full border border-red-300/80 bg-red-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-red-700 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300"
                   >
                     <Warning size={12} />
                     {md}
@@ -388,7 +452,7 @@ export default function EvidencePage() {
               </div>
 
               {(dq?.limitations ?? []).length > 0 && (
-                <ul className="mt-3 list-disc space-y-1 ps-4 text-xs text-[#6B7280]">
+                <ul className="mt-3 list-disc space-y-1 ps-4 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
                   {dq?.limitations.map((lim, i) => (
                     <li key={i}>{lim}</li>
                   ))}
@@ -397,7 +461,7 @@ export default function EvidencePage() {
 
               <Link
                 href="/farm-profile"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#00291B] text-white px-4 py-2 text-xs font-bold hover:bg-[#04421B] shadow-sm transition"
+                className="fs-cta-primary mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold active:not-disabled:scale-[0.96]"
               >
                 {t.fixInProfileBtn}
                 <ArrowRight size={14} weight="bold" />
@@ -405,16 +469,16 @@ export default function EvidencePage() {
             </div>
 
             {/* Visual Reference Spatial Map */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
-              <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-                <GlobeHemisphereEast size={18} className="text-[#137135]" />
+            <div className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
+              <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                <GlobeHemisphereEast size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
                 {t.spatialTitle}
               </h2>
-              <p className="mt-1 text-xs text-[#6B7280]">{t.spatialNote}</p>
+              <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.spatialNote}</p>
 
               <svg
                 viewBox="0 0 300 170"
-                className="mt-3 h-48 w-full rounded-xl border border-[#E5E7EB] bg-[#2D3C21]"
+                className="mt-3 h-48 w-full rounded-2xl bg-[#1A2619] ring-1 ring-[#111813]/12 dark:ring-white/12"
               >
                 <polygon
                   points={boundaryRing

@@ -16,6 +16,8 @@ import {
   Warning,
   XCircle,
 } from "@phosphor-icons/react";
+import { useResolvedTheme } from "@/app/providers";
+import { useWorkspaceShell } from "@/components/guelma/WorkspaceShellContext";
 import { UsdaTextureModal } from "@/components/profile/UsdaTextureModal";
 import { ApiErrorCard, WarningsBanner } from "@/components/shared/ProvenanceBanners";
 import {
@@ -129,6 +131,8 @@ const EQUIPMENT_OPTIONS = [
 export default function FarmProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const resolvedTheme = useResolvedTheme();
+  const { openAuthModal } = useWorkspaceShell();
   const {
     lang,
     authMode,
@@ -139,6 +143,10 @@ export default function FarmProfilePage() {
     setActiveAnalysisId,
     setActiveRequestId,
   } = useAppStore();
+
+  const glassInputClass =
+    "w-full rounded-xl border border-[#111813]/15 bg-[#111813]/[0.03] px-3 py-2 text-xs text-[#111813] placeholder:text-[#6B7A6F] focus:border-[#15803D] focus:outline-none focus:ring-1 focus:ring-[#15803D] dark:border-white/15 dark:bg-white/[0.06] dark:text-[#F5F7F5] dark:placeholder:text-[#6E7B71] dark:focus:border-[#22C55E] dark:focus:ring-[#22C55E]";
+  const glassSelectClass = `${glassInputClass} [&_option]:bg-white [&_option]:text-[#111813] dark:[&_option]:bg-[#141A15] dark:[&_option]:text-[#F5F7F5]`;
 
   const t = UI_DICT[lang].farmProfile;
   const hasSession = authMode !== "none";
@@ -444,23 +452,28 @@ export default function FarmProfilePage() {
   const catalogItems = catalogQuery.data?.items ?? [];
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="fs-view-enter space-y-5 pb-8">
       <div>
-        <h1 className="font-heading text-2xl font-extrabold text-[#111827]">{t.title}</h1>
-        <p className="mt-1 text-xs text-[#6B7280]">{t.subtitle}</p>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
+          {t.title}
+        </h1>
+        <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
       </div>
 
       {fieldDetailQuery.data && (
-        <WarningsBanner warnings={fieldDetailQuery.data.warnings} lang={lang} />
+        <WarningsBanner
+          warnings={fieldDetailQuery.data.warnings}
+          lang={lang}
+          theme={resolvedTheme}
+        />
       )}
 
       {submitError !== null && (
         <ApiErrorCard
           error={submitError}
           lang={lang}
-          onOpenClaimAccount={() => {
-            document.querySelector<HTMLButtonElement>('[data-testid="auth-modal-trigger"]')?.click();
-          }}
+          theme={resolvedTheme}
+          onOpenClaimAccount={openAuthModal}
         />
       )}
 
@@ -468,7 +481,7 @@ export default function FarmProfilePage() {
         <div
           role="alert"
           data-testid="client-validation-errors"
-          className="rounded-xl border-2 border-red-300 bg-red-50 p-4 text-xs text-red-800"
+          className="rounded-2xl border border-red-300/80 bg-red-50/90 p-4 text-xs text-red-800 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-200"
         >
           <ul className="list-disc space-y-1 ps-5">
             {clientErrors.map((err, i) => (
@@ -480,10 +493,10 @@ export default function FarmProfilePage() {
 
       <form onSubmit={handleSubmitAll} className="space-y-5">
         {/* Section 1: Crop History */}
-        <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+        <section className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-              <Plant size={18} className="text-[#137135]" />
+            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+              <Plant size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
               {t.secCropHistory}
             </h2>
             <button
@@ -504,7 +517,7 @@ export default function FarmProfilePage() {
                 ])
               }
               disabled={cropHistory.length >= 30}
-              className="inline-flex items-center gap-1 rounded-lg bg-[#00291B] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#04421B] shadow-sm transition"
+              className="fs-cta-primary inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold active:not-disabled:scale-[0.96] disabled:opacity-50"
             >
               <Plus size={14} weight="bold" />
               {t.addHistoryRow}
@@ -519,13 +532,12 @@ export default function FarmProfilePage() {
                 fieldLat
               );
               return (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5"
-                >
+                <div key={idx} className="fs-liquid-well rounded-2xl p-3.5">
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-[#374151]">Season</label>
+                      <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                        Season
+                      </label>
                       <select
                         value={row.season}
                         onChange={(e) => {
@@ -534,7 +546,7 @@ export default function FarmProfilePage() {
                             prev.map((r, i) => (i === idx ? { ...r, season: val } : r))
                           );
                         }}
-                        className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                        className={glassSelectClass}
                       >
                         {(["spring", "summer", "autumn", "winter"] as Season[]).map((s) => (
                           <option key={s} value={s}>
@@ -544,7 +556,9 @@ export default function FarmProfilePage() {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-[#374151]">Year</label>
+                      <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                        Year
+                      </label>
                       <input
                         type="number"
                         min={1980}
@@ -556,11 +570,11 @@ export default function FarmProfilePage() {
                             prev.map((r, i) => (i === idx ? { ...r, year: val } : r))
                           );
                         }}
-                        className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                        className={`tabular-nums ${glassInputClass}`}
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-[#374151]">
+                      <label className="mb-1 block text-[11px] font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                         Planting Month
                       </label>
                       <input
@@ -575,15 +589,16 @@ export default function FarmProfilePage() {
                           );
                         }}
                         placeholder="1..12"
-                        className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                        className={`tabular-nums ${glassInputClass}`}
                       />
                     </div>
                     <div className="lg:col-span-2">
                       <div className="mb-1 flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-[#374151]">Crop</span>
-                        <label className="inline-flex cursor-pointer items-center gap-1 text-[#137135]">
+                        <span className="font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">Crop</span>
+                        <label className="inline-flex cursor-pointer items-center gap-1 text-[#15803D] dark:text-[#86EFAC]">
                           <input
                             type="checkbox"
+                            className="accent-[#15803D] dark:accent-[#22C55E]"
                             checked={row.useCustomCrop}
                             onChange={(e) =>
                               setCropHistory((prev) =>
@@ -614,8 +629,13 @@ export default function FarmProfilePage() {
                               )
                             );
                           }}
-                          className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                          className={glassSelectClass}
                         >
+                          {catalogItems.length === 0 && (
+                            <option value={row.crop_id}>
+                              {row.crop_name_raw || row.crop_id || "Select crop"}
+                            </option>
+                          )}
                           {catalogItems.map((item) => (
                             <option key={item.crop_id} value={item.crop_id}>
                               {item.names[lang]} · {CROP_CATEGORY_LABELS[lang][item.category]}
@@ -636,18 +656,18 @@ export default function FarmProfilePage() {
                             );
                           }}
                           placeholder="e.g. Blé dur local"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                          className={glassInputClass}
                         />
                       )}
                     </div>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     {!rowMonthCheck.valid ? (
-                      <span className="text-[11px] font-semibold text-red-600">
+                      <span className="text-[11px] font-semibold text-red-600 dark:text-red-300">
                         INPUT-03: {rowMonthCheck.error}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
                         Northern Hemisphere season check OK
                       </span>
                     )}
@@ -657,7 +677,7 @@ export default function FarmProfilePage() {
                         onClick={() =>
                           setCropHistory((prev) => prev.filter((_, i) => i !== idx))
                         }
-                        className="inline-flex items-center gap-1 text-[11px] text-red-600 hover:underline"
+                        className="inline-flex items-center gap-1 text-[11px] text-red-600 hover:underline dark:text-red-300"
                       >
                         <Trash size={13} />
                         Remove
@@ -671,19 +691,19 @@ export default function FarmProfilePage() {
         </section>
 
         {/* Section 2: Soil Provenance (ADR-5) */}
-        <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+        <section className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-              <Flask size={18} className="text-[#137135]" />
+            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+              <Flask size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
               {t.secSoil}
             </h2>
             <button
               type="button"
               onClick={() => setUsdaModalOpen(true)}
               data-testid="usda-converter-btn"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-[#00291B] hover:bg-gray-50 shadow-xs transition"
+              className="fs-liquid-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
             >
-              <Calculator size={14} />
+              <Calculator size={14} className="text-[#15803D] dark:text-[#86EFAC]" />
               {t.usdaHelperBtn}
             </button>
           </div>
@@ -697,19 +717,23 @@ export default function FarmProfilePage() {
                 setOrganicMatter("");
                 setSoilTestDate("");
               }}
-              className={`rounded-xl border p-4 text-start transition ${
+              className={`rounded-2xl border p-4 text-start transition ${
                 soilType === "unknown"
-                  ? "border-[#137135] bg-emerald-50/50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+                  ? "border-[#15803D]/50 bg-[#15803D]/10 dark:border-[#22C55E]/45 dark:bg-[#22C55E]/15"
+                  : "fs-liquid-well-interactive border-transparent"
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#111827]">{t.soilUnknownTitle}</span>
-                <span className="rounded bg-gray-100 text-gray-700 px-2 py-0.5 text-[10px] font-bold">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  {t.soilUnknownTitle}
+                </span>
+                <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#4A5A4E] dark:border-white/15 dark:bg-white/10 dark:text-[#D1DDD3]">
                   soil_source: unknown
                 </span>
               </div>
-              <p className="mt-1 text-xs text-[#6B7280]">{t.soilUnknownDesc}</p>
+              <p className="mt-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+                {t.soilUnknownDesc}
+              </p>
             </button>
 
             <button
@@ -717,30 +741,36 @@ export default function FarmProfilePage() {
               onClick={() => {
                 if (soilType === "unknown") setSoilType("loamy");
               }}
-              className={`rounded-xl border p-4 text-start transition ${
+              className={`rounded-2xl border p-4 text-start transition ${
                 soilType !== "unknown"
-                  ? "border-[#137135] bg-emerald-50/50"
-                  : "border-gray-200 bg-white hover:border-gray-300"
+                  ? "border-[#15803D]/50 bg-[#15803D]/10 dark:border-[#22C55E]/45 dark:bg-[#22C55E]/15"
+                  : "fs-liquid-well-interactive border-transparent"
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#111827]">{t.soilKnownTitle}</span>
-                <span className="rounded bg-[#DCFCE7] text-[#15803D] px-2 py-0.5 text-[10px] font-bold">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  {t.soilKnownTitle}
+                </span>
+                <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                   soil_source: farmer
                 </span>
               </div>
-              <p className="mt-1 text-xs text-[#6B7280]">{t.soilKnownDesc}</p>
+              <p className="mt-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+                {t.soilKnownDesc}
+              </p>
             </button>
           </div>
 
           {soilType !== "unknown" && (
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Soil Texture</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Soil Texture
+                </label>
                 <select
                   value={soilType}
                   onChange={(e) => setSoilType(e.target.value as SoilType)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={glassSelectClass}
                 >
                   {(["clay", "loamy", "silty", "sandy"] as SoilType[]).map((st) => (
                     <option key={st} value={st}>
@@ -750,7 +780,9 @@ export default function FarmProfilePage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Soil pH (3.0–11.0)</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Soil pH (3.0–11.0)
+                </label>
                 <input
                   type="number"
                   step="0.1"
@@ -759,11 +791,13 @@ export default function FarmProfilePage() {
                   value={soilPh}
                   onChange={(e) => setSoilPh(e.target.value)}
                   placeholder="7.6"
-                  className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums ${glassInputClass}`}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Organic Matter %</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Organic Matter %
+                </label>
                 <input
                   type="number"
                   step="0.1"
@@ -772,16 +806,18 @@ export default function FarmProfilePage() {
                   value={organicMatter}
                   onChange={(e) => setOrganicMatter(e.target.value)}
                   placeholder="1.4"
-                  className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums ${glassInputClass}`}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Lab Test Date</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Lab Test Date
+                </label>
                 <input
                   type="date"
                   value={soilTestDate}
                   onChange={(e) => setSoilTestDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={glassInputClass}
                 />
               </div>
             </div>
@@ -789,20 +825,20 @@ export default function FarmProfilePage() {
         </section>
 
         {/* Section 3: Water & Irrigation */}
-        <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
-          <h2 className="mb-3 flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-            <Drop size={18} className="text-[#137135]" />
+        <section className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
+          <h2 className="mb-3 flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+            <Drop size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
             {t.secWater}
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.waterAvailability}
               </label>
               <select
                 value={waterAvailability}
                 onChange={(e) => setWaterAvailability(e.target.value as WaterAvailability)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 {(Object.keys(WATER_AVAILABILITY_LABELS[lang]) as WaterAvailability[]).map((w) => (
                   <option key={w} value={w}>
@@ -812,13 +848,13 @@ export default function FarmProfilePage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.waterSource}
               </label>
               <select
                 value={waterSource}
                 onChange={(e) => setWaterSource(e.target.value as WaterSource)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 {(Object.keys(WATER_SOURCE_LABELS[lang]) as WaterSource[]).map((w) => (
                   <option key={w} value={w}>
@@ -828,13 +864,13 @@ export default function FarmProfilePage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.irrigationSystem}
               </label>
               <select
                 value={irrigationSystem}
                 onChange={(e) => setIrrigationSystem(e.target.value as IrrigationSystem)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 {(Object.keys(IRRIGATION_SYSTEM_LABELS[lang]) as IrrigationSystem[]).map((sys) => (
                   <option key={sys} value={sys}>
@@ -847,29 +883,33 @@ export default function FarmProfilePage() {
 
           {waterSource === "other" && (
             <div className="mt-3">
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.waterSourceOther}
               </label>
               <input
                 type="text"
                 value={waterSourceOther}
                 onChange={(e) => setWaterSourceOther(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassInputClass}
               />
             </div>
           )}
         </section>
 
         {/* Section 4: Planning Window & Climate What-If */}
-        <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
-          <h2 className="mb-3 font-heading text-base font-bold text-[#111827]">{t.secPlanning}</h2>
+        <section className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
+          <h2 className="mb-3 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+            {t.secPlanning}
+          </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">{t.startSeason}</label>
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                {t.startSeason}
+              </label>
               <select
                 value={startSeason}
                 onChange={(e) => setStartSeason(e.target.value as Season)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 {(["spring", "summer", "autumn", "winter"] as Season[]).map((s) => (
                   <option key={s} value={s}>
@@ -879,18 +919,22 @@ export default function FarmProfilePage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">{t.startYear}</label>
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                {t.startYear}
+              </label>
               <input
                 type="number"
                 min={2020}
                 max={2100}
                 value={startYear}
                 onChange={(e) => setStartYear(Number(e.target.value))}
-                className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={`tabular-nums ${glassInputClass}`}
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">{t.plantingMonth}</label>
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                {t.plantingMonth}
+              </label>
               <input
                 type="number"
                 min={1}
@@ -900,26 +944,30 @@ export default function FarmProfilePage() {
                 onChange={(e) =>
                   setPlantingMonth(e.target.value === "" ? "" : Number(e.target.value))
                 }
-                className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={`tabular-nums ${glassInputClass}`}
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">{t.horizonSeasons}</label>
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                {t.horizonSeasons}
+              </label>
               <input
                 type="number"
                 min={1}
                 max={6}
                 value={horizonSeasons}
                 onChange={(e) => setHorizonSeasons(Number(e.target.value))}
-                className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={`tabular-nums ${glassInputClass}`}
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">{t.cycleMode}</label>
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                {t.cycleMode}
+              </label>
               <select
                 value={cycleMode}
                 onChange={(e) => setCycleMode(e.target.value as CycleMode)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 <option value="annual_rotation">Annual Rotation</option>
                 <option value="consecutive_seasons">Consecutive Seasons</option>
@@ -928,19 +976,21 @@ export default function FarmProfilePage() {
           </div>
 
           {!planningMonthCheck.valid && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600">
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-300">
               <Warning size={15} weight="fill" />
               INPUT-03: {planningMonthCheck.error}
             </p>
           )}
 
-          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
-            <p className="mb-3 text-xs font-bold text-[#00291B]">{t.whatIfTitle}</p>
+          <div className="mt-4 rounded-2xl border border-[#15803D]/25 bg-[#15803D]/8 p-4 dark:border-[#22C55E]/25 dark:bg-[#22C55E]/10">
+            <p className="mb-3 text-xs font-bold text-[#0B3D2E] dark:text-[#86EFAC]">
+              {t.whatIfTitle}
+            </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <div className="flex justify-between text-xs text-[#374151]">
+                <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
                   <span>{t.tempDelta}</span>
-                  <span dir="ltr" className="tabular-nums font-bold text-[#111827]">
+                  <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {tempDeltaC >= 0 ? `+${tempDeltaC}` : tempDeltaC} °C
                   </span>
                 </div>
@@ -951,13 +1001,13 @@ export default function FarmProfilePage() {
                   step={0.5}
                   value={tempDeltaC}
                   onChange={(e) => setTempDeltaC(Number(e.target.value))}
-                  className="mt-1 w-full accent-[#137135]"
+                  className="mt-1.5 w-full accent-[#15803D] dark:accent-[#22C55E]"
                 />
               </div>
               <div>
-                <div className="flex justify-between text-xs text-[#374151]">
+                <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
                   <span>{t.precipDelta}</span>
-                  <span dir="ltr" className="tabular-nums font-bold text-[#111827]">
+                  <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {precipPctDelta >= 0 ? `+${precipPctDelta}` : precipPctDelta}%
                   </span>
                 </div>
@@ -968,7 +1018,7 @@ export default function FarmProfilePage() {
                   step={5}
                   value={precipPctDelta}
                   onChange={(e) => setPrecipPctDelta(Number(e.target.value))}
-                  className="mt-1 w-full accent-[#137135]"
+                  className="mt-1.5 w-full accent-[#15803D] dark:accent-[#22C55E]"
                 />
               </div>
             </div>
@@ -976,19 +1026,19 @@ export default function FarmProfilePage() {
         </section>
 
         {/* Section 5: Farmer Priorities (Sum = 100) & Crop Constraints */}
-        <section className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+        <section className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-              <SlidersHorizontal size={18} className="text-[#137135]" />
+            <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+              <SlidersHorizontal size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
               {t.secPriorities}
             </h2>
             <div className="flex flex-wrap items-center gap-2">
               <span
                 data-testid="weights-sum-badge"
-                className={`tabular-nums rounded-full px-3 py-1 text-xs font-bold ${
+                className={`tabular-nums rounded-full border px-3 py-1 text-xs font-semibold ${
                   weightsCheck.valid
-                    ? "bg-[#DCFCE7] text-[#15803D]"
-                    : "bg-red-100 text-red-700"
+                    ? "border-[#15803D]/25 bg-[#15803D]/10 text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]"
+                    : "border-red-300/80 bg-red-50/90 text-red-700 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300"
                 }`}
               >
                 {t.weightsSum}: {weightsCheck.sum} / 100
@@ -997,7 +1047,7 @@ export default function FarmProfilePage() {
                 <button
                   type="button"
                   onClick={() => setWeights((prev) => balanceRemainingWeights(prev))}
-                  className="rounded-lg bg-[#00291B] text-white hover:bg-[#04421B] px-3 py-1 text-xs font-bold transition shadow-xs"
+                  className="fs-cta-primary rounded-full px-3 py-1 text-xs font-semibold active:not-disabled:scale-[0.96]"
                 >
                   {t.autoBalanceBtn}
                 </button>
@@ -1012,7 +1062,7 @@ export default function FarmProfilePage() {
                 key={p.id}
                 type="button"
                 onClick={() => setWeights(p.weights)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#374151] hover:bg-gray-50 transition"
+                className="fs-liquid-pill rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]"
               >
                 {p.label}
               </button>
@@ -1021,8 +1071,8 @@ export default function FarmProfilePage() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {WEIGHT_KEYS.map((key) => (
-              <div key={key} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-                <label className="block text-[11px] font-semibold capitalize text-[#374151]">
+              <div key={key} className="fs-liquid-well rounded-2xl p-3">
+                <label className="block text-[11px] font-semibold capitalize text-[#3E4C42] dark:text-[#D1DDD3]">
                   {key.replace("_", " ")}
                 </label>
                 <input
@@ -1037,7 +1087,7 @@ export default function FarmProfilePage() {
                       [key]: Math.max(0, Math.min(100, Math.round(Number(e.target.value)))),
                     }))
                   }
-                  className="tabular-nums mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-bold text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums mt-1.5 font-mono text-sm font-bold ${glassInputClass}`}
                 />
               </div>
             ))}
@@ -1045,7 +1095,7 @@ export default function FarmProfilePage() {
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#374151]">
+              <label className="mb-1.5 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.targetCrops}
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -1062,10 +1112,10 @@ export default function FarmProfilePage() {
                         onClick={() => toggleTargetCrop(item.crop_id)}
                         className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                           selected
-                            ? "bg-[#00291B] text-white shadow-xs"
+                            ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
                             : isExcluded
-                              ? "cursor-not-allowed bg-gray-100 text-gray-400 line-through"
-                              : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                              ? "cursor-not-allowed bg-[#111813]/8 text-[#6B7A6F] line-through opacity-60 dark:bg-white/5 dark:text-[#6E7B71]"
+                              : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                         }`}
                       >
                         {item.names[lang]}
@@ -1076,7 +1126,7 @@ export default function FarmProfilePage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#374151]">
+              <label className="mb-1.5 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.excludedCrops}
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -1093,10 +1143,10 @@ export default function FarmProfilePage() {
                         onClick={() => toggleExcludedCrop(item.crop_id)}
                         className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                           selected
-                            ? "bg-red-600 text-white shadow-xs"
+                            ? "bg-red-600 text-white shadow-xs dark:bg-red-500"
                             : isTarget
-                              ? "cursor-not-allowed bg-gray-100 text-gray-400 line-through"
-                              : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                              ? "cursor-not-allowed bg-[#111813]/8 text-[#6B7A6F] line-through opacity-60 dark:bg-white/5 dark:text-[#6E7B71]"
+                              : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                         }`}
                       >
                         {item.names[lang]}
@@ -1108,18 +1158,20 @@ export default function FarmProfilePage() {
           </div>
 
           {!cropsCheck.valid && (
-            <p className="mt-2 text-xs font-bold text-red-600">{cropsCheck.error}</p>
+            <p className="mt-2 text-xs font-bold text-red-600 dark:text-red-300">
+              {cropsCheck.error}
+            </p>
           )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.marketPreference}
               </label>
               <select
                 value={marketPreference}
                 onChange={(e) => setMarketPreference(e.target.value as MarketPreference)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassSelectClass}
               >
                 {(Object.keys(MARKET_PREFERENCE_LABELS[lang]) as MarketPreference[]).map((mp) => (
                   <option key={mp} value={mp}>
@@ -1129,7 +1181,7 @@ export default function FarmProfilePage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.equipmentConstraints}
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -1144,10 +1196,10 @@ export default function FarmProfilePage() {
                           prev.includes(eq) ? prev.filter((i) => i !== eq) : [...prev, eq]
                         )
                       }
-                      className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
                         active
-                          ? "bg-[#00291B] text-white shadow-xs"
-                          : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                          ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                          : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                       }`}
                     >
                       {eq.replace(/_/g, " ")}
@@ -1160,22 +1212,24 @@ export default function FarmProfilePage() {
         </section>
 
         {/* Sticky Submission Bar */}
-        <div className="sticky bottom-16 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-lg lg:bottom-4">
+        <div className="fs-hud-glass sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-3xl p-4">
           <div className="flex items-center gap-2 text-xs">
             {weightsCheck.valid && cropsCheck.valid && planningMonthCheck.valid ? (
               <>
-                <CheckCircle size={18} weight="fill" className="text-[#15803D]" />
-                <span className="text-[#111827]">
+                <CheckCircle size={18} weight="fill" className="text-[#15803D] dark:text-[#22C55E]" />
+                <span className="text-[#111813] dark:text-[#F5F7F5]">
                   Ready to analyze parcel{" "}
-                  <strong dir="ltr" className="text-[#00291B]">
+                  <strong dir="ltr" className="text-[#15803D] dark:text-[#86EFAC]">
                     {resolvedFieldId ?? "—"}
                   </strong>
                 </span>
               </>
             ) : (
               <>
-                <Warning size={18} weight="fill" className="text-red-600" />
-                <span className="text-red-700 font-semibold">Fix validation guards before running.</span>
+                <Warning size={18} weight="fill" className="text-red-600 dark:text-red-400" />
+                <span className="font-semibold text-red-700 dark:text-red-300">
+                  Fix validation guards before running.
+                </span>
               </>
             )}
           </div>
@@ -1183,9 +1237,9 @@ export default function FarmProfilePage() {
             type="submit"
             disabled={!resolvedFarmId || !resolvedFieldId || Boolean(pollingRequestId)}
             data-testid="run-analysis-submit-btn"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#00291B] px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#04421B] disabled:opacity-50 transition"
+            className="fs-cta-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-semibold active:not-disabled:scale-[0.96] disabled:opacity-50"
           >
-            <Play size={16} weight="fill" className="text-[#84E875]" />
+            <Play size={16} weight="fill" className="text-[#84E875] dark:text-[#15803D]" />
             {t.submitBtn}
           </button>
         </div>
@@ -1196,29 +1250,36 @@ export default function FarmProfilePage() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-md"
         >
-          <div className="flex w-full max-w-md flex-col items-center rounded-2xl border border-[#E5E7EB] bg-white p-6 text-center shadow-xl text-[#111827]">
+          <div className="fs-liquid-panel flex w-full max-w-md flex-col items-center rounded-3xl p-6 text-center text-[#111813] dark:text-[#F5F7F5]">
             <div className="relative h-16 w-16">
-              <svg className="animate-spin h-full w-full text-[#137135]" viewBox="0 0 24 24" fill="none">
+              <svg
+                className="h-full w-full animate-spin text-[#15803D] dark:text-[#22C55E]"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             </div>
-            <h3 className="mt-4 font-heading text-base font-extrabold text-[#111827]">
+            <h3 className="mt-4 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
               {t.pollingTitle}
             </h3>
-            <p className="mt-1 text-xs text-[#374151]">
-              Status: <span className="font-bold uppercase text-[#137135]">{pollStatus}</span>
+            <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+              Status:{" "}
+              <span className="font-bold uppercase text-[#15803D] dark:text-[#86EFAC]">
+                {pollStatus}
+              </span>
             </p>
-            <p dir="ltr" className="mt-1 text-[11px] text-gray-500">
+            <p dir="ltr" className="mt-1 font-mono text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
               {pollingRequestId}
             </p>
             <button
               type="button"
               onClick={handleCancelPolling}
               data-testid="cancel-job-btn"
-              className="mt-5 inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-700 hover:bg-red-100 transition"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-red-300/80 bg-red-50/90 px-4 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
             >
               <XCircle size={15} weight="bold" />
               {t.cancelJobBtn}
@@ -1230,6 +1291,7 @@ export default function FarmProfilePage() {
       <UsdaTextureModal
         open={usdaModalOpen}
         lang={lang}
+        theme={resolvedTheme}
         onClose={() => setUsdaModalOpen(false)}
         onApply={(derived) => setSoilType(derived)}
       />

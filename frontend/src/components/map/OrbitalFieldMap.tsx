@@ -93,7 +93,7 @@ export function OrbitalFieldMap({
           type: "fill",
           source: "guelma-boundary",
           paint: {
-            "fill-color": "#137135",
+            "fill-color": "#4ADE80",
             "fill-opacity": 0.08,
           },
         });
@@ -103,9 +103,9 @@ export function OrbitalFieldMap({
           type: "line",
           source: "guelma-boundary",
           paint: {
-            "line-color": "#137135",
-            "line-width": 2.5,
-            "line-dasharray": [3, 2],
+            "line-color": "#4ADE80",
+            "line-width": 2.2,
+            "line-dasharray": [4, 3],
           },
         });
 
@@ -122,8 +122,8 @@ export function OrbitalFieldMap({
           type: "fill",
           source: "active-parcel",
           paint: {
-            "fill-color": "#84E875",
-            "fill-opacity": 0.25,
+            "fill-color": "#4ADE80",
+            "fill-opacity": 0.30,
           },
         });
 
@@ -303,7 +303,7 @@ export function OrbitalFieldMap({
   }
 
   return (
-    <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-[#E5E7EB] bg-[#3B4E2B] lg:h-[560px]">
+    <div className="lg-map-frame lg-specular relative h-[420px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] lg:h-[560px]">
       {!webglFallback ? (
         <div
           ref={containerRef}
@@ -323,7 +323,7 @@ export function OrbitalFieldMap({
             const lat = Number((36.68 - relY * 0.65).toFixed(6));
             onAddVertex([lon, lat]);
           }}
-          className="flex h-full w-full flex-col items-center justify-center bg-[#2D3C21] p-4"
+          className="flex h-full w-full flex-col items-center justify-center bg-[#0a1310] p-4"
         >
           <svg viewBox="0 0 400 260" className="h-full w-full max-w-xl">
             <polygon
@@ -338,8 +338,8 @@ export function OrbitalFieldMap({
                   })
                   .join(" ")
               }
-              fill="rgba(95, 168, 125, 0.14)"
-              stroke="#5FA87D"
+              fill="rgba(74, 222, 128, 0.14)"
+              stroke="#4ADE80"
               strokeWidth="2"
               strokeDasharray="6 3"
             />
@@ -352,8 +352,8 @@ export function OrbitalFieldMap({
                     return `${x},${y}`;
                   })
                   .join(" ")}
-                fill="rgba(132, 232, 117, 0.3)"
-                stroke="#84E875"
+                fill="rgba(74, 222, 128, 0.3)"
+                stroke="#4ADE80"
                 strokeWidth="2.5"
                 strokeDasharray="4 4"
               />
@@ -362,18 +362,21 @@ export function OrbitalFieldMap({
               cx={Math.max(10, Math.min(390, ((targetCenter[0] - 6.9) / 1.1) * 380 + 10))}
               cy={Math.max(10, Math.min(250, ((36.72 - targetCenter[1]) / 0.72) * 240 + 10))}
               r="7"
-              fill="#84E875"
-              stroke="#00291B"
+              fill="#4ADE80"
+              stroke="#0a1310"
               strokeWidth="2"
             />
           </svg>
         </div>
       )}
 
+      {/* Liquid Glass Atmospheric Vignette overlay from Prototype */}
+      <div className="lg-vignette" />
+
       {/* Top Overlay Controls */}
-      <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="pointer-events-auto rounded-lg border border-[#E5E7EB] bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#111827] shadow-sm backdrop-blur-sm">
-          <span dir="ltr" className="tabular-nums">
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2">
+        <div className="lg-capsule pointer-events-auto rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-[#111813] dark:text-[#F5F7F5]">
+          <span dir="ltr" className="font-mono tabular-nums">
             {targetCenter[1].toFixed(5)}°N, {targetCenter[0].toFixed(5)}°E
           </span>
           {!flightSettled && " · Descending to parcel..."}
@@ -381,14 +384,14 @@ export function OrbitalFieldMap({
         <button
           type="button"
           onClick={handleInstantJump}
-          className="pointer-events-auto rounded-lg bg-[#00291B] px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#04421B] transition"
+          className="lg-capsule lg-capsule-active pointer-events-auto rounded-full px-3.5 py-1.5 text-xs font-semibold active:not-disabled:scale-[0.96]"
         >
           {instantJumpLabel}
         </button>
       </div>
 
       {/* Mandatory Map Attribution Pill */}
-      <div className="pointer-events-none absolute bottom-3 start-3 rounded-lg border border-[#E5E7EB] bg-white/90 px-3 py-1.5 text-[11px] text-[#374151] shadow-sm backdrop-blur-sm">
+      <div className="lg-capsule pointer-events-none absolute bottom-3 start-3 z-20 rounded-full px-3 py-1.5 text-[11px] text-[#3E4C42] dark:text-[#D1DDD3]">
         {attributionText}
       </div>
     </div>

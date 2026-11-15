@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ResolvedTheme, ThemePreference, useAppStore } from "@/store/useAppStore";
-import { AppShell } from "@/components/layout/AppShell";
+import { CommandCenterShell } from "@/components/guelma/CommandCenterShell";
 
 const ResolvedThemeContext = createContext<ResolvedTheme>("light");
 
@@ -82,7 +82,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ResolvedThemeContext.Provider value={resolvedTheme}>
       <QueryClientProvider client={queryClient}>
-        {isWorkspaceRoute ? children : <AppShell>{children}</AppShell>}
+        {isWorkspaceRoute ? children : <CommandCenterShell>{children}</CommandCenterShell>}
       </QueryClientProvider>
     </ResolvedThemeContext.Provider>
   );

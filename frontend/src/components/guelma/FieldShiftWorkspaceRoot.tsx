@@ -142,6 +142,21 @@ export function FieldShiftWorkspaceRoot() {
     }
   }, [lang]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("action") === "draw") {
+      setEditorTarget({ kind: "new-farm" });
+      setBorderDraft(null);
+      setEditingField(null);
+      setDefaultTargetFarmId(null);
+      setView("border-editor");
+      params.delete("action");
+      const nextSearch = params.toString();
+      const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", nextUrl);
+    }
+  }, []);
+
   // Fetch catalog items once session exists (or reload cleanly on language toggle)
   useEffect(() => {
     if (authMode === "none") return;

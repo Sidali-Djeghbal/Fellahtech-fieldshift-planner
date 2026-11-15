@@ -9,27 +9,22 @@ import {
   CloudSun,
   Compass,
   Drop,
-  GearSix,
   Leaf,
   MapPin,
-  Moon,
   PencilSimple,
   Play,
   Plus,
   Polygon,
-  SquaresFour,
   Sun,
   Translate,
   Trash,
-  UserCircle,
   WarningCircle,
   Wind,
 } from "@phosphor-icons/react";
-import { FieldShiftLogo } from "@/components/brand/FieldShiftLogo";
+import { CommandCenterShell } from "@/components/guelma/CommandCenterShell";
 import { FieldPolygonThumbnail } from "@/components/guelma/FieldPolygonThumbnail";
 import { GuelmaOverviewMap } from "@/components/guelma/GuelmaOverviewMap";
 import { ParcelInspectorPanel } from "@/components/guelma/ParcelInspectorPanel";
-import { WorkstationSettingsDrawer } from "@/components/guelma/WorkstationSettingsDrawer";
 import {
   FieldShiftAiIntelligenceSection,
   type AnalysisRunLifecycle,
@@ -275,9 +270,20 @@ export function GuelmaFarmerDashboard({
   onFocusStrategy,
   onUpdateSelection,
 }: GuelmaFarmerDashboardProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeView, setActiveView] = useState<WorkspaceView>("overview");
   const [inspectorOpen, setInspectorOpen] = useState(true);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const viewParam = params.get("view");
+    if (viewParam === "overview" || viewParam === "farms" || viewParam === "intelligence") {
+      setActiveView(viewParam);
+      params.delete("view");
+      const nextSearch = params.toString();
+      const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", nextUrl);
+    }
+  }, []);
 
   const prevLifecycleRef = useRef<AnalysisRunLifecycle>(analysisLifecycle);
   const prevEnvelopeIdRef = useRef<string | null>(envelope?.analysis_id ?? null);
@@ -365,7 +371,6 @@ export function GuelmaFarmerDashboard({
   };
 
   const meanAreaHa = fields.length > 0 ? (totalHa / fields.length).toFixed(1) : "0.0";
-  const mobileAddShortLabel = ws.analyticsZone.emptyPriority;
 
   // Derive real Soil & Water telemetry percentages from activeField
   const soilMetrics = useMemo(() => {
@@ -435,20 +440,6 @@ export function GuelmaFarmerDashboard({
   const activeRingCount = activeField
     ? Math.max(3, extractRingFromBoundary(activeField.location.boundary).length)
     : 0;
-
-  const viewTabs: Array<{ id: WorkspaceView; label: string; badge?: number }> = [
-    { id: "overview", label: ws.nav.overview },
-    {
-      id: "farms",
-      label: ws.nav.farmsFields,
-      badge: farms.length > 0 ? fields.length : undefined,
-    },
-    {
-      id: "intelligence",
-      label: ws.nav.intelligence,
-      badge: envelope ? envelope.result.field_plans.length : undefined,
-    },
-  ];
 
   // Radial Donut Geometry (136x136, r=50, circumference ≈ 314.16)
   const donutRadius = 50;
@@ -851,319 +842,27 @@ export function GuelmaFarmerDashboard({
   };
 
   return (
-    <div
-      className="fs-workstation-canvas min-h-screen text-[#111813] dark:text-[#F5F7F5]"
-      data-testid="guelma-farmer-dashboard"
+    <CommandCenterShell
+      isWorkspaceHome
+      testId="guelma-farmer-dashboard"
+      activeView={activeView}
+      onSelectView={setActiveView}
+      fieldsCount={farms.length > 0 ? fields.length : 0}
+      analysesCount={envelope ? envelope.result.field_plans.length : 0}
+      hasFarms={farms.length > 0}
+      onStartAddFarm={onStartAddFarm}
+      onResetWorkspace={onResetWorkspace}
+      onOpenAuthModal={onOpenAuthModal}
+      onChangeLang={onChangeLang}
+      onChangeTheme={onChangeTheme}
+      onTogglePlainMode={onTogglePlainMode}
+      langOverride={lang}
+      themeOverride={theme}
+      resolvedThemeOverride={resolvedTheme}
+      plainModeOverride={plainMode}
+      authModeOverride={authMode}
+      userEmailOverride={userEmail}
     >
-      {/* Spatial Tablet Shell */}
-      <div className="fs-app-shell overflow-x-clip rounded-none sm:rounded-[28px]">
-        {/* Floating Top Command Bar */}
-        <header
-          inert={settingsOpen ? true : undefined}
-          className="fs-glass-nav sticky top-0 z-30 no-print"
-        >
-          <div className="px-2.5 py-2.5 sm:px-5 sm:py-3 lg:px-6">
-            <div className="flex items-center justify-between gap-1.5 sm:gap-3">
-              {/* Brand Signature */}
-              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <FieldShiftLogo size={26} className="shrink-0" />
-                <div className="flex items-center gap-2.5">
-                  <span className="whitespace-nowrap font-heading text-xs font-bold tracking-tight text-[#111813] dark:text-[#F5F7F5] sm:text-sm">
-                    FIELD SHIFT
-                  </span>
-                  <span
-                    className="hidden h-3.5 w-px bg-[#111813]/15 dark:bg-white/15 xl:inline-block"
-                    aria-hidden="true"
-                  />
-                  <span className="hidden whitespace-nowrap font-mono text-[11px] font-medium text-[#4A5A4E] dark:text-[#9CA89E] xl:inline">
-                    {ws.geoContextTag}
-                  </span>
-                </div>
-              </div>
-
-              {/* Center Segmented Navigation Track (Desktop md+) */}
-              <nav
-                aria-label="Workspace sections"
-                className="fs-liquid-well hidden items-center gap-0.5 rounded-full p-1 md:flex lg:gap-1"
-              >
-                {viewTabs.map((tab) => {
-                  const isActive = activeView === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveView(tab.id)}
-                      aria-current={isActive ? "page" : undefined}
-                      className={`inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-xs font-medium transition-[transform,background-color,box-shadow,color] duration-150 ease-out active:scale-[0.96] lg:px-3.5 ${
-                        isActive
-                          ? "bg-[#0B3D2E] font-semibold text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713] dark:shadow-[0_2px_10px_rgba(0,0,0,0.3)]"
-                          : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-[#F5F7F5]"
-                      }`}
-                    >
-                      <span>{tab.label}</span>
-                      {tab.badge !== undefined ? (
-                        <span
-                          dir="ltr"
-                          className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
-                            isActive
-                              ? "bg-white/20 text-white dark:bg-[#111713]/10 dark:text-[#111713]"
-                              : "bg-[#111813]/10 text-[#3E4C42] dark:bg-white/10 dark:text-[#E4EBE5]"
-                          }`}
-                        >
-                          {tab.badge}
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(true)}
-                  data-testid="header-settings-btn"
-                  className="inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full ps-2.5 pe-3 text-xs font-medium text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:text-[#F5F7F5] lg:ps-3 lg:pe-3.5"
-                >
-                  <GearSix size={14} aria-hidden="true" />
-                  <span>{ws.nav.settings}</span>
-                </button>
-              </nav>
-
-              {/* Trailing Utility Controls */}
-              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-                <div
-                  className="fs-liquid-well inline-flex shrink-0 items-center rounded-full p-1 text-[10px] font-semibold sm:text-[11px]"
-                  role="radiogroup"
-                  aria-label="Language switcher"
-                  onKeyDown={(e) => {
-                    const order: readonly Language[] = ["en", "fr", "ar"];
-                    const idx = order.indexOf(lang);
-                    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-                      e.preventDefault();
-                      onChangeLang(order[(idx + 1) % order.length]);
-                    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-                      e.preventDefault();
-                      onChangeLang(order[(idx + order.length - 1) % order.length]);
-                    }
-                  }}
-                >
-                  {(["en", "fr", "ar"] as const).map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      role="radio"
-                      aria-checked={lang === l}
-                      onClick={() => onChangeLang(l)}
-                      data-testid={`dash-lang-${l}`}
-                      className={`min-h-8 rounded-full px-1.5 uppercase transition-[transform,background-color,box-shadow,color] duration-150 ease-out active:scale-[0.96] sm:min-h-9 sm:px-2.5 ${
-                        lang === l
-                          ? "bg-[#0B3D2E] text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
-                          : "text-[#4A5A4E] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:text-[#F5F7F5]"
-                      }`}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onOpenAuthModal}
-                  data-testid="header-auth-btn"
-                  aria-label={intel.header.accountBtn}
-                  className="fs-liquid-pill hidden min-h-10 items-center gap-2 rounded-full px-3 text-xs font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5] lg:inline-flex xl:ps-3 xl:pe-3.5"
-                >
-                  <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${
-                      authMode === "authenticated"
-                        ? "bg-[#15803D] dark:bg-[#22C55E]"
-                        : authMode === "guest"
-                          ? "bg-[#D97706] dark:bg-[#F59E0B]"
-                          : "bg-[#6B7A6F] dark:bg-[#9CA89E]"
-                    }`}
-                    aria-hidden="true"
-                  />
-                  <UserCircle size={15} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
-                  <span className="hidden max-w-[110px] truncate xl:inline">
-                    {authMode === "authenticated"
-                      ? userEmail || intel.header.signedInBadge
-                      : authMode === "guest"
-                        ? intel.header.guestBadge
-                        : intel.header.accountBtn}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(true)}
-                  data-testid="header-settings-mobile-btn"
-                  aria-label={ws.nav.settings}
-                  className="fs-liquid-pill inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#4A5A4E] active:not-disabled:scale-[0.96] dark:text-[#9CA89E] md:hidden"
-                >
-                  <GearSix size={15} aria-hidden="true" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onStartAddFarm}
-                  data-testid="header-add-farm-btn"
-                  className="fs-cta-primary inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full ps-2.5 pe-3 text-[11px] font-semibold active:not-disabled:scale-[0.96] sm:gap-1.5 sm:ps-3.5 sm:pe-4 sm:text-xs"
-                >
-                  <Plus size={14} weight="bold" className="shrink-0" aria-hidden="true" />
-                  <span className="hidden whitespace-nowrap sm:inline">
-                    {dict.addFarmBtn.replace(/^\+\s*/, "")}
-                  </span>
-                  <span className="whitespace-nowrap sm:hidden">
-                    {mobileAddShortLabel}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile View Switcher Pill Strip (<md) */}
-            <nav
-              aria-label="Mobile workspace navigation"
-              className="fs-liquid-well no-scrollbar mt-2.5 flex items-center gap-1.5 overflow-x-auto rounded-full p-1 md:hidden"
-            >
-              {viewTabs.map((tab) => {
-                const isActive = activeView === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveView(tab.id)}
-                    className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-medium transition-[transform,background-color,box-shadow,color] duration-150 ease-out active:scale-[0.96] ${
-                      isActive
-                        ? "bg-[#0B3D2E] font-semibold text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
-                        : "text-[#4A5A4E] dark:text-[#9CA89E]"
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    {tab.badge !== undefined ? (
-                      <span
-                        className={`rounded-full px-1.5 font-mono text-[10px] tabular-nums ${
-                          isActive
-                            ? "bg-white/20 text-white dark:bg-[#111713]/10 dark:text-[#111713]"
-                            : "bg-[#111813]/10 text-[#3E4C42] dark:bg-white/10 dark:text-[#E4EBE5]"
-                        }`}
-                      >
-                        {tab.badge}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </header>
-
-        {/* Body with Floating Left Tool Rail + Bento Stage */}
-        <div
-          inert={settingsOpen ? true : undefined}
-          className="flex gap-4 px-3.5 py-4 sm:px-5 sm:pb-6"
-        >
-          {/* Floating Vertical Tool Rail (Desktop md+) */}
-          <aside
-            aria-label="Spatial tool rail"
-            className="no-print fs-glass-rail sticky top-20 hidden max-h-[calc(100vh-110px)] min-h-[560px] w-14 shrink-0 flex-col items-center justify-between self-start rounded-3xl px-2 py-3 md:flex"
-          >
-            <div className="flex flex-col items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setActiveView("overview")}
-                title={ws.nav.overview}
-                aria-label={ws.nav.overview}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
-                  activeView === "overview"
-                    ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713] dark:shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-                    : "text-[#4A5A4E] hover:bg-[#111813]/[0.08] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                }`}
-              >
-                <SquaresFour size={18} weight={activeView === "overview" ? "fill" : "regular"} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                onClick={onStartAddFarm}
-                title={ws.mapHud.drawParcelLabel}
-                aria-label={ws.mapHud.drawParcelLabel}
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-              >
-                <Polygon size={18} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveView("farms")}
-                title={ws.nav.farmsFields}
-                aria-label={ws.nav.farmsFields}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
-                  activeView === "farms"
-                    ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713] dark:shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-                    : "text-[#4A5A4E] hover:bg-[#111813]/[0.08] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                }`}
-              >
-                <Compass size={18} weight={activeView === "farms" ? "fill" : "regular"} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveView("intelligence")}
-                title={ws.nav.intelligence}
-                aria-label={ws.nav.intelligence}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
-                  activeView === "intelligence"
-                    ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713] dark:shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-                    : "text-[#4A5A4E] hover:bg-[#111813]/[0.08] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                }`}
-              >
-                <Brain size={18} weight={activeView === "intelligence" ? "duotone" : "regular"} aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="flex flex-col items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => onChangeTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                data-testid="rail-theme-btn"
-                title={
-                  resolvedTheme === "dark" ? ws.settings.switchToLight : ws.settings.switchToDark
-                }
-                aria-label={
-                  resolvedTheme === "dark" ? ws.settings.switchToLight : ws.settings.switchToDark
-                }
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-              >
-                <Moon size={18} aria-hidden="true" className="inline dark:hidden" />
-                <Sun size={18} aria-hidden="true" className="hidden text-[#FCD34D] dark:inline" />
-              </button>
-
-              <button
-                type="button"
-                onClick={onTogglePlainMode}
-                title={plainMode ? intel.section.plainModeOn : intel.section.plainModeOff}
-                aria-label={plainMode ? intel.section.plainModeOn : intel.section.plainModeOff}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
-                  plainMode
-                    ? "bg-[#15803D]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
-                    : "text-[#4A5A4E] hover:bg-[#111813]/[0.08] hover:text-[#111813] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-                }`}
-              >
-                <Translate size={18} aria-hidden="true" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                title={ws.nav.settings}
-                aria-label={ws.nav.settings}
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/[0.08] hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:bg-white/[0.08] dark:hover:text-[#F5F7F5]"
-              >
-                <GearSix size={18} aria-hidden="true" />
-              </button>
-            </div>
-          </aside>
-
-          {/* Main Spatial Viewport */}
-          <main className="min-w-0 flex-1">
             {/* VIEW 1: EARTHLY ASYMMETRICAL 40/60 COMMAND BENTO OVERVIEW */}
             {activeView === "overview" ? (
               <div key="overview" className="fs-view-enter space-y-5">
@@ -1819,25 +1518,6 @@ export function GuelmaFarmerDashboard({
                 />
               </div>
             ) : null}
-          </main>
-        </div>
-      </div>
-
-      <WorkstationSettingsDrawer
-        open={settingsOpen}
-        lang={lang}
-        theme={theme}
-        plainMode={plainMode}
-        authMode={authMode}
-        userEmail={userEmail}
-        hasFarms={farms.length > 0}
-        onClose={() => setSettingsOpen(false)}
-        onChangeLang={onChangeLang}
-        onChangeTheme={onChangeTheme}
-        onTogglePlainMode={onTogglePlainMode}
-        onOpenAuth={onOpenAuthModal}
-        onResetWorkspace={onResetWorkspace}
-      />
-    </div>
+    </CommandCenterShell>
   );
 }

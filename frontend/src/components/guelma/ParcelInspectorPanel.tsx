@@ -10,7 +10,6 @@ import {
   PencilSimple,
   Play,
   Plus,
-  Polygon,
   Trash,
   X,
 } from "@phosphor-icons/react";
@@ -34,7 +33,7 @@ interface ParcelInspectorPanelProps {
   onOpenAnalysis: (farmId: string, fieldId: string) => void;
   onScrollToPlan: (fieldId: string) => void;
   onInspect3d: (farmId: string, fieldId: string) => void;
-  onEditBorders: (field: FieldDetailPublic) => void;
+  onEditBorders?: (field: FieldDetailPublic) => void;
   onEditInfo: (field: FieldDetailPublic) => void;
   onDeleteField?: (field: FieldDetailPublic) => void;
   onCloseInspector?: () => void;
@@ -50,7 +49,6 @@ export function ParcelInspectorPanel({
   onOpenAnalysis,
   onScrollToPlan,
   onInspect3d,
-  onEditBorders,
   onEditInfo,
   onDeleteField,
   onCloseInspector,
@@ -65,15 +63,15 @@ export function ParcelInspectorPanel({
     return (
       <aside
         data-testid="empty-workspace-card"
-        className="fs-hud-glass flex flex-col justify-between rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5] sm:p-5"
+        className="lg-surface lg-specular flex flex-col justify-between rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5] sm:p-5"
       >
         <div>
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111813]/[0.06] text-[#15803D] dark:bg-white/[0.08] dark:text-[#22C55E]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111813]/[0.06] text-[#15803D] dark:bg-white/[0.08] dark:text-[#4ADE80]">
               <GlobeHemisphereEast size={20} weight="regular" aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#15803D] dark:text-[#86EFAC]">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#15803D] dark:text-[#4ADE80]">
                 {dict.provinceBadge}
               </p>
               <h2 className="mt-1 font-heading text-base font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
@@ -92,7 +90,7 @@ export function ParcelInspectorPanel({
                 key={idx}
                 className="flex items-start gap-2.5 rounded-xl bg-[#111813]/[0.04] px-3 py-2 text-xs text-[#243227] dark:bg-white/[0.05] dark:text-[#E5EAE6]"
               >
-                <span className="shrink-0 font-mono text-[11px] font-semibold tabular-nums text-[#15803D] dark:text-[#86EFAC]">
+                <span className="shrink-0 font-mono text-[11px] font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <span className="leading-snug">{stepText}</span>
@@ -116,9 +114,9 @@ export function ParcelInspectorPanel({
             type="button"
             onClick={onLoadSamples}
             data-testid="load-samples-btn"
-            className="fs-liquid-pill inline-flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+            className="lg-capsule inline-flex min-h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
           >
-            <Compass size={14} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
+            <Compass size={14} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{dict.loadSamplesBtn}</span>
           </button>
         </div>
@@ -130,10 +128,10 @@ export function ParcelInspectorPanel({
     return (
       <aside
         data-testid="parcel-inspector-panel"
-        className="fs-hud-glass flex flex-col justify-center rounded-2xl p-5 text-[#111813] dark:text-[#F5F7F5]"
+        className="lg-surface lg-specular flex flex-col justify-center rounded-2xl p-5 text-[#111813] dark:text-[#F5F7F5]"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111813]/[0.06] text-[#15803D] dark:bg-white/[0.08] dark:text-[#86EFAC]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111813]/[0.06] text-[#15803D] dark:bg-white/[0.08] dark:text-[#4ADE80]">
             <Compass size={20} aria-hidden="true" />
           </div>
           <div>
@@ -184,7 +182,7 @@ export function ParcelInspectorPanel({
   return (
     <aside
       data-testid="parcel-inspector-panel"
-      className="fs-hud-glass rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5]"
+      className="lg-surface lg-specular rounded-2xl p-4 text-[#111813] dark:text-[#F5F7F5]"
     >
       {/* Header: Parcel Name + Crop / Hectares + Dismiss */}
       <div className="flex items-start justify-between gap-2.5">
@@ -193,7 +191,7 @@ export function ParcelInspectorPanel({
             <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-[#4A5A4E] dark:text-[#9CA89E]">
               {insp.headerTitle}
             </span>
-            <span className="rounded-md bg-[#15803D]/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#15803D] dark:bg-white/10 dark:text-[#86EFAC]">
+            <span className="rounded-md bg-[#15803D]/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#15803D] dark:bg-white/10 dark:text-[#4ADE80]">
               {selectedField.field_id}
             </span>
           </div>
@@ -203,7 +201,7 @@ export function ParcelInspectorPanel({
           <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
             <span>{commune.name[lang] || commune.name.en}</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#86EFAC]">
+            <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
               {selectedField.area_hectares.toFixed(2)} ha
             </span>
           </p>
@@ -214,7 +212,7 @@ export function ParcelInspectorPanel({
             type="button"
             onClick={onCloseInspector}
             aria-label={hud.closeInspectorLabel}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#111813]/[0.06] text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#111813]/12 hover:text-[#111813] active:scale-[0.96] dark:bg-white/[0.06] dark:text-[#9CA89E] dark:hover:bg-white/12 dark:hover:text-[#F5F7F5]"
+            className="lg-capsule flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#4A5A4E] transition-[transform,background-color,color] duration-150 ease-out hover:text-[#111813] active:scale-[0.96] dark:text-[#9CA89E] dark:hover:text-[#F5F7F5]"
           >
             <X size={14} aria-hidden="true" />
           </button>
@@ -225,13 +223,13 @@ export function ParcelInspectorPanel({
       <div className="mt-3">
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-[#4A5A4E] dark:text-[#9CA89E]">{hud.readinessLabel}</span>
-          <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#22C55E]">
+          <span className="font-mono font-semibold tabular-nums text-[#15803D] dark:text-[#4ADE80]">
             {readinessScore}%
           </span>
         </div>
         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#111813]/10 dark:bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#16A34A] via-[#22C55E] to-[#84E875] transition-[width] duration-300 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-[#16A34A] via-[#4ADE80] to-[#EAB34D] transition-[width] duration-300 ease-out"
             style={{ width: `${readinessScore}%` }}
           />
         </div>
@@ -241,7 +239,7 @@ export function ParcelInspectorPanel({
       <dl className="mt-3 space-y-1.5 rounded-xl bg-[#111813]/[0.04] px-3 py-2.5 text-xs dark:bg-white/[0.05]">
         <div className="flex items-center justify-between gap-2">
           <dt className="flex items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-            <Leaf size={13} className="text-[#15803D] dark:text-[#22C55E]" aria-hidden="true" />
+            <Leaf size={13} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{insp.soil}</span>
           </dt>
           <dd className="truncate font-medium text-[#111813] dark:text-[#F5F7F5]">{soilSummary}</dd>
@@ -282,7 +280,7 @@ export function ParcelInspectorPanel({
 
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <dt className="flex items-center gap-1.5 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
-            <Brain size={13} className="text-[#15803D] dark:text-[#86EFAC]" aria-hidden="true" />
+            <Brain size={13} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
             <span>{insp.aiStatus}</span>
           </dt>
           <dd>
@@ -290,7 +288,7 @@ export function ParcelInspectorPanel({
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                   fieldPlan.status === "ok"
-                    ? "bg-[#15803D]/12 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
+                    ? "bg-[#15803D]/12 text-[#15803D] dark:bg-[#4ADE80]/20 dark:text-[#4ADE80]"
                     : "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
                 }`}
               >
@@ -313,7 +311,7 @@ export function ParcelInspectorPanel({
           <button
             type="button"
             onClick={() => onScrollToPlan(selectedField.field_id)}
-            className="fs-cta-primary inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-semibold active:not-disabled:scale-[0.96]"
+            className="fs-cta-primary inline-flex min-h-9 min-w-full flex-1 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-semibold active:not-disabled:scale-[0.96]"
           >
             <Brain size={14} weight="fill" aria-hidden="true" />
             <span>{insp.openPlanBtn}</span>
@@ -332,27 +330,17 @@ export function ParcelInspectorPanel({
         <button
           type="button"
           onClick={() => onInspect3d(selectedField.farm_id, selectedField.field_id)}
-          className="fs-liquid-pill inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
           title={insp.sim3dBtn}
         >
-          <Play size={12} weight="fill" className="text-[#15803D] dark:text-[#22C55E]" aria-hidden="true" />
+          <Play size={12} weight="fill" className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
           <span>{insp.sim3dBtn}</span>
         </button>
 
         <button
           type="button"
-          onClick={() => onEditBorders(selectedField)}
-          className="fs-liquid-pill inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
-          title={dict.editBordersBtn}
-        >
-          <Polygon size={12} aria-hidden="true" />
-          <span>{insp.editBordersBtn}</span>
-        </button>
-
-        <button
-          type="button"
           onClick={() => onEditInfo(selectedField)}
-          className="fs-liquid-pill inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
+          className="lg-capsule inline-flex min-h-9 items-center justify-center gap-1 rounded-xl px-2.5 text-[11px] font-medium text-[#111813] active:not-disabled:scale-[0.96] dark:text-[#F5F7F5]"
           title={dict.editInfoBtn}
         >
           <PencilSimple size={12} aria-hidden="true" />

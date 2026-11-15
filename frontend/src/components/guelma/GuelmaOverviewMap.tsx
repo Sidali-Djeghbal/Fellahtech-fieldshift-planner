@@ -294,8 +294,8 @@ export function GuelmaOverviewMap({
           type: "line",
           source: "guelma-boundary",
           paint: {
-            "line-color": "#A7F3D0",
-            "line-width": 2,
+            "line-color": "#4ADE80",
+            "line-width": 2.2,
             "line-dasharray": [4, 3],
             "line-opacity": 0.85,
           },
@@ -310,8 +310,8 @@ export function GuelmaOverviewMap({
           type: "fill",
           source: "workspace-fields",
           paint: {
-            "fill-color": ["case", ["==", ["get", "selected"], 1], "#22C55E", "#F59E0B"],
-            "fill-opacity": ["case", ["==", ["get", "selected"], 1], 0.36, 0.22],
+            "fill-color": ["case", ["==", ["get", "selected"], 1], "#4ADE80", "#EAB34D"],
+            "fill-opacity": ["case", ["==", ["get", "selected"], 1], 0.35, 0.20],
           },
         });
         map.addLayer({
@@ -319,8 +319,8 @@ export function GuelmaOverviewMap({
           type: "line",
           source: "workspace-fields",
           paint: {
-            "line-color": ["case", ["==", ["get", "selected"], 1], "#FFFFFF", "#FDE68A"],
-            "line-width": ["case", ["==", ["get", "selected"], 1], 2.5, 1.5],
+            "line-color": ["case", ["==", ["get", "selected"], 1], "#FFFFFF", "#EAB34D"],
+            "line-width": ["case", ["==", ["get", "selected"], 1], 2.5, 1.8],
           },
         });
 
@@ -334,7 +334,7 @@ export function GuelmaOverviewMap({
           source: "workspace-points",
           paint: {
             "circle-radius": ["case", ["==", ["get", "selected"], 1], 8, 6],
-            "circle-color": ["case", ["==", ["get", "selected"], 1], "#22C55E", "#F59E0B"],
+            "circle-color": ["case", ["==", ["get", "selected"], 1], "#4ADE80", "#EAB34D"],
             "circle-stroke-width": 2,
             "circle-stroke-color": "#FFFFFF",
           },
@@ -460,7 +460,7 @@ export function GuelmaOverviewMap({
     <div className="relative" data-testid="guelma-overview-map">
       <div
         ref={mapFrameRef}
-        className="relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#E1ECE3] shadow-(--shadow-liquid-glass) outline outline-1 -outline-offset-1 outline-[#111813]/10 dark:bg-[#0D1912] dark:outline-white/10 sm:h-[420px] md:h-[470px] lg:h-[500px]"
+        className="lg-map-frame lg-specular relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#0a1310] dark:bg-[#070d0a] sm:h-[420px] md:h-[470px] lg:h-[500px]"
       >
         {/* Full-bleed Satellite Map / SVG Spatial Fallback */}
         <div
@@ -523,16 +523,16 @@ export function GuelmaOverviewMap({
                       fill={
                         isSel
                           ? isDarkTheme
-                            ? "rgba(34, 197, 94, 0.25)"
+                            ? "rgba(74, 222, 128, 0.35)"
                             : "rgba(21, 128, 61, 0.25)"
-                          : "rgba(245, 158, 11, 0.18)"
+                          : "rgba(234, 179, 77, 0.24)"
                       }
                     />
                     <circle
                       cx={cx}
                       cy={cy}
                       r={isSel ? 6 : 4.5}
-                      fill={isSel ? (isDarkTheme ? "#22C55E" : "#15803D") : "#F59E0B"}
+                      fill={isSel ? (isDarkTheme ? "#4ADE80" : "#15803D") : "#EAB34D"}
                       stroke={isDarkTheme ? "#FFFFFF" : "#0B3D2E"}
                       strokeWidth="1.8"
                     />
@@ -542,6 +542,9 @@ export function GuelmaOverviewMap({
             </svg>
           )}
         </div>
+
+        {/* Liquid Glass Atmospheric Vignette overlay from Prototype */}
+        <div className="lg-vignette" />
 
         {/* Callout Vector Leader Line + Pin Connector (Desktop/Tablet md+) */}
         {calloutPin && selectedField && inspectorOpen ? (
@@ -563,7 +566,7 @@ export function GuelmaOverviewMap({
               cx={calloutPin.x}
               cy={calloutPin.y}
               r="7"
-              fill={isDarkTheme ? "rgba(34, 197, 94, 0.35)" : "rgba(21, 128, 61, 0.28)"}
+              fill={isDarkTheme ? "rgba(74, 222, 128, 0.35)" : "rgba(21, 128, 61, 0.28)"}
             />
             <circle
               cx={calloutPin.x}
@@ -575,7 +578,7 @@ export function GuelmaOverviewMap({
         ) : null}
 
         {/* TOP-LEADING HUD: Layers & Draw Parcel Circular Glass Icons */}
-        <div className="pointer-events-none absolute start-3 top-3 z-20 flex items-center gap-3">
+        <div className="pointer-events-none absolute start-3 top-3 z-20 flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => setHighContrastLayers((v) => !v)}
@@ -584,8 +587,8 @@ export function GuelmaOverviewMap({
             title={hudLabels?.layersLabel ?? "Toggle satellite layer contrast"}
             className={`pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
               highContrastLayers
-                ? "fs-active-pill"
-                : "fs-hud-glass text-[#111813] hover:bg-[#111813]/10 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+                ? "lg-capsule lg-capsule-active"
+                : "lg-capsule text-[#111813] dark:text-[#F5F7F5]"
             }`}
           >
             <Stack size={17} aria-hidden="true" />
@@ -597,7 +600,7 @@ export function GuelmaOverviewMap({
               onClick={onStartAddFarm}
               aria-label={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
               title={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
-              className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
             >
               <PencilLine size={17} aria-hidden="true" />
             </button>
@@ -611,12 +614,12 @@ export function GuelmaOverviewMap({
             disabled={fields.length < 2}
             onClick={() => handleStepField(-1)}
             aria-label={hudLabels?.prevFieldLabel ?? "Previous parcel"}
-            className="fs-hud-glass pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-[#111813]/10 active:not-disabled:scale-[0.96] disabled:opacity-45 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40 dark:text-[#F5F7F5]"
           >
             <CaretLeft size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
           </button>
 
-          <div className="fs-active-pill pointer-events-auto flex min-h-10 max-w-[230px] items-center justify-center rounded-full px-4 text-xs font-semibold tracking-tight">
+          <div className="lg-capsule lg-capsule-active pointer-events-auto flex min-h-10 max-w-[230px] items-center justify-center rounded-full px-4 text-xs font-semibold tracking-tight shadow-md">
             <span dir="auto" className="truncate">
               {activePillLabel}
             </span>
@@ -627,7 +630,7 @@ export function GuelmaOverviewMap({
             disabled={fields.length < 2}
             onClick={() => handleStepField(1)}
             aria-label={hudLabels?.nextFieldLabel ?? "Next parcel"}
-            className="fs-hud-glass pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-[#111813]/10 active:not-disabled:scale-[0.96] disabled:opacity-45 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out active:not-disabled:scale-[0.96] disabled:opacity-40 dark:text-[#F5F7F5]"
           >
             <CaretRight size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
           </button>
@@ -641,32 +644,32 @@ export function GuelmaOverviewMap({
             aria-label={hudLabels?.fitExtent ?? "Fit extent"}
             title={hudLabels?.fitExtent ?? "Fit extent"}
             data-testid="map-fit-extent-btn"
-            className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
           >
             <CornersOut size={16} aria-hidden="true" />
           </button>
         </div>
 
         {/* BOTTOM-TRAILING HUD: Vertical + / - Zoom Capsule + Center Location Circle */}
-        <div className="pointer-events-none absolute bottom-3 end-3 z-20 flex flex-col items-end gap-3">
-          <div className="fs-hud-glass pointer-events-auto flex flex-col gap-1.5 rounded-full p-1">
+        <div className="pointer-events-none absolute bottom-3 end-3 z-20 flex flex-col items-end gap-2.5">
+          <div className="lg-capsule pointer-events-auto flex flex-col gap-1 rounded-full p-1">
             <button
               type="button"
               onClick={handleZoomIn}
               aria-label={hudLabels?.zoomIn ?? "Zoom in"}
               title={hudLabels?.zoomIn ?? "Zoom in"}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
             >
-              <Plus size={16} weight="bold" aria-hidden="true" />
+              <Plus size={15} weight="bold" aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={handleZoomOut}
               aria-label={hudLabels?.zoomOut ?? "Zoom out"}
               title={hudLabels?.zoomOut ?? "Zoom out"}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
             >
-              <Minus size={16} weight="bold" aria-hidden="true" />
+              <Minus size={15} weight="bold" aria-hidden="true" />
             </button>
           </div>
 
@@ -675,7 +678,7 @@ export function GuelmaOverviewMap({
             onClick={handleCenterSelected}
             aria-label={hudLabels?.fitExtent ?? "Fit extent"}
             title={hudLabels?.fitExtent ?? "Fit extent"}
-            className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            className="lg-capsule pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
           >
             <Crosshair size={16} aria-hidden="true" />
           </button>
@@ -688,9 +691,9 @@ export function GuelmaOverviewMap({
               type="button"
               onClick={onReopenInspector}
               data-testid="reopen-inspector-btn"
-              className="fs-hud-glass pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3 pe-4 text-xs font-medium text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+              className="lg-capsule pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3.5 pe-4 text-xs font-medium text-[#111813] transition-[transform,background-color] duration-150 ease-out active:scale-[0.96] dark:text-[#F5F7F5]"
             >
-              <Info size={15} className="text-[#15803D] dark:text-[#22C55E]" aria-hidden="true" />
+              <Info size={15} className="text-[#15803D] dark:text-[#4ADE80]" aria-hidden="true" />
               <span>{hudLabels?.openInspectorLabel ?? "Open parcel inspector"}</span>
             </button>
           </div>

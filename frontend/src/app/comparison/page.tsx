@@ -15,9 +15,11 @@ import {
   Thermometer,
   XCircle,
 } from "@phosphor-icons/react";
+import { useResolvedTheme } from "@/app/providers";
 import { AgronomicRiskCalendar } from "@/components/comparison/AgronomicRiskCalendar";
 import { PrintableBrief } from "@/components/comparison/PrintableBrief";
 import { ScoreRadarChart } from "@/components/comparison/ScoreRadarChart";
+import { useWorkspaceShell } from "@/components/guelma/WorkspaceShellContext";
 import {
   ApiErrorCard,
   DegradedReplayBanner,
@@ -47,6 +49,8 @@ function ComparisonContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const resolvedTheme = useResolvedTheme();
+  const { openAuthModal } = useWorkspaceShell();
 
   const {
     lang,
@@ -203,27 +207,29 @@ function ComparisonContent() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="fs-view-enter space-y-5">
       {/* Screen Header */}
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-extrabold text-[#111827]">{t.title}</h1>
-          <p className="mt-1 text-xs text-[#6B7280]">{t.subtitle}</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
+            {t.title}
+          </h1>
+          <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[11px] font-medium text-[#374151] shadow-xs">
+          <label className="fs-liquid-pill inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] font-medium text-[#3E4C42] dark:text-[#D1DDD3]">
             <input
               type="checkbox"
               data-testid="toggle-degraded-preview"
               checked={simulateDegradedReplay}
               onChange={(e) => setSimulateDegradedReplay(e.target.checked)}
-              className="accent-[#137135] rounded"
+              className="rounded accent-[#15803D] dark:accent-[#22C55E]"
             />
             <span>{UI_DICT[lang].dashboard.simulateDegradedLabel}</span>
           </label>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-xs font-bold text-[#111827] hover:bg-gray-50 shadow-xs transition"
+            className="fs-liquid-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
           >
             <ArrowLeft size={14} />
             <span>Command Center</span>
@@ -232,7 +238,7 @@ function ComparisonContent() {
             type="button"
             onClick={() => window.print()}
             data-testid="print-brief-btn"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-bold text-[#111827] hover:bg-gray-50 shadow-xs transition"
+            className="fs-cta-primary inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold active:not-disabled:scale-[0.96]"
           >
             <Printer size={16} />
             {t.printBriefBtn}
@@ -240,46 +246,89 @@ function ComparisonContent() {
         </div>
       </div>
 
-      {analysisQuery.error && <ApiErrorCard error={analysisQuery.error} lang={lang} />}
+      {analysisQuery.error && (
+        <ApiErrorCard error={analysisQuery.error} lang={lang} theme={resolvedTheme} />
+      )}
       {actionError !== null && (
         <ApiErrorCard
           error={actionError}
           lang={lang}
-          onOpenClaimAccount={() => {
-            document.querySelector<HTMLButtonElement>('[data-testid="auth-modal-trigger"]')?.click();
-          }}
+          theme={resolvedTheme}
+          onOpenClaimAccount={openAuthModal}
         />
+      )}
+
+      {!envelope && !analysisQuery.error && (
+        <section className="no-print fs-liquid-panel rounded-3xl p-6 text-[#111813] dark:text-[#F5F7F5]">
+          {hasSession && resolvedAnalysisId && analysisQuery.isLoading ? (
+            <p className="text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+              Loading rotation comparison...
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  No rotation analysis selected yet
+                </h2>
+                <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+                  Configure a farm parcel and submit an analysis in Farm Profile, or load a sample workspace from the Command Center.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/farm-profile"
+                  className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold"
+                >
+                  Open Farm Profile
+                </Link>
+                <Link
+                  href="/"
+                  className="fs-liquid-pill rounded-full px-4 py-2 text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]"
+                >
+                  Command Center
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
       {envelope && activeFieldPlan && (
         <>
-          <DegradedReplayBanner degradedMode={envelope.degraded_mode} lang={lang} />
-          <WarningsBanner warnings={envelope.warnings} lang={lang} />
+          <DegradedReplayBanner
+            degradedMode={envelope.degraded_mode}
+            lang={lang}
+            theme={resolvedTheme}
+          />
+          <WarningsBanner warnings={envelope.warnings} lang={lang} theme={resolvedTheme} />
 
           {/* Summary & Provenance Banner */}
-          <section className="no-print rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+          <section className="no-print fs-liquid-microclimate rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
               <div className="flex flex-wrap items-center gap-2">
-                <code dir="ltr" className="rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-bold text-[#00291B]">
+                <code
+                  dir="ltr"
+                  className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-0.5 font-mono font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]"
+                >
                   {envelope.analysis_id}
                 </code>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-[#374151]">
+                <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.04] px-2.5 py-0.5 text-[#3E4C42] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#D1DDD3]">
                   Dataset: <strong dir="ltr">{envelope.result.dataset_version_used}</strong>
                 </span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-[#374151]">
+                <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.04] px-2.5 py-0.5 text-[#3E4C42] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#D1DDD3]">
                   Engine: <strong dir="ltr">{envelope.result.ml_engine_version}</strong>
                 </span>
               </div>
-              <span className="tabular-nums rounded-full bg-[#DCFCE7] text-[#15803D] px-3 py-0.5 font-bold">
+              <span className="tabular-nums rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-3 py-0.5 font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                 Completeness:{" "}
                 {Math.round((envelope.result.data_quality.completeness_score ?? 0) * 100)}%
               </span>
             </div>
-            <p className="mt-3 text-sm font-medium leading-relaxed text-[#111827]">
+            <p className="mt-3 text-sm font-medium leading-relaxed text-[#111813] dark:text-[#F5F7F5]">
               {localizePlainText(envelope.result.overall_summary, lang, plainMode)}
             </p>
-            <p className="mt-2 flex items-start gap-1.5 text-xs text-[#6B7280]">
-              <ShieldWarning size={15} className="mt-0.5 shrink-0 text-[#137135]" />
+            <p className="mt-2 flex items-start gap-1.5 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+              <ShieldWarning size={15} className="mt-0.5 shrink-0 text-[#15803D] dark:text-[#86EFAC]" />
               {envelope.result.disclaimer}
             </p>
           </section>
@@ -292,10 +341,10 @@ function ComparisonContent() {
                   key={fp.field_id}
                   type="button"
                   onClick={() => setSelectedFieldIdx(idx)}
-                  className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
                     idx === selectedFieldIdx
-                      ? "bg-[#00291B] text-white shadow-xs"
-                      : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                      ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   {fp.field_id} · {fp.field_name} ({fp.status})
@@ -305,7 +354,7 @@ function ComparisonContent() {
           )}
 
           {activeFieldPlan.status === "partial" && activeFieldPlan.partial_reason && (
-            <div className="no-print rounded-xl border border-red-300 bg-red-50 p-3 text-xs text-red-800">
+            <div className="no-print rounded-2xl border border-red-300/80 bg-red-50/90 p-3.5 text-xs text-red-800 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-200">
               Partial field result: {activeFieldPlan.partial_reason}
             </div>
           )}
@@ -323,8 +372,8 @@ function ComparisonContent() {
 
           {/* Radar Chart & Strategy Comparison Cards */}
           <section className="no-print grid grid-cols-1 gap-5 xl:grid-cols-12">
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827] xl:col-span-4">
-              <h2 className="mb-3 font-heading text-sm font-bold text-[#111827]">
+            <div className="fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5] xl:col-span-4">
+              <h2 className="mb-3 font-heading text-sm font-bold text-[#111813] dark:text-[#F5F7F5]">
                 Multi-Axis Agronomic Balance
               </h2>
               <ScoreRadarChart
@@ -332,42 +381,44 @@ function ComparisonContent() {
                 focused={chosenOrSuggestedStrategy}
                 lang={lang}
                 plainMode={plainMode}
+                variant={resolvedTheme}
               />
 
               {/* Requested Crop Outcomes */}
-              <div className="mt-5 border-t border-gray-200 pt-4">
-                <h3 className="text-xs font-bold text-[#6B7280]">{t.requestedCropsTitle}</h3>
-                <div className="mt-2 space-y-2">
+              <div className="mt-5 border-t border-[#111813]/10 pt-4 dark:border-white/10">
+                <h3 className="text-xs font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
+                  {t.requestedCropsTitle}
+                </h3>
+                <div className="mt-2.5 space-y-2">
                   {activeFieldPlan.requested_crop_results.map((reqCrop) => (
-                    <div
-                      key={reqCrop.requested_crop_id}
-                      className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 text-xs"
-                    >
+                    <div key={reqCrop.requested_crop_id} className="fs-liquid-well rounded-2xl p-3 text-xs">
                       <div className="flex items-center justify-between gap-2">
-                        <strong className="text-[#111827]">
+                        <strong className="text-[#111813] dark:text-[#F5F7F5]">
                           {getLocalizedCropName(
                             reqCrop.requested_crop_id,
                             reqCrop.requested_crop_id
                           )}
                         </strong>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
                             reqCrop.outcome === "included"
-                              ? "bg-[#DCFCE7] text-[#15803D]"
+                              ? "bg-[#15803D]/15 text-[#15803D] dark:bg-[#22C55E]/20 dark:text-[#86EFAC]"
                               : reqCrop.outcome === "replaced"
-                                ? "bg-[#FEF3C7] text-[#D97706]"
-                                : "bg-red-100 text-red-700"
+                                ? "bg-amber-500/15 text-amber-800 dark:bg-amber-500/20 dark:text-[#FCD34D]"
+                                : "bg-red-500/15 text-red-700 dark:bg-red-500/20 dark:text-red-300"
                           }`}
                         >
                           {reqCrop.outcome}
                         </span>
                       </div>
                       {reqCrop.replaced_by_crop_id && (
-                        <p className="mt-1 text-[11px] text-[#137135] font-semibold">
+                        <p className="mt-1 text-[11px] font-semibold text-[#15803D] dark:text-[#86EFAC]">
                           Replaced by: {reqCrop.replaced_by_crop_id}
                         </p>
                       )}
-                      <p className="mt-1 text-[11px] text-[#6B7280]">{reqCrop.explanation}</p>
+                      <p className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+                        {reqCrop.explanation}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -385,48 +436,54 @@ function ComparisonContent() {
                   <article
                     key={strat.strategy_id}
                     data-testid={`strategy-card-${strat.strategy_id}`}
-                    className={`rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827] transition ${
+                    className={`fs-liquid-panel rounded-3xl p-5 text-[#111813] transition dark:text-[#F5F7F5] ${
                       selState === "selected"
-                        ? "ring-2 ring-[#00291B]"
+                        ? "ring-2 ring-[#0B3D2E] dark:ring-[#22C55E]"
                         : isSuggested
-                          ? "ring-1 ring-[#137135]"
+                          ? "ring-1 ring-[#15803D]/50 dark:ring-[#22C55E]/45"
                           : ""
                     }`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-heading text-base font-extrabold text-[#111827]">
+                          <h3 className="font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
                             {strat.name}
                           </h3>
                           {isSuggested && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[#DCFCE7] text-[#15803D] px-2.5 py-0.5 text-[11px] font-bold">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                               <Crown size={12} weight="fill" />
                               {t.recommendedBadge}
                             </span>
                           )}
                           {strat.is_existing_rotation && (
-                            <span className="rounded-full border border-gray-300 bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700">
+                            <span className="rounded-full border border-[#111813]/12 bg-[#111813]/[0.05] px-2.5 py-0.5 text-[11px] font-semibold text-[#3E4C42] dark:border-white/15 dark:bg-white/[0.08] dark:text-[#D1DDD3]">
                               {t.baselineBadge}
                             </span>
                           )}
                           {selState === "selected" && (
                             <span
                               data-testid={`selected-badge-${strat.strategy_id}`}
-                              className="inline-flex items-center gap-1 rounded-full bg-[#00291B] px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs"
+                              className="inline-flex items-center gap-1 rounded-full bg-[#0B3D2E] px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-xs dark:bg-[#FFFFFF] dark:text-[#111713]"
                             >
-                              <CheckCircle size={12} weight="fill" className="text-[#84E875]" />
+                              <CheckCircle
+                                size={12}
+                                weight="fill"
+                                className="text-[#84E875] dark:text-[#15803D]"
+                              />
                               {t.selectedBadge}
                             </span>
                           )}
                           {selState === "rejected" && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:bg-red-500">
                               <XCircle size={12} weight="fill" />
                               {t.rejectedBadge}
                             </span>
                           )}
                         </div>
-                        <p className="mt-1 text-xs text-[#6B7280]">{strat.description}</p>
+                        <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
+                          {strat.description}
+                        </p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -434,14 +491,14 @@ function ComparisonContent() {
                           type="button"
                           data-testid={`select-strategy-${strat.strategy_id}`}
                           onClick={() => handleSelectAction(strat.strategy_id, "selected")}
-                          className="rounded-lg bg-[#00291B] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#04421B] shadow-xs transition"
+                          className="fs-cta-primary rounded-full px-3.5 py-1.5 text-xs font-semibold active:not-disabled:scale-[0.96]"
                         >
                           {t.selectStrategyBtn}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleSelectAction(strat.strategy_id, "rejected")}
-                          className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
+                          className="rounded-full border border-red-300/80 bg-red-50/90 px-3.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
                         >
                           {t.rejectStrategyBtn}
                         </button>
@@ -451,24 +508,21 @@ function ComparisonContent() {
                     {/* Season-by-season Strip */}
                     <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                       {strat.seasons.map((sn) => (
-                        <div
-                          key={sn.order}
-                          className="rounded-xl border border-gray-200 bg-gray-50/70 p-2.5"
-                        >
-                          <div className="flex items-center justify-between text-[10px] text-[#6B7280]">
+                        <div key={sn.order} className="fs-liquid-well rounded-2xl p-3">
+                          <div className="flex items-center justify-between text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                             <span>
                               #{sn.order} · {SEASON_LABELS[lang][sn.season]} {sn.year}
                             </span>
                             {sn.planting_month && <span dir="ltr">M{sn.planting_month}</span>}
                           </div>
-                          <p className="mt-1 text-xs font-bold text-[#111827]">
+                          <p className="mt-1 text-xs font-bold text-[#111813] dark:text-[#F5F7F5]">
                             {getLocalizedCropName(sn.crop_id, sn.crop_name)}
                           </p>
                           <div className="mt-1.5 flex flex-wrap gap-1 text-[10px]">
-                            <span className="rounded bg-white border border-gray-200 px-1.5 py-0.5 text-[#374151]">
+                            <span className="rounded-full border border-[#111813]/12 bg-white/70 px-2 py-0.5 text-[#3E4C42] dark:border-white/12 dark:bg-white/[0.06] dark:text-[#D1DDD3]">
                               {CROP_CATEGORY_LABELS[lang][sn.category]}
                             </span>
-                            <span className="rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[#137135] font-medium">
+                            <span className="rounded-full border border-[#15803D]/25 bg-[#15803D]/10 px-2 py-0.5 font-medium text-[#15803D] dark:border-[#22C55E]/25 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]">
                               {CROP_ROLE_LABELS[lang][sn.role]}
                             </span>
                           </div>
@@ -485,17 +539,16 @@ function ComparisonContent() {
                             ? SCORE_LABELS[lang][scoreKey].plain
                             : SCORE_LABELS[lang][scoreKey].tech;
                           return (
-                            <div
-                              key={scoreKey}
-                              className="rounded-lg border border-gray-200 bg-gray-50/50 p-2"
-                            >
-                              <div className="flex items-center justify-between text-[10px] text-[#374151]">
+                            <div key={scoreKey} className="fs-liquid-well rounded-xl p-2.5">
+                              <div className="flex items-center justify-between text-[10px] text-[#3E4C42] dark:text-[#D1DDD3]">
                                 <span className="truncate">{label}</span>
-                                <strong className="tabular-nums text-[#111827]">{val}</strong>
+                                <strong className="font-mono tabular-nums text-[#111813] dark:text-[#F5F7F5]">
+                                  {val}
+                                </strong>
                               </div>
-                              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#111813]/10 dark:bg-white/10">
                                 <div
-                                  className="h-full bg-[#137135]"
+                                  className="h-full rounded-full bg-[#15803D] dark:bg-[#22C55E]"
                                   style={{ width: `${val}%` }}
                                 />
                               </div>
@@ -503,11 +556,11 @@ function ComparisonContent() {
                           );
                         }
                       )}
-                      <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-2">
-                        <span className="block truncate text-[10px] text-[#6B7280]">
+                      <div className="fs-liquid-well rounded-xl p-2.5">
+                        <span className="block truncate text-[10px] text-[#4A5A4E] dark:text-[#9CA89E]">
                           {plainMode ? t.bareDaysPlain : t.bareDaysLabel}
                         </span>
-                        <strong className="tabular-nums mt-0.5 block text-sm text-[#00291B] font-bold">
+                        <strong className="mt-0.5 block font-mono text-sm font-bold tabular-nums text-[#15803D] dark:text-[#86EFAC]">
                           {strat.scores.bare_field_days_per_year} d/yr
                         </strong>
                       </div>
@@ -519,33 +572,41 @@ function ComparisonContent() {
                       onClick={() =>
                         setExpandedStrategyId(expanded ? null : strat.strategy_id)
                       }
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#137135] hover:underline"
+                      className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#15803D] hover:underline dark:text-[#86EFAC]"
                     >
                       {expanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
                       {expanded ? "Hide Agronomic Breakdown" : "Inspect Benefits, Risks & Gaps"}
                     </button>
 
                     {expanded && (
-                      <div className="mt-3 grid grid-cols-1 gap-3 border-t border-gray-200 pt-3 md:grid-cols-3 text-xs">
+                      <div className="mt-3 grid grid-cols-1 gap-3 border-t border-[#111813]/10 pt-3 text-xs dark:border-white/10 md:grid-cols-3">
                         <div>
-                          <p className="font-bold text-[#137135]">{t.benefitsTitle}</p>
-                          <ul className="mt-1.5 space-y-1.5 text-[#374151]">
+                          <p className="font-bold text-[#15803D] dark:text-[#86EFAC]">
+                            {t.benefitsTitle}
+                          </p>
+                          <ul className="mt-1.5 space-y-1.5 text-[#3E4C42] dark:text-[#D1DDD3]">
                             {strat.explanation.benefits.map((b) => (
                               <li key={b.benefit_id}>
-                                <strong className="text-[#111827]">{b.title}:</strong>{" "}
+                                <strong className="text-[#111813] dark:text-[#F5F7F5]">
+                                  {b.title}:
+                                </strong>{" "}
                                 {localizePlainText(b.description, lang, plainMode)}
                               </li>
                             ))}
                           </ul>
                         </div>
                         <div>
-                          <p className="font-bold text-red-700">{t.risksTitle}</p>
-                          <ul className="mt-1.5 space-y-1.5 text-[#374151]">
+                          <p className="font-bold text-red-700 dark:text-red-300">
+                            {t.risksTitle}
+                          </p>
+                          <ul className="mt-1.5 space-y-1.5 text-[#3E4C42] dark:text-[#D1DDD3]">
                             {strat.explanation.risks.map((r) => (
                               <li key={r.risk_id}>
-                                <strong className="text-[#111827]">{r.title}</strong> ({r.severity}):{" "}
-                                {localizePlainText(r.description, lang, plainMode)}
-                                <span className="mt-0.5 block text-[#137135] font-medium">
+                                <strong className="text-[#111813] dark:text-[#F5F7F5]">
+                                  {r.title}
+                                </strong>{" "}
+                                ({r.severity}): {localizePlainText(r.description, lang, plainMode)}
+                                <span className="mt-0.5 block font-medium text-[#15803D] dark:text-[#86EFAC]">
                                   Mitigation: {r.mitigation}
                                 </span>
                               </li>
@@ -553,8 +614,10 @@ function ComparisonContent() {
                           </ul>
                         </div>
                         <div>
-                          <p className="font-bold text-[#6B7280]">{t.gapsTitle}</p>
-                          <ul className="mt-1.5 list-disc space-y-1 ps-4 text-[#6B7280]">
+                          <p className="font-bold text-[#4A5A4E] dark:text-[#9CA89E]">
+                            {t.gapsTitle}
+                          </p>
+                          <ul className="mt-1.5 list-disc space-y-1 ps-4 text-[#4A5A4E] dark:text-[#9CA89E]">
                             {strat.explanation.information_gaps.map((g, gi) => (
                               <li key={gi}>{g}</li>
                             ))}
@@ -572,14 +635,14 @@ function ComparisonContent() {
           </section>
 
           {/* Inline Climate What-If Scenario Tweak */}
-          <section className="no-print rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+          <section className="no-print fs-liquid-panel rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111827]">
-                  <Thermometer size={18} className="text-[#137135]" />
+                <h2 className="flex items-center gap-2 font-heading text-base font-bold text-[#111813] dark:text-[#F5F7F5]">
+                  <Thermometer size={18} className="text-[#15803D] dark:text-[#86EFAC]" />
                   {t.whatIfTitle}
                 </h2>
-                <p className="mt-1 text-xs text-[#6B7280]">
+                <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
                   Test hotter/drier seasons against the same parcel baseline (uses 1 guest quarter).
                 </p>
               </div>
@@ -587,16 +650,16 @@ function ComparisonContent() {
                 type="button"
                 disabled={runningWhatIf}
                 onClick={handleQuickWhatIf}
-                className="rounded-xl bg-[#00291B] px-4 py-2 text-xs font-bold text-white hover:bg-[#04421B] shadow-xs disabled:opacity-50 transition"
+                className="fs-cta-primary rounded-full px-4 py-2 text-xs font-semibold active:not-disabled:scale-[0.96] disabled:opacity-50"
               >
                 {runningWhatIf ? "Running..." : t.whatIfRunBtn}
               </button>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <div className="flex justify-between text-xs text-[#374151]">
+                <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
                   <span>Temperature Shift</span>
-                  <span dir="ltr" className="tabular-nums font-bold text-[#111827]">
+                  <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {whatIfTemp >= 0 ? `+${whatIfTemp}` : whatIfTemp} °C
                   </span>
                 </div>
@@ -607,13 +670,13 @@ function ComparisonContent() {
                   step={0.5}
                   value={whatIfTemp}
                   onChange={(e) => setWhatIfTemp(Number(e.target.value))}
-                  className="mt-1 w-full accent-[#137135]"
+                  className="mt-1.5 w-full accent-[#15803D] dark:accent-[#22C55E]"
                 />
               </div>
               <div>
-                <div className="flex justify-between text-xs text-[#374151]">
+                <div className="flex justify-between text-xs text-[#3E4C42] dark:text-[#D1DDD3]">
                   <span>Precipitation Change</span>
-                  <span dir="ltr" className="tabular-nums font-bold text-[#111827]">
+                  <span dir="ltr" className="tabular-nums font-bold text-[#111813] dark:text-[#F5F7F5]">
                     {whatIfPrecip >= 0 ? `+${whatIfPrecip}` : whatIfPrecip}%
                   </span>
                 </div>
@@ -624,7 +687,7 @@ function ComparisonContent() {
                   step={5}
                   value={whatIfPrecip}
                   onChange={(e) => setWhatIfPrecip(Number(e.target.value))}
-                  className="mt-1 w-full accent-[#137135]"
+                  className="mt-1.5 w-full accent-[#15803D] dark:accent-[#22C55E]"
                 />
               </div>
             </div>
@@ -646,7 +709,7 @@ export default function ComparisonPage() {
   return (
     <Suspense
       fallback={
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 text-xs text-[#6B7280] shadow-sm">
+        <div className="fs-liquid-panel rounded-3xl p-6 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">
           Loading rotation comparison...
         </div>
       }

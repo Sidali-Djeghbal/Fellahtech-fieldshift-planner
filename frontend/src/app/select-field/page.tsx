@@ -12,6 +12,8 @@ import {
   Trash,
   Warning,
 } from "@phosphor-icons/react";
+import { useResolvedTheme } from "@/app/providers";
+import { useWorkspaceShell } from "@/components/guelma/WorkspaceShellContext";
 import { OrbitalFieldMap } from "@/components/map/OrbitalFieldMap";
 import { ApiErrorCard, WarningsBanner } from "@/components/shared/ProvenanceBanners";
 import {
@@ -39,6 +41,8 @@ import { useAppStore } from "@/store/useAppStore";
 export default function SelectFieldPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const resolvedTheme = useResolvedTheme();
+  const { openAuthModal } = useWorkspaceShell();
   const {
     lang,
     authMode,
@@ -47,6 +51,9 @@ export default function SelectFieldPage() {
     setActiveFarmId,
     setActiveFieldId,
   } = useAppStore();
+
+  const glassInputClass =
+    "w-full rounded-xl border border-[#111813]/15 bg-[#111813]/[0.03] px-3 py-2 text-xs text-[#111813] placeholder:text-[#6B7A6F] focus:border-[#15803D] focus:outline-none focus:ring-1 focus:ring-[#15803D] dark:border-white/15 dark:bg-white/[0.06] dark:text-[#F5F7F5] dark:placeholder:text-[#6E7B71] dark:focus:border-[#22C55E] dark:focus:ring-[#22C55E]";
 
   const t = UI_DICT[lang].selectField;
   const hasSession = authMode !== "none";
@@ -276,18 +283,20 @@ export default function SelectFieldPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="fs-view-enter space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-extrabold text-[#111827]">{t.title}</h1>
-          <p className="mt-1 text-xs text-[#6B7280]">{t.subtitle}</p>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-[#111813] dark:text-[#F5F7F5]">
+            {t.title}
+          </h1>
+          <p className="mt-1 text-xs text-[#4A5A4E] dark:text-[#9CA89E]">{t.subtitle}</p>
         </div>
         <div
           data-testid="boundary-status-pill"
-          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold ${
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold ${
             insideGuelma
-              ? "bg-[#DCFCE7] text-[#15803D]"
-              : "border border-red-300 bg-red-100 text-red-700"
+              ? "border-[#15803D]/25 bg-[#15803D]/10 text-[#15803D] dark:border-[#22C55E]/30 dark:bg-[#22C55E]/15 dark:text-[#86EFAC]"
+              : "border-red-300/80 bg-red-50/90 text-red-700 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300"
           }`}
         >
           {insideGuelma ? <CheckCircle size={15} weight="fill" /> : <Warning size={15} weight="fill" />}
@@ -296,17 +305,19 @@ export default function SelectFieldPage() {
       </div>
 
       {selectedFieldDetailQuery.data && (
-        <WarningsBanner warnings={selectedFieldDetailQuery.data.warnings} lang={lang} />
+        <WarningsBanner
+          warnings={selectedFieldDetailQuery.data.warnings}
+          lang={lang}
+          theme={resolvedTheme}
+        />
       )}
 
       {saveError !== null && (
         <ApiErrorCard
           error={saveError}
           lang={lang}
-          onOpenClaimAccount={() => {
-            const trigger = document.querySelector<HTMLButtonElement>('[data-testid="auth-modal-trigger"]');
-            trigger?.click();
-          }}
+          theme={resolvedTheme}
+          onOpenClaimAccount={openAuthModal}
         />
       )}
 
@@ -324,14 +335,16 @@ export default function SelectFieldPage() {
           />
 
           {/* Drawing Toolbar & 6 Verified Guelma Presets */}
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm text-[#111827]">
+          <div className="fs-liquid-panel lg-surface lg-specular rounded-3xl p-4 sm:p-5 text-[#111813] dark:text-[#F5F7F5]">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setDrawMode((v) => !v)}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition ${
-                    drawMode ? "bg-[#00291B] text-[#84E875]" : "bg-[#00291B] text-white hover:bg-[#04421B]"
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition active:scale-[0.96] ${
+                    drawMode
+                      ? "bg-[#15803D] text-white shadow-sm dark:bg-[#22C55E] dark:text-[#081A0E]"
+                      : "fs-cta-primary"
                   }`}
                 >
                   <PencilSimple size={15} weight="bold" />
@@ -340,7 +353,7 @@ export default function SelectFieldPage() {
                 <button
                   type="button"
                   onClick={() => setParcelRing([])}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-gray-100 transition"
+                  className="fs-liquid-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]"
                 >
                   <Trash size={14} />
                   {t.clearPolygon}
@@ -350,24 +363,28 @@ export default function SelectFieldPage() {
                 type="button"
                 data-testid="load-setif-outside-btn"
                 onClick={handleLoadOutsideTest}
-                className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
+                className="rounded-full border border-red-300/80 bg-red-50/90 px-3.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-500/35 dark:bg-red-500/15 dark:text-red-300 dark:hover:bg-red-500/25"
               >
                 {t.outsideTestBtn}
               </button>
             </div>
 
-            <p className="mt-4 text-xs font-bold text-[#6B7280]">{t.presetsTitle}</p>
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+            <p className="mt-4 text-xs font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
+              {t.presetsTitle}
+            </p>
+            <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
               {GUELMA_PARCEL_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
                   type="button"
                   data-testid={`preset-${preset.id}`}
                   onClick={() => handleLoadPreset(preset.id)}
-                  className="flex flex-col items-start rounded-xl border border-gray-200 bg-gray-50/70 p-2.5 text-start transition hover:border-[#137135] hover:bg-emerald-50/30"
+                  className="fs-liquid-well-interactive flex flex-col items-start rounded-2xl p-3 text-start"
                 >
-                  <span className="text-xs font-bold text-[#111827]">{preset.zoneName[lang]}</span>
-                  <span className="tabular-nums mt-0.5 text-[11px] text-[#137135] font-semibold">
+                  <span className="text-xs font-semibold text-[#111813] dark:text-[#F5F7F5]">
+                    {preset.zoneName[lang]}
+                  </span>
+                  <span className="mt-1 font-mono text-[11px] font-medium tabular-nums text-[#15803D] dark:text-[#86EFAC]">
                     {preset.areaHectares} ha · {preset.ring.length - 1} vertices
                   </span>
                 </button>
@@ -379,9 +396,11 @@ export default function SelectFieldPage() {
         {/* Side Control Drawer */}
         <div className="space-y-4 xl:col-span-5">
           {/* Farm Selector + Quick Create */}
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm text-[#111827]">
-            <label className="block text-xs font-bold text-[#6B7280]">{t.farmLabel}</label>
-            <div className="mt-2 flex flex-wrap gap-2">
+          <div className="fs-liquid-panel rounded-3xl p-4 sm:p-5 text-[#111813] dark:text-[#F5F7F5]">
+            <label className="block text-xs font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
+              {t.farmLabel}
+            </label>
+            <div className="mt-2.5 flex flex-wrap gap-2">
               {(farmsQuery.data?.items ?? []).map((farm) => (
                 <button
                   key={farm.farm_id}
@@ -390,10 +409,10 @@ export default function SelectFieldPage() {
                     setActiveFarmId(farm.farm_id);
                     setActiveFieldId(null);
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                     farm.farm_id === resolvedFarmId
-                      ? "bg-[#00291B] text-white shadow-xs"
-                      : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                      ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                      : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                   }`}
                 >
                   {farm.farm_name} ({farm.field_count})
@@ -401,18 +420,18 @@ export default function SelectFieldPage() {
               ))}
             </div>
 
-            <form onSubmit={handleCreateFarm} className="mt-3 flex gap-2">
+            <form onSubmit={handleCreateFarm} className="mt-3.5 flex gap-2">
               <input
                 type="text"
                 value={newFarmName}
                 onChange={(e) => setNewFarmName(e.target.value)}
                 placeholder={t.newFarmName}
-                className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={`min-w-0 flex-1 ${glassInputClass}`}
               />
               <button
                 type="submit"
                 data-testid="create-farm-btn"
-                className="inline-flex items-center gap-1 rounded-lg bg-[#00291B] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#04421B] shadow-sm transition"
+                className="fs-cta-primary inline-flex shrink-0 items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold active:not-disabled:scale-[0.96]"
               >
                 <Plus size={14} weight="bold" />
                 {t.createFarmBtn}
@@ -421,25 +440,32 @@ export default function SelectFieldPage() {
           </div>
 
           {/* Field Switcher & Metadata Form */}
-          <form onSubmit={handleSaveAndContinue} className="space-y-4 rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-sm text-[#111827]">
+          <form
+            onSubmit={handleSaveAndContinue}
+            className="fs-liquid-panel space-y-4 rounded-3xl p-5 text-[#111813] dark:text-[#F5F7F5]"
+          >
             <div>
-              <p className="text-xs font-bold text-[#6B7280]">Farm Parcels</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <p className="text-xs font-semibold text-[#4A5A4E] dark:text-[#9CA89E]">
+                Farm Parcels
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
                 {(fieldsQuery.data?.items ?? []).map((f) => (
                   <button
                     key={f.field_id}
                     type="button"
                     onClick={() => setActiveFieldId(f.field_id)}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                       f.field_id === activeFieldId
-                        ? "bg-[#00291B] text-white shadow-xs"
-                        : "border border-gray-200 bg-white text-[#374151] hover:bg-gray-50"
+                        ? "bg-[#0B3D2E] text-white shadow-sm dark:bg-[#FFFFFF] dark:text-[#111713]"
+                        : "fs-liquid-pill text-[#3E4C42] dark:text-[#D1DDD3]"
                     }`}
                   >
                     <MapPin size={13} />
                     <span dir="ltr">{f.field_id}</span>
                     {f.is_unverified_demo_parcel && (
-                      <span className="rounded bg-[#FEF3C7] text-[#D97706] px-1 text-[9px] font-bold">DEMO</span>
+                      <span className="rounded-full bg-amber-500/20 px-1.5 text-[9px] font-bold text-amber-800 dark:text-[#FCD34D]">
+                        DEMO
+                      </span>
                     )}
                   </button>
                 ))}
@@ -454,7 +480,7 @@ export default function SelectFieldPage() {
                     setIsUnverifiedDemo(false);
                     setParcelRing([]);
                   }}
-                  className="inline-flex items-center gap-1 rounded-lg border border-dashed border-[#137135] px-2.5 py-1.5 text-xs font-semibold text-[#137135] hover:bg-emerald-50 transition"
+                  className="inline-flex items-center gap-1 rounded-full border border-dashed border-[#15803D]/50 px-3 py-1.5 text-xs font-semibold text-[#15803D] transition hover:bg-[#15803D]/10 dark:border-[#22C55E]/40 dark:text-[#86EFAC] dark:hover:bg-[#22C55E]/15"
                 >
                   <Plus size={13} />
                   New Parcel
@@ -464,7 +490,7 @@ export default function SelectFieldPage() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                   {t.fieldIdLabel}
                 </label>
                 <input
@@ -473,11 +499,11 @@ export default function SelectFieldPage() {
                   dir="ltr"
                   value={fieldId}
                   onChange={(e) => setFieldId(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={glassInputClass}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                   {t.areaLabel}
                 </label>
                 <input
@@ -489,13 +515,13 @@ export default function SelectFieldPage() {
                   dir="ltr"
                   value={areaHectares}
                   onChange={(e) => setAreaHectares(Number(e.target.value))}
-                  className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums ${glassInputClass}`}
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.fieldNameLabel}
               </label>
               <input
@@ -503,37 +529,41 @@ export default function SelectFieldPage() {
                 required
                 value={fieldName}
                 onChange={(e) => setFieldName(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={glassInputClass}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Latitude</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Latitude
+                </label>
                 <input
                   type="number"
                   step="0.000001"
                   dir="ltr"
                   value={latitude}
                   onChange={(e) => setLatitude(Number(e.target.value))}
-                  className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums ${glassInputClass}`}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[#374151]">Longitude</label>
+                <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
+                  Longitude
+                </label>
                 <input
                   type="number"
                   step="0.000001"
                   dir="ltr"
                   value={longitude}
                   onChange={(e) => setLongitude(Number(e.target.value))}
-                  className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                  className={`tabular-nums ${glassInputClass}`}
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#374151]">
+              <label className="mb-1 block text-xs font-semibold text-[#3E4C42] dark:text-[#D1DDD3]">
                 {t.elevationLabel}
               </label>
               <input
@@ -545,16 +575,18 @@ export default function SelectFieldPage() {
                 value={elevationInput}
                 onChange={(e) => setElevationInput(e.target.value)}
                 placeholder="null"
-                className="tabular-nums w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-[#111827] focus:border-[#00291B] focus:outline-none focus:ring-1 focus:ring-[#00291B]"
+                className={`tabular-nums ${glassInputClass}`}
               />
-              <p className="mt-1 text-[11px] text-[#6B7280]">{t.elevationUnknownHint}</p>
+              <p className="mt-1 text-[11px] text-[#4A5A4E] dark:text-[#9CA89E]">
+                {t.elevationUnknownHint}
+              </p>
             </div>
 
             <button
               type="submit"
               disabled={saving || !resolvedFarmId}
               data-testid="save-parcel-continue-btn"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#00291B] px-4 py-3 text-xs font-bold text-white shadow-sm hover:bg-[#04421B] disabled:opacity-50 transition"
+              className="fs-cta-primary flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-semibold active:not-disabled:scale-[0.98] disabled:opacity-50"
             >
               <FloppyDisk size={16} weight="bold" />
               {saving ? "Saving..." : t.saveContinueBtn}

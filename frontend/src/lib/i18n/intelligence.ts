@@ -5,6 +5,7 @@ export interface WorkstationDictionary {
     overview: string;
     farmsFields: string;
     intelligence: string;
+    studio: string;
     settings: string;
   };
   breadcrumb: string;
@@ -339,6 +340,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
         overview: "Overview",
         farmsFields: "Farms & Fields",
         intelligence: "Field Intelligence",
+        studio: "Studio",
         settings: "Settings",
       },
       breadcrumb: "Guelma / Agricultural Operations",
@@ -691,6 +693,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
         overview: "Aperçu",
         farmsFields: "Fermes & Parcelles",
         intelligence: "Intelligence Parcellaire",
+        studio: "Studio",
         settings: "Paramètres",
       },
       breadcrumb: "Guelma / Opérations Agronomiques",
@@ -1043,6 +1046,7 @@ export const INTELLIGENCE_I18N: Record<Language, IntelligenceDictionary> = {
         overview: "نظرة عامة",
         farmsFields: "المزارع والقطع",
         intelligence: "ذكاء الحقل",
+        studio: "الاستوديو",
         settings: "الإعدادات",
       },
       breadcrumb: "قالمة / العمليات الفلاحية",
