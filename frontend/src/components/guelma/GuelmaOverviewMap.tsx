@@ -1,38 +1,75 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MapPin, Compass } from "@phosphor-icons/react";
 import {
+  CaretLeft,
+  CaretRight,
+  CornersOut,
+  Crosshair,
+  Info,
+  Minus,
+  PencilLine,
+  Plus,
+  Stack,
+} from "@phosphor-icons/react";
+import {
+  closeRing,
+  computePolygonBbox,
   extractRingFromBoundary,
   GUELMA_DEFAULT_CENTER,
   GUELMA_FALLBACK_BOUNDARY,
-  computePolygonBbox,
-  closeRing,
 } from "@/lib/geo/guelma";
+import { useResolvedTheme } from "@/app/providers";
 import { canUseWebgl } from "@/lib/geo/webgl";
 import type { FieldDetailPublic } from "@/lib/schemas";
+
+export interface GuelmaOverviewMapHudLabels {
+  fitExtent: string;
+  zoomIn: string;
+  zoomOut: string;
+  activeParcelCount: string;
+  selectedLabel: string;
+  registeredLabel: string;
+  layersLabel?: string;
+  drawParcelLabel?: string;
+  prevFieldLabel?: string;
+  nextFieldLabel?: string;
+  communesChip?: string;
+  openInspectorLabel?: string;
+}
 
 interface GuelmaOverviewMapProps {
   fields: FieldDetailPublic[];
   selectedFieldKey: string | null;
   onSelectField: (farmId: string, fieldId: string) => void;
   onOpenInspect?: (farmId: string, fieldId: string) => void;
-  title: string;
-  subtitle: string;
+  onStartAddFarm?: () => void;
+  title?: string;
+  subtitle?: string;
+  hudLabels?: GuelmaOverviewMapHudLabels;
+  inspectorOpen?: boolean;
+  onReopenInspector?: () => void;
+  children?: React.ReactNode;
 }
 
 const GUELMA_SVG_BOUNDS = {
   minLon: 6.94,
   maxLon: 7.94,
   minLat: 36.02,
-  maxLat: 36.70,
+  maxLat: 36.7,
 };
 
-function projectToSvg(lon: number, lat: number, w = 640, h = 280): [number, number] {
-  const x = ((lon - GUELMA_SVG_BOUNDS.minLon) / (GUELMA_SVG_BOUNDS.maxLon - GUELMA_SVG_BOUNDS.minLon)) * w;
-  const y = ((GUELMA_SVG_BOUNDS.maxLat - lat) / (GUELMA_SVG_BOUNDS.maxLat - GUELMA_SVG_BOUNDS.minLat)) * h;
+function projectToSvg(lon: number, lat: number, w = 640, h = 360): [number, number] {
+  const x =
+    ((lon - GUELMA_SVG_BOUNDS.minLon) /
+      (GUELMA_SVG_BOUNDS.maxLon - GUELMA_SVG_BOUNDS.minLon)) *
+    w;
+  const y =
+    ((GUELMA_SVG_BOUNDS.maxLat - lat) /
+      (GUELMA_SVG_BOUNDS.maxLat - GUELMA_SVG_BOUNDS.minLat)) *
+    h;
   return [Number(x.toFixed(1)), Number(y.toFixed(1))];
 }
 
@@ -40,13 +77,115 @@ export function GuelmaOverviewMap({
   fields,
   selectedFieldKey,
   onSelectField,
-  onOpenInspect,
-  title,
-  subtitle,
+  onStartAddFarm,
+  hudLabels,
+  inspectorOpen = true,
+  onReopenInspector,
+  children,
 }: GuelmaOverviewMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapFrameRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
+  const [highContrastLayers, setHighContrastLayers] = useState(false);
+  const [calloutPin, setCalloutPin] = useState<{ x: number; y: number } | null>(null);
+  const resolvedTheme = useResolvedTheme();
+  const isDarkTheme = resolvedTheme === "dark";
+
+  const selectedIndex = useMemo(() => {
+    if (!selectedFieldKey || fields.length === 0) return -1;
+    return fields.findIndex((f) => `${f.farm_id}::${f.field_id}` === selectedFieldKey);
+  }, [fields, selectedFieldKey]);
+
+  const selectedField =
+    selectedIndex >= 0 ? fields[selectedIndex] : fields.length > 0 ? fields[0] : null;
+
+  const updateCalloutPin = useCallback(() => {
+    const frame = mapFrameRef.current;
+    if (!frame || !selectedField || !inspectorOpen) {
+      setCalloutPin(null);
+      return;
+    }
+    const rect = frame.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    const map = mapRef.current;
+    if (map && !webglFailed) {
+      try {
+        const pt = map.project([selectedField.location.longitude, selectedField.location.latitude]);
+        const clampedX = Math.max(40, Math.min(rect.width - 40, pt.x));
+        const clampedY = Math.max(64, Math.min(rect.height - 64, pt.y));
+        setCalloutPin({ x: clampedX, y: clampedY });
+        return;
+      } catch {
+        /* fallback below */
+      }
+    }
+
+    const [sx, sy] = projectToSvg(
+      selectedField.location.longitude,
+      selectedField.location.latitude,
+      640,
+      360
+    );
+    setCalloutPin({
+      x: (sx / 640) * rect.width,
+      y: (sy / 360) * rect.height,
+    });
+  }, [selectedField, inspectorOpen, webglFailed]);
+
+  const handleZoomIn = () => {
+    mapRef.current?.zoomIn({ duration: 220 });
+  };
+
+  const handleZoomOut = () => {
+    mapRef.current?.zoomOut({ duration: 220 });
+  };
+
+  const handleFitExtent = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (fields.length === 0) {
+      map.flyTo({ center: GUELMA_DEFAULT_CENTER, zoom: 9.2, duration: 320 });
+      return;
+    }
+    const bounds = new maplibregl.LngLatBounds();
+    fields.forEach((f) => {
+      const ring = extractRingFromBoundary(f.location.boundary);
+      if (ring && ring.length >= 3) {
+        ring.forEach(([lng, lat]) => bounds.extend([lng, lat]));
+      } else {
+        bounds.extend([f.location.longitude, f.location.latitude]);
+      }
+    });
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 64, maxZoom: 14, duration: 320 });
+    }
+  };
+
+  const handleCenterSelected = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (selectedField) {
+      map.flyTo({
+        center: [selectedField.location.longitude, selectedField.location.latitude],
+        zoom: 13.8,
+        duration: 420,
+      });
+    } else {
+      handleFitExtent();
+    }
+  };
+
+  const handleStepField = (delta: number) => {
+    if (fields.length < 2) return;
+    const base = selectedIndex >= 0 ? selectedIndex : 0;
+    const nextIdx = (base + delta + fields.length) % fields.length;
+    const target = fields[nextIdx];
+    if (target) {
+      onSelectField(target.farm_id, target.field_id);
+    }
+  };
 
   const fieldsRef = useRef(fields);
   fieldsRef.current = fields;
@@ -171,8 +310,8 @@ export function GuelmaOverviewMap({
           type: "fill",
           source: "workspace-fields",
           paint: {
-            "fill-color": ["case", ["==", ["get", "selected"], 1], "#22C55E", "#38BDF8"],
-            "fill-opacity": ["case", ["==", ["get", "selected"], 1], 0.34, 0.22],
+            "fill-color": ["case", ["==", ["get", "selected"], 1], "#22C55E", "#F59E0B"],
+            "fill-opacity": ["case", ["==", ["get", "selected"], 1], 0.36, 0.22],
           },
         });
         map.addLayer({
@@ -180,8 +319,8 @@ export function GuelmaOverviewMap({
           type: "line",
           source: "workspace-fields",
           paint: {
-            "line-color": ["case", ["==", ["get", "selected"], 1], "#DCFCE7", "#BAE6FD"],
-            "line-width": ["case", ["==", ["get", "selected"], 1], 2.5, 1.6],
+            "line-color": ["case", ["==", ["get", "selected"], 1], "#FFFFFF", "#FDE68A"],
+            "line-width": ["case", ["==", ["get", "selected"], 1], 2.5, 1.5],
           },
         });
 
@@ -195,7 +334,7 @@ export function GuelmaOverviewMap({
           source: "workspace-points",
           paint: {
             "circle-radius": ["case", ["==", ["get", "selected"], 1], 8, 6],
-            "circle-color": ["case", ["==", ["get", "selected"], 1], "#16A34A", "#0EA5E9"],
+            "circle-color": ["case", ["==", ["get", "selected"], 1], "#22C55E", "#F59E0B"],
             "circle-stroke-width": 2,
             "circle-stroke-color": "#FFFFFF",
           },
@@ -223,7 +362,12 @@ export function GuelmaOverviewMap({
         map.on("mouseleave", "workspace-points-dot", () => {
           if (map) map.getCanvas().style.cursor = "";
         });
+
+        updateCalloutPin();
       });
+
+      map.on("move", updateCalloutPin);
+      map.on("zoom", updateCalloutPin);
 
       map.on("webglcontextlost", () => setWebglFailed(true));
       map.on("error", (ev) => {
@@ -248,7 +392,10 @@ export function GuelmaOverviewMap({
   // Sync GeoJSON data & camera focus when saved fields or selection changes
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || !map.isStyleLoaded()) {
+      updateCalloutPin();
+      return;
+    }
 
     const polySrc = map.getSource("workspace-fields") as maplibregl.GeoJSONSource | undefined;
     if (polySrc) polySrc.setData(fieldsGeoJson);
@@ -256,11 +403,8 @@ export function GuelmaOverviewMap({
     const ptSrc = map.getSource("workspace-points") as maplibregl.GeoJSONSource | undefined;
     if (ptSrc) ptSrc.setData(pointsGeoJson);
 
-    const selected = fields.find(
-      (f) => `${f.farm_id}::${f.field_id}` === selectedFieldKey
-    );
-    if (selected) {
-      const ring = extractRingFromBoundary(selected.location.boundary);
+    if (selectedField) {
+      const ring = extractRingFromBoundary(selectedField.location.boundary);
       const bbox = ring.length >= 3 ? computePolygonBbox(ring) : null;
       if (bbox) {
         map.fitBounds(
@@ -268,13 +412,13 @@ export function GuelmaOverviewMap({
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]],
           ],
-          { padding: 55, maxZoom: 15.2, duration: 750 }
+          { padding: 70, maxZoom: 15, duration: 600 }
         );
       } else {
         map.flyTo({
-          center: [selected.location.longitude, selected.location.latitude],
+          center: [selectedField.location.longitude, selectedField.location.latitude],
           zoom: 13.8,
-          duration: 750,
+          duration: 600,
         });
       }
     } else if (fields.length > 0) {
@@ -285,10 +429,18 @@ export function GuelmaOverviewMap({
           [Math.min(...lons) - 0.08, Math.min(...lats) - 0.06],
           [Math.max(...lons) + 0.08, Math.max(...lats) + 0.06],
         ],
-        { padding: 45, maxZoom: 12.2, duration: 700 }
+        { padding: 60, maxZoom: 12.2, duration: 550 }
       );
     }
-  }, [fields, fieldsGeoJson, pointsGeoJson, selectedFieldKey]);
+
+    updateCalloutPin();
+  }, [fields, fieldsGeoJson, pointsGeoJson, selectedField, updateCalloutPin]);
+
+  useEffect(() => {
+    updateCalloutPin();
+    window.addEventListener("resize", updateCalloutPin);
+    return () => window.removeEventListener("resize", updateCalloutPin);
+  }, [updateCalloutPin]);
 
   // Build SVG fallback representation of Guelma Wilaya outline
   const guelmaOutlineSvgPts = useMemo(() => {
@@ -297,109 +449,260 @@ export function GuelmaOverviewMap({
       geom.type === "MultiPolygon"
         ? ((geom.coordinates as number[][][][])[0]?.[0] as [number, number][]) || []
         : ((geom.coordinates as number[][][])[0] as [number, number][]) || [];
-    return outer
-      .map(([lon, lat]) => projectToSvg(lon, lat).join(","))
-      .join(" ");
+    return outer.map(([lon, lat]) => projectToSvg(lon, lat).join(",")).join(" ");
   }, []);
 
+  const activePillLabel = selectedField
+    ? `${selectedField.field_name}`
+    : hudLabels?.communesChip ?? "Guelma · 34 communes";
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#DCE3DF] bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5EAE7] px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0B4B2E]/10 text-[#0B4B2E]">
-            <Compass size={16} weight="duotone" />
-          </span>
-          <div>
-            <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
-            <p className="text-[11px] text-[#6B7280]">{subtitle}</p>
-          </div>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ECFDF5] px-2.5 py-1 text-[11px] font-semibold text-[#065F46]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-          36.05°–36.68° N · 6.96°–7.92° E
-        </span>
-      </div>
-
-      <div className="relative h-64 w-full bg-[#0C1C15]">
-        {!webglFailed ? (
-          <div ref={containerRef} className="h-full w-full" />
-        ) : (
-          <svg
-            viewBox="0 0 640 280"
-            className="h-full w-full bg-[#0C1C15]"
-            data-testid="guelma-overview-svg-fallback"
-          >
-            <polygon
-              points={guelmaOutlineSvgPts}
-              fill="rgba(16, 185, 129, 0.08)"
-              stroke="#6EE7B7"
-              strokeWidth="1.6"
-              strokeDasharray="6 4"
-            />
-            {fields.map((f) => {
-              const key = `${f.farm_id}::${f.field_id}`;
-              const isSel = key === selectedFieldKey;
-              const [cx, cy] = projectToSvg(f.location.longitude, f.location.latitude);
-              return (
-                <g
-                  key={key}
-                  onClick={() => onSelectField(f.farm_id, f.field_id)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={isSel ? 8 : 6}
-                    fill={isSel ? "#22C55E" : "#38BDF8"}
-                    stroke="#FFFFFF"
-                    strokeWidth="2"
+    <div className="relative" data-testid="guelma-overview-map">
+      <div
+        ref={mapFrameRef}
+        className="relative h-[340px] w-full overflow-hidden rounded-3xl bg-[#E1ECE3] shadow-(--shadow-liquid-glass) outline outline-1 -outline-offset-1 outline-[#111813]/10 dark:bg-[#0D1912] dark:outline-white/10 sm:h-[420px] md:h-[470px] lg:h-[500px]"
+      >
+        {/* Full-bleed Satellite Map / SVG Spatial Fallback */}
+        <div
+          className={`h-full w-full transition-[filter] duration-200 ${
+            highContrastLayers ? "brightness-110 contrast-110 saturate-125" : ""
+          }`}
+        >
+          {!webglFailed ? (
+            <div ref={containerRef} className="h-full w-full" />
+          ) : (
+            <svg
+              viewBox="0 0 640 360"
+              className={
+                isDarkTheme
+                  ? "h-full w-full bg-[radial-gradient(ellipse_at_60%_35%,rgba(34,197,94,0.16),rgba(13,25,18,0.98)_70%)]"
+                  : "h-full w-full bg-[radial-gradient(ellipse_at_60%_35%,rgba(21,128,61,0.14),rgba(232,241,234,0.98)_72%)]"
+              }
+              data-testid="guelma-overview-svg-fallback"
+            >
+              <defs>
+                <pattern id="fs-topo-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                  <path
+                    d="M 32 0 L 0 0 0 32"
+                    fill="none"
+                    stroke={isDarkTheme ? "rgba(255,255,255,0.04)" : "rgba(11,61,46,0.07)"}
+                    strokeWidth="1"
                   />
-                  <text
-                    x={cx + 11}
-                    y={cy + 4}
-                    fill="#ECFDF5"
-                    fontSize="11"
-                    fontWeight="600"
+                </pattern>
+              </defs>
+              <rect width="640" height="360" fill="url(#fs-topo-grid)" />
+              <polygon
+                points={guelmaOutlineSvgPts}
+                fill={
+                  isDarkTheme
+                    ? highContrastLayers
+                      ? "rgba(34, 197, 94, 0.16)"
+                      : "rgba(34, 197, 94, 0.10)"
+                    : highContrastLayers
+                      ? "rgba(21, 128, 61, 0.18)"
+                      : "rgba(21, 128, 61, 0.10)"
+                }
+                stroke={isDarkTheme ? "rgba(167, 243, 208, 0.55)" : "rgba(11, 61, 46, 0.45)"}
+                strokeWidth="1.6"
+                strokeDasharray="6 4"
+              />
+              {fields.map((f) => {
+                const key = `${f.farm_id}::${f.field_id}`;
+                const isSel = key === selectedFieldKey;
+                const [cx, cy] = projectToSvg(f.location.longitude, f.location.latitude, 640, 360);
+                return (
+                  <g
+                    key={key}
+                    onClick={() => onSelectField(f.farm_id, f.field_id)}
+                    style={{ cursor: "pointer" }}
                   >
-                    {f.field_name}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        )}
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={isSel ? 12 : 8}
+                      fill={
+                        isSel
+                          ? isDarkTheme
+                            ? "rgba(34, 197, 94, 0.25)"
+                            : "rgba(21, 128, 61, 0.25)"
+                          : "rgba(245, 158, 11, 0.18)"
+                      }
+                    />
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={isSel ? 6 : 4.5}
+                      fill={isSel ? (isDarkTheme ? "#22C55E" : "#15803D") : "#F59E0B"}
+                      stroke={isDarkTheme ? "#FFFFFF" : "#0B3D2E"}
+                      strokeWidth="1.8"
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+          )}
+        </div>
 
-        {/* Quick field selector strip overlaid cleanly when fields exist */}
-        {fields.length > 0 ? (
-          <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5">
-            {fields.slice(0, 6).map((f) => {
-              const key = `${f.farm_id}::${f.field_id}`;
-              const isSel = key === selectedFieldKey;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => {
-                    onSelectField(f.farm_id, f.field_id);
-                    onOpenInspect?.(f.farm_id, f.field_id);
-                  }}
-                  className={`pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm backdrop-blur-md transition ${
-                    isSel
-                      ? "bg-[#0B4B2E] text-white ring-1 ring-[#6EE7B7]"
-                      : "bg-black/65 text-[#ECFDF5] hover:bg-black/80"
-                  }`}
-                >
-                  <MapPin size={12} weight="fill" />
-                  <span className="max-w-[140px] truncate">{f.field_name}</span>
-                  <span className="font-mono text-[10px] opacity-80">
-                    {f.area_hectares.toFixed(1)} ha
-                  </span>
-                </button>
-              );
-            })}
+        {/* Callout Vector Leader Line + Pin Connector (Desktop/Tablet md+) */}
+        {calloutPin && selectedField && inspectorOpen ? (
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-10 hidden h-full w-full md:block"
+          >
+            <polyline
+              points={`280,${Math.max(120, Math.min(390, calloutPin.y + 42))} ${Math.max(
+                290,
+                calloutPin.x - 18
+              )},${calloutPin.y} ${calloutPin.x},${calloutPin.y}`}
+              fill="none"
+              stroke={isDarkTheme || !webglFailed ? "rgba(255,255,255,0.78)" : "rgba(11,61,46,0.72)"}
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+            <circle
+              cx={calloutPin.x}
+              cy={calloutPin.y}
+              r="7"
+              fill={isDarkTheme ? "rgba(34, 197, 94, 0.35)" : "rgba(21, 128, 61, 0.28)"}
+            />
+            <circle
+              cx={calloutPin.x}
+              cy={calloutPin.y}
+              r="3.5"
+              fill={isDarkTheme || !webglFailed ? "#FFFFFF" : "#0B3D2E"}
+            />
+          </svg>
+        ) : null}
+
+        {/* TOP-LEADING HUD: Layers & Draw Parcel Circular Glass Icons */}
+        <div className="pointer-events-none absolute start-3 top-3 z-20 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setHighContrastLayers((v) => !v)}
+            aria-pressed={highContrastLayers}
+            aria-label={hudLabels?.layersLabel ?? "Toggle satellite layer contrast"}
+            title={hudLabels?.layersLabel ?? "Toggle satellite layer contrast"}
+            className={`pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.96] ${
+              highContrastLayers
+                ? "fs-active-pill"
+                : "fs-hud-glass text-[#111813] hover:bg-[#111813]/10 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            }`}
+          >
+            <Stack size={17} aria-hidden="true" />
+          </button>
+
+          {onStartAddFarm ? (
+            <button
+              type="button"
+              onClick={onStartAddFarm}
+              aria-label={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
+              title={hudLabels?.drawParcelLabel ?? "Draw parcel on map"}
+              className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            >
+              <PencilLine size={17} aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
+
+        {/* TOP-CENTER HUD: Parcel Switcher Pill (< [Active Field / Communes] >) */}
+        <div className="pointer-events-none absolute start-1/2 top-3 z-20 hidden max-w-[calc(100%-200px)] -translate-x-1/2 items-center gap-2 rtl:translate-x-1/2 sm:flex">
+          <button
+            type="button"
+            disabled={fields.length < 2}
+            onClick={() => handleStepField(-1)}
+            aria-label={hudLabels?.prevFieldLabel ?? "Previous parcel"}
+            className="fs-hud-glass pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-[#111813]/10 active:not-disabled:scale-[0.96] disabled:opacity-45 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+          >
+            <CaretLeft size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
+          </button>
+
+          <div className="fs-active-pill pointer-events-auto flex min-h-10 max-w-[230px] items-center justify-center rounded-full px-4 text-xs font-semibold tracking-tight">
+            <span dir="auto" className="truncate">
+              {activePillLabel}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            disabled={fields.length < 2}
+            onClick={() => handleStepField(1)}
+            aria-label={hudLabels?.nextFieldLabel ?? "Next parcel"}
+            className="fs-hud-glass pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-[#111813]/10 active:not-disabled:scale-[0.96] disabled:opacity-45 dark:text-[#F5F7F5] dark:hover:bg-white/15"
+          >
+            <CaretRight size={15} weight="bold" className="rtl:-scale-x-100" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* TOP-TRAILING HUD: Fit Extent Circular Glass Button */}
+        <div className="pointer-events-none absolute end-3 top-3 z-20">
+          <button
+            type="button"
+            onClick={handleFitExtent}
+            aria-label={hudLabels?.fitExtent ?? "Fit extent"}
+            title={hudLabels?.fitExtent ?? "Fit extent"}
+            data-testid="map-fit-extent-btn"
+            className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+          >
+            <CornersOut size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* BOTTOM-TRAILING HUD: Vertical + / - Zoom Capsule + Center Location Circle */}
+        <div className="pointer-events-none absolute bottom-3 end-3 z-20 flex flex-col items-end gap-3">
+          <div className="fs-hud-glass pointer-events-auto flex flex-col gap-1.5 rounded-full p-1">
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              aria-label={hudLabels?.zoomIn ?? "Zoom in"}
+              title={hudLabels?.zoomIn ?? "Zoom in"}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            >
+              <Plus size={16} weight="bold" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              aria-label={hudLabels?.zoomOut ?? "Zoom out"}
+              title={hudLabels?.zoomOut ?? "Zoom out"}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            >
+              <Minus size={16} weight="bold" aria-hidden="true" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCenterSelected}
+            aria-label={hudLabels?.fitExtent ?? "Fit extent"}
+            title={hudLabels?.fitExtent ?? "Fit extent"}
+            className="fs-hud-glass pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+          >
+            <Crosshair size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Reopen Inspector Pill when closed manually on desktop */}
+        {!inspectorOpen && onReopenInspector && fields.length > 0 ? (
+          <div className="pointer-events-none absolute bottom-3 start-3 z-20">
+            <button
+              type="button"
+              onClick={onReopenInspector}
+              data-testid="reopen-inspector-btn"
+              className="fs-hud-glass pointer-events-auto inline-flex min-h-10 items-center gap-2 rounded-full ps-3 pe-4 text-xs font-medium text-[#111813] transition-[transform,background-color] duration-150 ease-out hover:bg-[#111813]/10 active:scale-[0.96] dark:text-[#F5F7F5] dark:hover:bg-white/15"
+            >
+              <Info size={15} className="text-[#15803D] dark:text-[#22C55E]" aria-hidden="true" />
+              <span>{hudLabels?.openInspectorLabel ?? "Open parcel inspector"}</span>
+            </button>
           </div>
         ) : null}
       </div>
+
+      {/* Single DOM Inspector Card: flows below map on <md mobile, floats inside lower-leading corner on md+ */}
+      {children && inspectorOpen ? (
+        <div className="mt-3 md:pointer-events-none md:absolute md:bottom-3 md:start-3 md:z-20 md:mt-0 md:w-[336px] md:max-w-[calc(100%-84px)] lg:w-[356px]">
+          <div className="md:pointer-events-auto">{children}</div>
+        </div>
+      ) : null}
     </div>
   );
 }

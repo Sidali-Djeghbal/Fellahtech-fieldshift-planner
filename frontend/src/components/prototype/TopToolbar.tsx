@@ -93,7 +93,7 @@ export function TopToolbar({
               flexShrink: 0,
             }}
           >
-            <span>{backLabel || "← Dashboard"}</span>
+            <span>{backLabel || "Dashboard"}</span>
           </button>
         ) : null}
         <div className="brand-dock lg-capsule" aria-label="Guelma field presets">

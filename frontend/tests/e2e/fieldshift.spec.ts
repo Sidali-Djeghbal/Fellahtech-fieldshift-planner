@@ -209,7 +209,12 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
             text
           )
         ) {
-          consoleErrors.push(text);
+          const srcUrl = msg.location()?.url || "";
+          const isExternalTileAbort =
+            /ERR_FAILED/i.test(text) && srcUrl !== "" && !srcUrl.startsWith("http://127.0.0.1:3100");
+          if (!isExternalTileAbort) {
+            consoleErrors.push(`${text}${srcUrl ? ` [${srcUrl}]` : ""}`);
+          }
         }
       }
     });
@@ -325,5 +330,219 @@ test.describe("Field Shift Guelma MVP E2E Flow", () => {
     expect(pageErrors, "Uncaught page errors on /").toEqual([]);
     expect(consoleErrors, "Console errors on /").toEqual([]);
     expect(failedLocalRequests, "Failed local asset requests on /").toEqual([]);
+  });
+
+  test("executes AI crop-rotation analysis inside Liquid Glass dashboard, persists strategy selection, explores insights/evidence/quality without overflow", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        const text = msg.text();
+        if (
+          !/webgl|Failed to initialize WebGL|maplibre|ERR_NAME_NOT_RESOLVED|Failed to fetch|terrarium|arcgisonline|gibs|demotiles/i.test(
+            text
+          )
+        ) {
+          const srcUrl = msg.location()?.url || "";
+          const isExternalTileAbort =
+            /ERR_FAILED/i.test(text) && srcUrl !== "" && !srcUrl.startsWith("http://127.0.0.1:3100");
+          if (!isExternalTileAbort) {
+            consoleErrors.push(`${text}${srcUrl ? ` [${srcUrl}]` : ""}`);
+          }
+        }
+      }
+    });
+
+    await page.addInitScript(() => {
+      try {
+        if (!sessionStorage.getItem("__e2e_ai_reset")) {
+          localStorage.removeItem("fieldshift.guelma.workspace.v1");
+          localStorage.removeItem("fieldshift-app-storage");
+          sessionStorage.setItem("__e2e_ai_reset", "1");
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+
+    await page.goto("/");
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+    await expect(page.getByTestId("guelma-overview-map")).toBeVisible();
+    await expect(page.getByTestId("map-fit-extent-btn")).toBeVisible();
+    await expect(page.getByTestId("empty-workspace-card")).toBeVisible();
+
+    await page.getByTestId("load-samples-btn").click();
+    await expect(page.getByTestId("kpi-fields")).toHaveText("4");
+    await expect(page.getByTestId("parcel-inspector-panel")).toContainText(
+      "Seybouse Alluvial Plain"
+    );
+
+    // Selecting a row in the table synchronizes the Field Inspector panel
+    await page.getByTestId("field-card-G-2").click();
+    await expect(page.getByTestId("parcel-inspector-panel")).toContainText("Heliopolis Hillside");
+    await page.getByTestId("field-card-G-1").click();
+    await expect(page.getByTestId("parcel-inspector-panel")).toContainText(
+      "Seybouse Alluvial Plain"
+    );
+    await page.getByTestId("map-fit-extent-btn").click();
+
+    // Open and close Workstation Settings drawer cleanly
+    const desktopSettingsBtn = page.getByTestId("header-settings-btn");
+    if (await desktopSettingsBtn.isVisible()) {
+      await desktopSettingsBtn.click();
+    } else {
+      await page.getByTestId("header-settings-mobile-btn").click();
+    }
+    await expect(page.getByTestId("settings-drawer")).toBeVisible();
+    await expect(page.getByTestId("reset-workspace-btn")).toBeVisible();
+    await page.getByTestId("close-settings-drawer-btn").click();
+    await expect(page.getByTestId("settings-drawer")).toHaveCount(0);
+
+    // 1. Configure & Launch AI Crop-Rotation Analysis directly from Dashboard
+    await page.getByTestId("run-ai-analysis-btn").click();
+    await expect(page.getByTestId("analysis-runner-modal")).toBeVisible();
+    await page.getByTestId("submit-ai-analysis-btn").click();
+
+    // 2. Verify full ML Result surfaces render cleanly
+    await expect(page.getByTestId("analysis-summary-card")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByTestId("analysis-status-pill")).toBeVisible();
+    await expect(page.getByTestId("field-insights-timeline")).toBeVisible();
+    await expect(page.getByTestId("stress-matrix")).toBeVisible();
+    await expect(page.getByTestId("strategy-comparison-grid")).toBeVisible();
+    await expect(page.getByTestId("recommended-badge-S2_water_resilient")).toBeVisible();
+    await expect(page.getByTestId("baseline-badge-S1_baseline_cereal")).toBeVisible();
+
+    // 3. Persist Strategy Selection & inspect Timeline + Scientific Evidence + Data Quality
+    await page.getByTestId("select-strategy-S1_baseline_cereal").click();
+    await expect(page.getByTestId("intelligence-toast")).toBeVisible();
+    await expect(page.getByTestId("selection-status-S1_baseline_cereal")).toContainText(
+      /Selected Plan/i
+    );
+
+    await page.getByTestId("explanation-tab-evidence").click();
+    await expect(page.getByTestId("evidence-item-farmer_input").first()).toBeVisible();
+
+    await page.getByTestId("strategy-card-S2_water_resilient").click();
+    await expect(page.getByTestId("evidence-item-dataset").first()).toBeVisible();
+
+    await page.getByTestId("explanation-tab-risks").click();
+    await expect(page.getByTestId("requested-crops-section")).toBeVisible();
+    await expect(page.getByTestId("data-quality-farm")).toBeVisible();
+    await expect(page.getByTestId("data-quality-field")).toBeVisible();
+
+    // 4. Verify Plain Language toggle & RTL Arabic mode without overflow
+    await page.getByTestId("toggle-plain-mode-btn").click();
+    await assertNoHorizontalOverflow(page, "/ (AI Intelligence LTR)");
+
+    await page.getByTestId("dash-lang-ar").click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await assertNoHorizontalOverflow(page, "/ (AI Intelligence AR RTL)");
+
+    await page.getByTestId("dash-lang-en").click();
+
+    expect(pageErrors, "Uncaught page errors during AI dashboard flow").toEqual([]);
+    expect(consoleErrors, "Console errors during AI dashboard flow").toEqual([]);
+  });
+
+  test("Light/Dark mode system listener, quick toggle, settings selector, and zero-FOUC reload persistence", async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+
+    await page.emulateMedia({ colorScheme: "light" });
+
+    // Record early dataset.theme at DOMContentLoaded (before/at hydration) to verify zero FOUC on reload
+    await page.addInitScript(() => {
+      try {
+        if (!sessionStorage.getItem("__theme_test_reset")) {
+          localStorage.removeItem("fieldshift-planner-v32");
+          localStorage.removeItem("fieldshift.guelma.workspace.v1");
+          sessionStorage.setItem("__theme_test_reset", "1");
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+          (window as unknown as { __domLoadedTheme?: string }).__domLoadedTheme =
+            document.documentElement.dataset.theme;
+        });
+      } catch {
+        /* ignore */
+      }
+    });
+
+    await page.goto("/");
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+
+    // 1. Default system preference resolves to Light Mode
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).not.toHaveClass(/\bdark\b/);
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(238, 243, 239)");
+    await assertNoHorizontalOverflow(page, "/ (Light Mode default)");
+
+    // 2. While in system mode, live OS prefers-color-scheme change updates theme immediately
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(18, 23, 19)");
+
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    // 3. Header quick toggle switches Light <-> Dark cleanly
+    await page.getByTestId("header-theme-btn").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByTestId("header-theme-btn").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    // 4. Settings Drawer 3-way selector persists Dark Mode across reload with zero FOUC
+    const desktopSettingsBtn = page.getByTestId("header-settings-btn");
+    if (await desktopSettingsBtn.isVisible()) {
+      await desktopSettingsBtn.click();
+    } else {
+      await page.getByTestId("header-settings-mobile-btn").click();
+    }
+    await expect(page.getByTestId("settings-drawer")).toBeVisible();
+
+    // After explicit quick toggles in step 3, active preference is Light
+    await expect(page.getByTestId("settings-theme-light")).toHaveAttribute("aria-checked", "true");
+    await page.getByTestId("settings-theme-dark").click();
+    await expect(page.getByTestId("settings-theme-dark")).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    await page.reload();
+    await expect(page.getByTestId("guelma-farmer-dashboard")).toBeVisible();
+    const domLoadedTheme = await page.evaluate(
+      () => (window as unknown as { __domLoadedTheme?: string }).__domLoadedTheme
+    );
+    expect(domLoadedTheme, "Blocking head script must set data-theme=dark before paint").toBe(
+      "dark"
+    );
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(18, 23, 19)");
+    await assertNoHorizontalOverflow(page, "/ (Dark Mode persisted after reload)");
+
+    // Return to Light/System via Settings Drawer
+    if (await desktopSettingsBtn.isVisible()) {
+      await desktopSettingsBtn.click();
+    } else {
+      await page.getByTestId("header-settings-mobile-btn").click();
+    }
+    await page.getByTestId("settings-theme-light").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.getByTestId("settings-theme-system").click();
+    await expect(page.getByTestId("settings-theme-system")).toHaveAttribute("aria-checked", "true");
+    await page.getByTestId("close-settings-drawer-btn").click();
+
+    expect(pageErrors, "Uncaught page errors during theme test").toEqual([]);
+    expect(consoleErrors, "Console errors during theme test").toEqual([]);
   });
 });

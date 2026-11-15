@@ -1,10 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAppStore } from "@/store/useAppStore";
+import { ResolvedTheme, ThemePreference, useAppStore } from "@/store/useAppStore";
 import { AppShell } from "@/components/layout/AppShell";
+
+const ResolvedThemeContext = createContext<ResolvedTheme>("light");
+
+export function useResolvedTheme(): ResolvedTheme {
+  return useContext(ResolvedThemeContext);
+}
+
+function getSystemTheme(): ResolvedTheme {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return "light";
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyDocumentTheme(preference: ThemePreference): ResolvedTheme {
+  const nextResolved: ResolvedTheme =
+    preference === "system" ? getSystemTheme() : preference;
+  if (typeof document !== "undefined") {
+    const root = document.documentElement;
+    root.dataset.theme = nextResolved;
+    root.classList.toggle("dark", nextResolved === "dark");
+    root.style.colorScheme = nextResolved;
+  }
+  return nextResolved;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +46,30 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   const lang = useAppStore((s) => s.lang);
+  const theme = useAppStore((s) => s.theme);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setResolvedTheme(applyDocumentTheme(theme));
+    };
+
+    updateTheme();
+
+    if (
+      theme !== "system" ||
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", updateTheme);
+    return () => {
+      mediaQuery.removeEventListener("change", updateTheme);
+    };
+  }, [theme]);
 
   useEffect(() => {
     if (pathname === "/") return;
@@ -29,8 +78,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [lang, pathname]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {pathname === "/" ? children : <AppShell>{children}</AppShell>}
-    </QueryClientProvider>
+    <ResolvedThemeContext.Provider value={resolvedTheme}>
+      <QueryClientProvider client={queryClient}>
+        {pathname === "/" ? children : <AppShell>{children}</AppShell>}
+      </QueryClientProvider>
+    </ResolvedThemeContext.Provider>
   );
 }

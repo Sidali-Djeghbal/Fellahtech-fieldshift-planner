@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useResolvedTheme } from "@/app/providers";
 import {
   computePerimeterMeters,
   extractRingFromBoundary,
@@ -28,6 +29,7 @@ export function FieldPolygonThumbnail({
   areaHectares,
   className = "",
 }: FieldPolygonThumbnailProps) {
+  const resolvedTheme = useResolvedTheme();
   const rawPts = ring?.length
     ? stripClosingPoint(ring)
     : extractRingFromBoundary(boundary);
@@ -74,13 +76,34 @@ export function FieldPolygonThumbnail({
 
   const pointsAttr = projected.map(([x, y]) => `${x},${y}`).join(" ");
   const perimM = Math.round(computePerimeterMeters(pts, true));
-  const strokeCol = !insideGuelma ? "#DC2626" : active ? "#0B4B2E" : "#15803D";
-  const fillCol = !insideGuelma ? "rgba(220,38,38,0.16)" : active ? "rgba(19,113,53,0.24)" : "rgba(34,197,94,0.18)";
+  const isDark = resolvedTheme === "dark";
+  const strokeCol = !insideGuelma
+    ? isDark
+      ? "#F87171"
+      : "#DC2626"
+    : active
+      ? isDark
+        ? "#86EFAC"
+        : "#15803D"
+      : isDark
+        ? "#4ADE80"
+        : "#16A34A";
+  const fillCol = !insideGuelma
+    ? "rgba(220,38,38,0.18)"
+    : active
+      ? isDark
+        ? "rgba(134,239,172,0.26)"
+        : "rgba(21,128,61,0.22)"
+      : isDark
+        ? "rgba(34,197,94,0.18)"
+        : "rgba(22,163,74,0.14)";
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-[#0E1E17] ${
-        active ? "border-[#137135] ring-2 ring-[#137135]/20" : "border-[#D5DED8]"
+      className={`relative overflow-hidden rounded-xl bg-[#E8EFE9] dark:bg-[#0B110D] ${
+        active
+          ? "ring-1 ring-[#15803D]/55 dark:ring-[#86EFAC]/65"
+          : "ring-1 ring-[#111813]/10 dark:ring-white/10"
       } ${className}`}
       title={`${pts.length} vertices · ${perimM} m perimeter`}
     >
@@ -91,7 +114,12 @@ export function FieldPolygonThumbnail({
       >
         <defs>
           <pattern id="thumb-grid" width="16" height="16" patternUnits="userSpaceOnUse">
-            <path d="M 16 0 L 0 0 0 16" fill="none" stroke="rgba(148,180,160,0.12)" strokeWidth="0.7" />
+            <path
+              d="M 16 0 L 0 0 0 16"
+              fill="none"
+              stroke={isDark ? "rgba(148,180,160,0.12)" : "rgba(11,61,46,0.08)"}
+              strokeWidth="0.7"
+            />
           </pattern>
         </defs>
         <rect width={width} height={height} fill="url(#thumb-grid)" />
@@ -108,14 +136,14 @@ export function FieldPolygonThumbnail({
             cx={vx}
             cy={vy}
             r={idx === 0 ? 2.6 : 1.9}
-            fill={idx === 0 ? "#86EFAC" : "#ECFDF5"}
-            stroke="#064E3B"
+            fill={idx === 0 ? strokeCol : isDark ? "#ECFDF5" : "#FFFFFF"}
+            stroke={isDark ? "#064E3B" : "#0B3D2E"}
             strokeWidth="0.7"
           />
         ))}
       </svg>
       {areaHectares !== undefined ? (
-        <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#D1FAE5] backdrop-blur-sm">
+        <span className="absolute bottom-1.5 end-1.5 rounded-md bg-[#0B3D2E]/85 px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-white backdrop-blur-sm dark:bg-black/70 dark:text-[#D1FAE5]">
           {areaHectares.toFixed(1)} ha
         </span>
       ) : null}

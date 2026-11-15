@@ -5,9 +5,12 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type { Language, UserProfile } from "@/lib/schemas";
 
 export type AuthMode = "none" | "guest" | "authenticated";
+export type ThemePreference = "system" | "light" | "dark";
+export type ResolvedTheme = "light" | "dark";
 
 export interface AppState {
   lang: Language;
+  theme: ThemePreference;
   plainMode: boolean;
   authMode: AuthMode;
   accessToken: string | null;
@@ -22,6 +25,7 @@ export interface AppState {
   bootSplashSeen: boolean;
   simulateDegradedReplay: boolean;
 
+  setTheme: (theme: ThemePreference) => void;
   setLang: (lang: Language) => void;
   togglePlainMode: () => void;
   setPlainMode: (enabled: boolean) => void;
@@ -46,6 +50,7 @@ export interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
+      theme: "system",
       lang: "en",
       plainMode: false,
       authMode: "none",
@@ -61,6 +66,7 @@ export const useAppStore = create<AppState>()(
       bootSplashSeen: false,
       simulateDegradedReplay: false,
 
+      setTheme: (theme) => set({ theme }),
       setLang: (lang) => set({ lang }),
       togglePlainMode: () => set((s) => ({ plainMode: !s.plainMode })),
       setPlainMode: (plainMode) => set({ plainMode }),
@@ -116,6 +122,7 @@ export const useAppStore = create<AppState>()(
             }
       ),
       partialize: (state) => ({
+        theme: state.theme,
         lang: state.lang,
         plainMode: state.plainMode,
         authMode: state.authMode,
