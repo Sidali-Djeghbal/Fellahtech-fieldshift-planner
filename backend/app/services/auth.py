@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -35,28 +34,10 @@ from app.schemas.auth import (
     UserDataExport,
     UserProfile,
 )
-from app.schemas.common import (
-    DEMO_PARCEL_UNVERIFIED_MESSAGE,
-    MVP_OUTSIDE_COVERAGE_MESSAGE,
-    IrrigationSystem,
-    Language,
-    Season,
-    SoilSource,
-    SoilType,
-    WarningCode,
-    WarningNotice,
-    WaterAvailability,
-    WaterSource,
-)
+from app.schemas.common import Language
 from app.schemas.demo import DemoLocationSummary
-from app.schemas.farm import FarmPublic
-from app.schemas.field import (
-    CropHistoryWriteItem,
-    FieldDetailPublic,
-    FieldLocationPublic,
-    FieldSoilPublic,
-    FieldWaterPublic,
-)
+from app.services.farms import to_farm_public
+from app.services.fields import build_field_detail
 
 
 def _to_user_profile(user: User) -> UserProfile:
@@ -314,78 +295,6 @@ def _format_iso_opt(value: datetime | None) -> str | None:
     return value.astimezone(UTC).isoformat() if value is not None else None
 
 
-def _build_export_field_detail(
-    row: dict[str, Any],
-    history_items: list[Any],
-) -> FieldDetailPublic:
-    boundary_raw = row["boundary_geojson"]
-    boundary = json.loads(boundary_raw) if isinstance(boundary_raw, str) else None
-
-    warnings: list[WarningNotice] = []
-    if bool(row["is_unverified_demo_parcel"]):
-        warnings.append(
-            WarningNotice(
-                code=WarningCode.DEMO_PARCEL_UNVERIFIED,
-                message=DEMO_PARCEL_UNVERIFIED_MESSAGE,
-            )
-        )
-    if not bool(row["in_guelma_boundary"]):
-        warnings.append(
-            WarningNotice(
-                code=WarningCode.MVP_OUTSIDE_COVERAGE,
-                message=MVP_OUTSIDE_COVERAGE_MESSAGE,
-            )
-        )
-
-    return FieldDetailPublic(
-        farm_id=f"farm_{int(row['farm_id'])}",
-        field_id=str(row["external_field_id"]),
-        field_name=str(row["field_name"]),
-        is_unverified_demo_parcel=bool(row["is_unverified_demo_parcel"]),
-        location=FieldLocationPublic(
-            latitude=float(row["latitude"]),
-            longitude=float(row["longitude"]),
-            boundary=boundary,
-        ),
-        area_hectares=float(row["area_hectares"]),
-        elevation_m=float(row["elevation_m"]) if row["elevation_m"] is not None else None,
-        soil=FieldSoilPublic(
-            soil_type=SoilType(str(row["soil_type"])),
-            source=SoilSource(str(row["soil_source"])),
-            soil_ph=float(row["soil_ph"]) if row["soil_ph"] is not None else None,
-            organic_matter_percent=(
-                float(row["organic_matter_percent"])
-                if row["organic_matter_percent"] is not None
-                else None
-            ),
-            soil_test_date=row["soil_test_date"],
-        ),
-        water=FieldWaterPublic(
-            availability=WaterAvailability(str(row["water_availability"])),
-            source=WaterSource(str(row["water_source"])),
-            source_other=row["water_source_other"],
-            irrigation_system=IrrigationSystem(str(row["irrigation_system"])),
-        ),
-        crop_history=[
-            CropHistoryWriteItem(
-                season=Season(item.season),
-                year=item.year,
-                planting_month=item.planting_month,
-                crop_id=item.crop_id,
-                crop_name_raw=item.crop_name_raw,
-                yield_tons_per_hectare=(
-                    float(item.yield_tons_per_hectare)
-                    if item.yield_tons_per_hectare is not None
-                    else None
-                ),
-                notes=item.notes,
-            )
-            for item in history_items
-        ],
-        warnings=warnings,
-    )
-
-
 async def export_me_data(
     db: AsyncSession,
     *,
@@ -398,20 +307,12 @@ async def export_me_data(
         raise FieldShiftError(ErrorCode.UNAUTHORIZED, "User account no longer exists.")
 
     farms_public = [
-        FarmPublic(
-            farm_id=f"farm_{farm.id}",
-            farm_name=farm.farm_name,
-            country=farm.country,
-            region=farm.region,
-            commune=farm.commune,
-            field_count=field_count,
-            created_at=farm.created_at,
-        )
+        to_farm_public(farm, field_count=field_count)
         for farm, field_count in bundle.farms
     ]
 
     fields_public = [
-        _build_export_field_detail(
+        build_field_detail(
             row,
             bundle.crop_history_by_field_pk.get(int(row["pk"]), []),
         )

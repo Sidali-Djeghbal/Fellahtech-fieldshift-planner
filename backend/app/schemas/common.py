@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from enum import StrEnum
 from typing import Any
 
@@ -14,6 +15,16 @@ from pydantic import (
 )
 
 from app.core.errors import ErrorCode
+
+# TODO(OQ-2): Review additional prompt-injection neutralization rules with Security/ML Owner.
+_CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def sanitize_free_text(value: Any) -> Any:
+    """Strip unsafe ASCII control characters and trim user free-text (`# TODO(OQ-2)`)."""
+    if not isinstance(value, str):
+        return value
+    return _CONTROL_CHAR_RE.sub("", value).strip()
 
 DEMO_PARCEL_UNVERIFIED_MESSAGE = (
     "This demo parcel is marked unverified; "

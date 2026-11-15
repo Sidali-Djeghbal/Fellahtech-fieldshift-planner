@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, case, delete, func, select, update
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ErrorCode, FieldShiftError
@@ -17,6 +18,7 @@ from app.models.demo import DemoLocation, GuestSession
 from app.models.farm import Farm
 from app.models.field import Field, FieldCropHistory
 from app.models.user import RefreshToken, User
+from app.repositories import field as field_repo
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +41,11 @@ class UserExportBundle:
     analysis_requests: list[dict[str, Any]]
     analysis_results: list[dict[str, Any]]
     analysis_selections: list[dict[str, Any]]
+
+
+def _rows_to_dicts(rows: Sequence[RowMapping]) -> list[dict[str, Any]]:
+    """Normalize SQLAlchemy ``RowMapping`` objects into plain string-keyed dictionaries."""
+    return [{str(k): v for k, v in row.items()} for row in rows]
 
 
 async def get_active_demo_location(
@@ -162,9 +169,9 @@ async def atomic_claim_refresh_token(
     if row is None:
         return None
     return ClaimedRefreshRow(
-        id=int(row.id),
-        user_id=int(row.user_id),
-        family_id=uuid.UUID(str(row.family_id)),
+        id=int(row[0]),
+        user_id=int(row[1]),
+        family_id=uuid.UUID(str(row[2])),
     )
 
 
@@ -269,39 +276,11 @@ async def load_user_export_bundle(
         )
 
     field_stmt = (
-        select(
-            Field.id.label("pk"),
-            Field.farm_id,
-            Field.external_field_id,
-            Field.field_name,
-            Field.is_unverified_demo_parcel,
-            func.ST_Y(Field.geom_point).label("latitude"),
-            func.ST_X(Field.geom_point).label("longitude"),
-            func.ST_AsGeoJSON(Field.geom_polygon).label("boundary_geojson"),
-            Field.area_hectares,
-            Field.elevation_m,
-            Field.soil_type,
-            Field.soil_source,
-            Field.soil_ph,
-            Field.organic_matter_percent,
-            Field.soil_test_date,
-            Field.water_availability,
-            Field.water_source,
-            Field.water_source_other,
-            Field.irrigation_system,
-            case(
-                (DemoLocation.id.is_(None), True),
-                else_=func.ST_Covers(DemoLocation.boundary, Field.geom_point),
-            ).label("in_guelma_boundary"),
-        )
-        .outerjoin(
-            DemoLocation,
-            and_(DemoLocation.code == "guelma", DemoLocation.is_active.is_(True)),
-        )
+        field_repo.select_field_projections()
         .where(Field.farm_id.in_(farm_ids))
         .order_by(Field.farm_id.asc(), Field.id.asc())
     )
-    field_rows = [dict(row) for row in (await db.execute(field_stmt)).mappings().all()]
+    field_rows = _rows_to_dicts((await db.execute(field_stmt)).mappings().all())
     field_pks = [int(row["pk"]) for row in field_rows]
 
     history_by_field: dict[int, list[FieldCropHistory]] = {}
@@ -344,7 +323,7 @@ async def load_user_export_bundle(
         .where(AnalysisRequest.farm_id.in_(farm_ids))
         .order_by(AnalysisRequest.created_at.asc(), AnalysisRequest.request_id.asc())
     )
-    req_rows = [dict(row) for row in (await db.execute(req_stmt)).mappings().all()]
+    req_rows = _rows_to_dicts((await db.execute(req_stmt)).mappings().all())
 
     res_stmt = (
         select(
@@ -362,7 +341,7 @@ async def load_user_export_bundle(
         .where(AnalysisRequest.farm_id.in_(farm_ids))
         .order_by(AnalysisResult.created_at.asc(), AnalysisResult.analysis_id.asc())
     )
-    res_rows = [dict(row) for row in (await db.execute(res_stmt)).mappings().all()]
+    res_rows = _rows_to_dicts((await db.execute(res_stmt)).mappings().all())
 
     sel_stmt = (
         select(
@@ -381,7 +360,7 @@ async def load_user_export_bundle(
             AnalysisSelection.strategy_id.asc(),
         )
     )
-    sel_rows = [dict(row) for row in (await db.execute(sel_stmt)).mappings().all()]
+    sel_rows = _rows_to_dicts((await db.execute(sel_stmt)).mappings().all())
 
     return UserExportBundle(
         user=user,

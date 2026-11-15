@@ -85,6 +85,26 @@ def decode_cursor(
     return parsed
 
 
+def decode_id_cursor(
+    cursor: str | None,
+    *,
+    key: str = "id",
+    max_int64: int = 9_223_372_036_854_775_807,
+) -> int | None:
+    """Decode a positive BIGINT keyset cursor id, rejecting tampering or out-of-range ints."""
+    if cursor is None:
+        return None
+    payload = decode_cursor(cursor, required_keys=(key,))
+    raw_id = payload[key]
+    if isinstance(raw_id, bool) or not isinstance(raw_id, int) or not (1 <= raw_id <= max_int64):
+        raise FieldShiftError(
+            ErrorCode.INVALID_INPUT,
+            "Invalid pagination cursor.",
+            details=[{"field": "cursor", "reason": "invalid_cursor_id"}],
+        )
+    return int(raw_id)
+
+
 def slice_keyset_page[T](
     rows: Sequence[T],
     *,
