@@ -176,3 +176,23 @@ async def upsert_catalog_and_prune(
 
     await db.flush()
     return payload.catalog_version
+
+
+async def get_catalog_crop_meta_map(
+    db: AsyncSession,
+    *,
+    catalog_version: str,
+) -> dict[str, tuple[str, tuple[str, ...], str]]:
+    """Return `{crop_id: (category, roles, family)}` for one synced `catalog_version`."""
+    stmt = select(
+        CropCatalog.crop_id,
+        CropCatalog.category,
+        CropCatalog.roles,
+        CropCatalog.family,
+    ).where(CropCatalog.catalog_version == catalog_version)
+    rows = (await db.execute(stmt)).all()
+    return {
+        str(crop_id): (str(category), tuple(str(role) for role in roles), str(family))
+        for crop_id, category, roles, family in rows
+    }
+

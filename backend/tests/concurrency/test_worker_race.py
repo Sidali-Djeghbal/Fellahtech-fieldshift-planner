@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import copy
 import json
 import os
 import subprocess
@@ -31,6 +30,7 @@ from app.ml_client import (
     MLHealthResult,
     MLProviderManager,
     MLUpstreamServerError,
+    MockMLAdapter,
     ProviderKind,
 )
 from app.models import AnalysisRequest
@@ -162,6 +162,7 @@ class _ConcurrencyProbeMLAdapter(MLAdapter):
     ) -> None:
         self._template_output = template_output
         self._template_catalog = template_catalog
+        self._delegate = MockMLAdapter()
         self._sleep_seconds = sleep_seconds
         self._fail_503 = fail_503
         self.active = 0
@@ -179,7 +180,6 @@ class _ConcurrencyProbeMLAdapter(MLAdapter):
         idempotency_key: str,
         compress: bool = False,
     ) -> dict[str, Any]:
-        del compress
         self.active += 1
         self.max_observed = max(self.max_observed, self.active)
         self.invocations.append(idempotency_key)
@@ -187,15 +187,12 @@ class _ConcurrencyProbeMLAdapter(MLAdapter):
             await asyncio.sleep(self._sleep_seconds)
             if self._fail_503:
                 raise MLUpstreamServerError("Simulated overload", status_code=503)
-            parsed = (
-                json.loads(payload.decode("utf-8"))
-                if isinstance(payload, bytes)
-                else dict(payload)
+            # Delegate dynamic response synthesis so distinct start_year inputs pass SEM-02.
+            return await self._delegate.analyze(
+                payload,
+                idempotency_key=idempotency_key,
+                compress=compress,
             )
-            out = copy.deepcopy(self._template_output)
-            out["request_id"] = idempotency_key
-            out["dataset_version_used"] = str(parsed["dataset_version"])
-            return out
         finally:
             self.active -= 1
 

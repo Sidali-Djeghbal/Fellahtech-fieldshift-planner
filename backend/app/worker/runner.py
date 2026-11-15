@@ -9,7 +9,7 @@ import json
 import random
 import signal
 import time
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -34,17 +34,18 @@ from app.ml_client.base import MLClientError
 from app.ml_client.manager import AsyncRedisStatusStore, MLProviderManager
 from app.repositories import analysis as analysis_repo
 from app.repositories import catalog as catalog_repo
+from app.services.verification import verify_analysis_result
 from app.worker.jobs import (
     DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
     GZIP_COMPRESS_THRESHOLD_BYTES,
     PayloadTrimError,
+    ResultVerificationOutcome,
     ResultVerifier,
     RetryBudgetState,
     classify_ml_error_policy,
     extract_payload_crop_ids,
     serialize_compact_json,
     trim_analysis_payload_for_size,
-    verify_analysis_result_basic,
 )
 
 BULKHEAD_START_SLOT = 1001
@@ -253,7 +254,7 @@ class WorkerRunner:
         self._sessionmaker = sessionmaker
         self._redis_client = redis_client
         self._ml_manager = ml_manager
-        self._verifier: ResultVerifier = verifier or verify_analysis_result_basic
+        self._custom_verifier: ResultVerifier | None = verifier
         self._concurrency = (
             worker_concurrency if worker_concurrency is not None else settings.WORKER_CONCURRENCY
         )
@@ -626,10 +627,13 @@ class WorkerRunner:
                     )
 
             assert raw_result is not None
-            verification = await self._verifier(
+            verification = await self._verify_result_payload(
                 raw_result,
                 expected_dataset_version=req_snapshot.dataset_version,
                 input_snapshot=input_snapshot,
+                catalog_version=str(
+                    payload_to_send.get("catalog_version") or req_snapshot.catalog_version
+                ),
             )
             raw_ds_used = raw_result.get("dataset_version_used")
             raw_eng_ver = raw_result.get("ml_engine_version")
@@ -746,6 +750,33 @@ class WorkerRunner:
                 )
                 return None
         return synced_version
+
+    async def _verify_result_payload(
+        self,
+        raw_result: Mapping[str, Any],
+        *,
+        expected_dataset_version: str,
+        input_snapshot: Mapping[str, Any],
+        catalog_version: str,
+    ) -> ResultVerificationOutcome:
+        if self._custom_verifier is not None:
+            return await self._custom_verifier(
+                raw_result,
+                expected_dataset_version=expected_dataset_version,
+                input_snapshot=input_snapshot,
+            )
+        async with self._sessionmaker() as db:
+            catalog_crops = await catalog_repo.get_catalog_crop_meta_map(
+                db,
+                catalog_version=catalog_version,
+            )
+        return await verify_analysis_result(
+            raw_result,
+            expected_dataset_version=expected_dataset_version,
+            input_snapshot=input_snapshot,
+            catalog_crops=catalog_crops,
+            sem04_tolerance=self._settings.SEM04_NUMERIC_TOLERANCE,
+        )
 
     async def execute_claimed_job(self, request_id: str) -> JobExecutionSummary:
         """Execute an already-claimed job with cooperative heartbeat cancel & clean unlock."""

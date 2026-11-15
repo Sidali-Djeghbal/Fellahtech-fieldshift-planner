@@ -6,8 +6,8 @@ import copy
 import json
 import random
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
-from typing import Any, Literal, Protocol
+from dataclasses import dataclass
+from typing import Any, Literal
 
 from app.core.config import Settings
 from app.core.errors import ErrorCode
@@ -26,6 +26,12 @@ from app.ml_client.base import (
     MLTransportError,
     MLUpstreamServerError,
     validate_contract_def,
+)
+from app.services.verification import (
+    ResultVerificationOutcome as ResultVerificationOutcome,
+)
+from app.services.verification import (
+    ResultVerifier as ResultVerifier,
 )
 
 DEFAULT_HEARTBEAT_INTERVAL_SECONDS = 2.0
@@ -86,28 +92,6 @@ class MLErrorDecision:
     trips_breaker: bool = False
     refundable_for_guest: bool = False
     critical_alert: bool = False
-
-
-@dataclass(frozen=True, slots=True)
-class ResultVerificationOutcome:
-    """Validation result consumed by M8 basic check and M9 Stage 1 + SEM-01..07 verifier."""
-
-    valid: bool
-    result_status: Literal["ok", "partial", "invalid"]
-    error_code: ErrorCode | None = None
-    validation_errors: list[dict[str, Any]] = field(default_factory=list)
-
-
-class ResultVerifier(Protocol):
-    """Async/sync-friendly verifier contract invoked on parsed 200 OK ML responses."""
-
-    async def __call__(
-        self,
-        result_payload: Mapping[str, Any],
-        *,
-        expected_dataset_version: str,
-        input_snapshot: Mapping[str, Any],
-    ) -> ResultVerificationOutcome: ...
 
 
 class PayloadTrimError(Exception):
