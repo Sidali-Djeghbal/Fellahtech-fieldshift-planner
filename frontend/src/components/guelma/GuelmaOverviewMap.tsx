@@ -86,6 +86,7 @@ export function GuelmaOverviewMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapFrameRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const sourcesReadyRef = useRef(false);
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const pinLabelRef = useRef<HTMLSpanElement | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
@@ -158,7 +159,7 @@ export function GuelmaOverviewMap({
   const fitCurrentView = useCallback(
     (animate = true) => {
       const map = mapRef.current;
-      if (!map || !map.isStyleLoaded()) return;
+      if (!map || !sourcesReadyRef.current) return;
 
       const pad = computeDockedPadding();
       const dur = animate ? 600 : 0;
@@ -270,6 +271,10 @@ export function GuelmaOverviewMap({
   fieldsRef.current = fields;
   const onSelectRef = useRef(onSelectField);
   onSelectRef.current = onSelectField;
+  const selectedFieldRef = useRef(selectedField);
+  selectedFieldRef.current = selectedField;
+  const fitCurrentViewRef = useRef(fitCurrentView);
+  fitCurrentViewRef.current = fitCurrentView;
 
   const fieldsGeoJson = useMemo(() => {
     const features = fields.map((f) => {
@@ -326,6 +331,11 @@ export function GuelmaOverviewMap({
       }),
     };
   }, [fields, selectedFieldKey]);
+
+  const fieldsGeoJsonRef = useRef(fieldsGeoJson);
+  fieldsGeoJsonRef.current = fieldsGeoJson;
+  const pointsGeoJsonRef = useRef(pointsGeoJson);
+  pointsGeoJsonRef.current = pointsGeoJson;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -392,7 +402,7 @@ export function GuelmaOverviewMap({
 
         map.addSource("workspace-fields", {
           type: "geojson",
-          data: fieldsGeoJson,
+          data: fieldsGeoJsonRef.current,
         });
         map.addLayer({
           id: "workspace-fields-fill",
@@ -426,7 +436,7 @@ export function GuelmaOverviewMap({
 
         map.addSource("workspace-points", {
           type: "geojson",
-          data: pointsGeoJson,
+          data: pointsGeoJsonRef.current,
         });
         map.addLayer({
           id: "workspace-points-dot",
@@ -463,14 +473,15 @@ export function GuelmaOverviewMap({
           if (map) map.getCanvas().style.cursor = "";
         });
 
-        if (selectedField) {
+        const latestSelected = selectedFieldRef.current;
+        if (latestSelected) {
           const pinEl = document.createElement("div");
           pinEl.className = "lg-pin";
           const dotEl = document.createElement("span");
           dotEl.className = "lg-pin-dot";
           const lblEl = document.createElement("span");
           lblEl.className = "lg-pin-lbl";
-          lblEl.textContent = `${selectedField.field_name} · ${selectedField.area_hectares.toFixed(1)} ha`;
+          lblEl.textContent = `${latestSelected.field_name} · ${latestSelected.area_hectares.toFixed(1)} ha`;
           pinLabelRef.current = lblEl;
           pinEl.append(dotEl, lblEl);
 
@@ -478,11 +489,12 @@ export function GuelmaOverviewMap({
             element: pinEl,
             anchor: "left",
           })
-            .setLngLat([selectedField.location.longitude, selectedField.location.latitude])
+            .setLngLat([latestSelected.location.longitude, latestSelected.location.latitude])
             .addTo(map);
         }
 
-        fitCurrentView(false);
+        sourcesReadyRef.current = true;
+        fitCurrentViewRef.current(false);
         updateCalloutPin();
       });
 
@@ -501,6 +513,7 @@ export function GuelmaOverviewMap({
     }
 
     return () => {
+      sourcesReadyRef.current = false;
       if (markerRef.current) {
         markerRef.current.remove();
         markerRef.current = null;
@@ -516,7 +529,7 @@ export function GuelmaOverviewMap({
   // Sync GeoJSON data, marker & camera focus when saved fields or selection changes
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) {
+    if (!map || !sourcesReadyRef.current) {
       updateCalloutPin();
       return;
     }

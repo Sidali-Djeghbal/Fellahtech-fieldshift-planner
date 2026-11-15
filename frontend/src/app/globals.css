@@ -93,6 +93,14 @@
   --lg-tile-border: rgba(17, 24, 19, 0.06);
   --lg-btn-bg: var(--fs-hud-bg);
   --lg-btn-border: var(--fs-card-border);
+  --lg-accent: #15803d;
+  --lg-accent-bg: rgba(21, 128, 61, 0.12);
+  --lg-warn: #b45309;
+  --lg-warn-bg: rgba(180, 83, 9, 0.14);
+  --lg-sky: #0284c7;
+  --lg-danger: #dc2626;
+  --lg-danger-bg: rgba(220, 38, 38, 0.12);
+  --lg-track-bg: rgba(17, 24, 19, 0.10);
 
   --fs-cta-bg: #0b3d2e;
   --fs-cta-fg: #ffffff;
@@ -201,6 +209,14 @@
   --lg-tile-border: rgba(255, 255, 255, 0.08);
   --lg-btn-bg: var(--fs-hud-bg);
   --lg-btn-border: var(--fs-card-border);
+  --lg-accent: #4ade80;
+  --lg-accent-bg: rgba(74, 222, 128, 0.16);
+  --lg-warn: #fcd34d;
+  --lg-warn-bg: rgba(234, 179, 77, 0.18);
+  --lg-sky: #38bdf8;
+  --lg-danger: #fca5a5;
+  --lg-danger-bg: rgba(239, 68, 68, 0.16);
+  --lg-track-bg: rgba(255, 255, 255, 0.12);
 
   --fs-cta-bg: #ffffff;
   --fs-cta-fg: #111713;
@@ -415,25 +431,33 @@ body {
 
   /* Dark-Adaptive Optical Liquid Glass Scoped HUD Over Satellite Maps */
   .lg-map-hud {
-    --fs-hud-bg: rgba(13, 20, 17, 0.64);
-    --fs-pill-bg: rgba(15, 23, 19, 0.60);
-    --fs-card-border: rgba(255, 255, 255, 0.14);
+    --fs-hud-bg: rgba(13, 20, 17, 0.72);
+    --fs-pill-bg: rgba(15, 23, 19, 0.68);
+    --fs-card-border: rgba(255, 255, 255, 0.16);
     --text-primary: #f4f7f4;
-    --text-secondary: rgba(235, 243, 238, 0.78);
-    --text-tertiary: rgba(205, 220, 212, 0.56);
+    --text-secondary: rgba(235, 243, 238, 0.80);
+    --text-tertiary: rgba(205, 220, 212, 0.62);
     --lg-fg: #f4f7f4;
-    --lg-fg-muted: rgba(235, 243, 238, 0.78);
-    --lg-fg-subtle: rgba(205, 220, 212, 0.56);
-    --lg-tile-bg: rgba(255, 255, 255, 0.055);
-    --lg-tile-border: rgba(255, 255, 255, 0.08);
-    --lg-btn-bg: rgba(15, 23, 19, 0.60);
-    --lg-btn-border: rgba(255, 255, 255, 0.16);
+    --lg-fg-muted: rgba(235, 243, 238, 0.80);
+    --lg-fg-subtle: rgba(205, 220, 212, 0.62);
+    --lg-tile-bg: rgba(255, 255, 255, 0.065);
+    --lg-tile-border: rgba(255, 255, 255, 0.10);
+    --lg-btn-bg: rgba(15, 23, 19, 0.68);
+    --lg-btn-border: rgba(255, 255, 255, 0.18);
+    --lg-accent: #4ade80;
+    --lg-accent-bg: rgba(74, 222, 128, 0.16);
+    --lg-warn: #fcd34d;
+    --lg-warn-bg: rgba(234, 179, 77, 0.18);
+    --lg-sky: #38bdf8;
+    --lg-danger: #fca5a5;
+    --lg-danger-bg: rgba(239, 68, 68, 0.18);
+    --lg-track-bg: rgba(255, 255, 255, 0.14);
     color: var(--lg-fg);
   }
 
   .lg-map-hud .lg-capsule {
-    background: rgba(15, 23, 19, 0.60);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(15, 23, 19, 0.68);
+    border-color: rgba(255, 255, 255, 0.16);
     color: #f4f7f4;
     box-shadow:
       inset 0 1px 0.5px rgba(255, 255, 255, 0.22),
@@ -442,14 +466,14 @@ body {
   }
 
   .lg-map-hud .lg-capsule:hover {
-    background: rgba(255, 255, 255, 0.095);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.28);
     color: #ffffff;
   }
 
   .lg-map-hud .lg-surface {
-    background: rgba(13, 20, 17, 0.64);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(13, 20, 17, 0.72);
+    border-color: rgba(255, 255, 255, 0.16);
     color: #f4f7f4;
     box-shadow:
       inset 0 1px 0.5px rgba(255, 255, 255, 0.20),
@@ -459,36 +483,48 @@ body {
   }
 
   .lg-map-hud .lg-capsule-active {
-    background: rgba(234, 179, 77, 0.18) !important;
-    color: #f4f7f4 !important;
-    border-color: rgba(234, 179, 77, 0.50) !important;
+    background: rgba(234, 179, 77, 0.22) !important;
+    color: #ffffff !important;
+    border-color: rgba(234, 179, 77, 0.56) !important;
     box-shadow:
-      inset 0 0 0 1px rgba(234, 179, 77, 0.50),
+      inset 0 0 0 1px rgba(234, 179, 77, 0.56),
       0 4px 14px -2px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .lg-map-hud .fs-cta-primary:not(:disabled) {
+    border: 1px solid rgba(255, 255, 255, 0.22);
   }
 
   /* Scoped Floating Inspector inside satellite map on desktop md+ */
   @media (min-width: 768px) {
     .lg-floating-inspector {
-      --fs-hud-bg: rgba(13, 20, 17, 0.64);
-      --fs-pill-bg: rgba(15, 23, 19, 0.60);
-      --fs-card-border: rgba(255, 255, 255, 0.14);
+      --fs-hud-bg: rgba(13, 20, 17, 0.72);
+      --fs-pill-bg: rgba(15, 23, 19, 0.68);
+      --fs-card-border: rgba(255, 255, 255, 0.16);
       --text-primary: #f4f7f4;
-      --text-secondary: rgba(235, 243, 238, 0.78);
-      --text-tertiary: rgba(205, 220, 212, 0.56);
+      --text-secondary: rgba(235, 243, 238, 0.80);
+      --text-tertiary: rgba(205, 220, 212, 0.62);
       --lg-fg: #f4f7f4;
-      --lg-fg-muted: rgba(235, 243, 238, 0.78);
-      --lg-fg-subtle: rgba(205, 220, 212, 0.56);
-      --lg-tile-bg: rgba(255, 255, 255, 0.055);
-      --lg-tile-border: rgba(255, 255, 255, 0.08);
-      --lg-btn-bg: rgba(15, 23, 19, 0.60);
-      --lg-btn-border: rgba(255, 255, 255, 0.16);
+      --lg-fg-muted: rgba(235, 243, 238, 0.80);
+      --lg-fg-subtle: rgba(205, 220, 212, 0.62);
+      --lg-tile-bg: rgba(255, 255, 255, 0.065);
+      --lg-tile-border: rgba(255, 255, 255, 0.10);
+      --lg-btn-bg: rgba(15, 23, 19, 0.68);
+      --lg-btn-border: rgba(255, 255, 255, 0.18);
+      --lg-accent: #4ade80;
+      --lg-accent-bg: rgba(74, 222, 128, 0.16);
+      --lg-warn: #fcd34d;
+      --lg-warn-bg: rgba(234, 179, 77, 0.18);
+      --lg-sky: #38bdf8;
+      --lg-danger: #fca5a5;
+      --lg-danger-bg: rgba(239, 68, 68, 0.18);
+      --lg-track-bg: rgba(255, 255, 255, 0.14);
       color: var(--lg-fg);
     }
 
     .lg-floating-inspector .lg-surface {
-      background: rgba(13, 20, 17, 0.64) !important;
-      border-color: rgba(255, 255, 255, 0.14) !important;
+      background: rgba(13, 20, 17, 0.72) !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
       color: #f4f7f4 !important;
       box-shadow:
         inset 0 1px 0.5px rgba(255, 255, 255, 0.20),
@@ -498,24 +534,28 @@ body {
     }
 
     .lg-floating-inspector .lg-capsule {
-      background: rgba(15, 23, 19, 0.60);
-      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(15, 23, 19, 0.68);
+      border-color: rgba(255, 255, 255, 0.16);
       color: #f4f7f4;
     }
 
     .lg-floating-inspector .lg-capsule:hover {
-      background: rgba(255, 255, 255, 0.095);
-      border-color: rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.28);
       color: #ffffff;
     }
 
     .lg-floating-inspector .lg-capsule-active {
-      background: rgba(234, 179, 77, 0.18) !important;
-      color: #f4f7f4 !important;
-      border-color: rgba(234, 179, 77, 0.50) !important;
+      background: rgba(234, 179, 77, 0.22) !important;
+      color: #ffffff !important;
+      border-color: rgba(234, 179, 77, 0.56) !important;
       box-shadow:
-        inset 0 0 0 1px rgba(234, 179, 77, 0.50),
+        inset 0 0 0 1px rgba(234, 179, 77, 0.56),
         0 4px 14px -2px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    .lg-floating-inspector .fs-cta-primary:not(:disabled) {
+      border: 1px solid rgba(255, 255, 255, 0.22);
     }
   }
 
@@ -750,8 +790,15 @@ body {
     opacity 150ms ease-out;
 }
 
-.fs-cta-primary:hover {
+.fs-cta-primary:hover:not(:disabled) {
   background: var(--fs-cta-hover);
+}
+
+.lg-map-hud .fs-cta-primary:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(244, 247, 244, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: none;
 }
 
 /* Accessible High-Contrast Focus Rings */
