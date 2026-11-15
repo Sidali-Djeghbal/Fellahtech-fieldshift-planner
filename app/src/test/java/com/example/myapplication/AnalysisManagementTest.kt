@@ -91,9 +91,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -103,6 +107,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.HttpException
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisManagementTest {
@@ -688,6 +694,90 @@ class AnalysisManagementTest {
             assertFalse(cancel200Vm.uiState.value.isPolling)
         } finally {
             Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisRepositoryImpl submitAnalysis sends HTTP POST to analysis with Idempotency-Key and serialized body including retries`() = runTest {
+        data class CapturedRequest(
+            val method: String,
+            val encodedPath: String,
+            val idempotencyKey: String?,
+            val body: String
+        )
+
+        val prodJson = NetworkModule.provideJson()
+        val captured = mutableListOf<CapturedRequest>()
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val req = chain.request()
+                val buffer = Buffer()
+                req.body?.writeTo(buffer)
+                captured += CapturedRequest(
+                    method = req.method,
+                    encodedPath = req.url.encodedPath,
+                    idempotencyKey = req.header("Idempotency-Key"),
+                    body = buffer.readUtf8()
+                )
+                if (captured.size == 1) {
+                    throw IOException("Simulated timeout")
+                }
+                val responseJson = """
+                    {
+                      "request_id": "req-http-1",
+                      "status": "pending",
+                      "poll_url": "/api/v1/analysis/requests/req-http-1",
+                      "poll_interval_ms": 2000,
+                      "warnings": []
+                    }
+                """.trimIndent()
+                okhttp3.Response.Builder()
+                    .request(req)
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(202)
+                    .message("Accepted")
+                    .body(responseJson.toResponseBody("application/json".toMediaType()))
+                    .build()
+            }
+            .build()
+
+        val apiService = Retrofit.Builder()
+            .baseUrl("https://api.example.com/api/v1/")
+            .client(client)
+            .addConverterFactory(prodJson.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(AnalysisApiService::class.java)
+
+        val repo = AnalysisRepositoryImpl(
+            apiService = apiService,
+            activeAnalysisStore = InMemoryActiveAnalysisStore(),
+            errorParser = ApiErrorParser(prodJson)
+        )
+
+        val firstAttempt = repo.submitAnalysis(sampleSubmitInput(), "idem-key-123")
+        assertTrue(firstAttempt is AnalysisCallResult.Failure)
+        assertTrue((firstAttempt as AnalysisCallResult.Failure).error is AnalysisError.Network)
+
+        val retryAttempt = repo.submitAnalysis(sampleSubmitInput(), "idem-key-123")
+        assertTrue(retryAttempt is AnalysisCallResult.Success)
+        assertEquals("req-http-1", (retryAttempt as AnalysisCallResult.Success).data.requestId)
+
+        assertEquals(2, captured.size)
+        captured.forEach { req ->
+            assertEquals("POST", req.method)
+            assertEquals("/api/v1/analysis", req.encodedPath)
+            assertEquals("idem-key-123", req.idempotencyKey)
+
+            val root = prodJson.parseToJsonElement(req.body).jsonObject
+            assertEquals("farm_1", root.getValue("farm_id").jsonPrimitive.content)
+            assertEquals("en", root.getValue("language").jsonPrimitive.content)
+            assertEquals(listOf("f1"), root.getValue("field_ids").jsonArray.map { it.jsonPrimitive.content })
+
+            val priorities = root.getValue("priorities").jsonObject
+            assertEquals("mixed", priorities.getValue("market_preference").jsonPrimitive.content)
+            assertEquals(0, priorities.getValue("target_crop_ids").jsonArray.size)
+            assertEquals(0, priorities.getValue("excluded_crop_ids").jsonArray.size)
+            assertEquals(0, priorities.getValue("equipment_constraints").jsonArray.size)
         }
     }
 
