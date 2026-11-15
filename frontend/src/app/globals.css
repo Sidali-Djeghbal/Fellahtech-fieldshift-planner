@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-heading: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Overpass", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Overpass", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary-forest: #00291b;
+  --color-primary-forest-hover: #04421b;
+  --color-emerald-vigor: #137135;
+  --color-sage-mid: #5fa87d;
+  --color-vibrant-lime: #84e875;
+  --color-canvas-bg: #f8faf8;
+  --color-card-surface: #ffffff;
+  --color-card-border: #e5e7eb;
+}
+
+:root {
+  --primary: #00291b;
+  --primary-hover: #04421b;
+  --primary-foreground: #ffffff;
+  --accent-emerald: #137135;
+  --accent-sage: #5fa87d;
+  --accent-lime: #84e875;
+  --background: #f8faf8;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-dark: #151a06;
+  --card-foreground: #111827;
+  --text-secondary: #374151;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+
+  --status-healthy-bg: #dcfce7;
+  --status-healthy-text: #15803d;
+  --status-stable-bg: #fef3c7;
+  --status-stable-text: #d97706;
+
+  --donut-irrigation: #003523;
+  --donut-nutrition: #18664c;
+  --donut-equipment: #afda8a;
+  --donut-pest: #d0a034;
+  --donut-logistics: #bc4c4b;
+
+  --heat-l0: #effedf;
+  --heat-l1: #d4f9b3;
+  --heat-l2: #98ea70;
+  --heat-l3: #1b8a5f;
+  --heat-l4: #072b1f;
+  --heat-stress: #ca5609;
+}
+
+html[lang="ar"] body {
+  font-family: var(--font-arabic), var(--font-sans), sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+.fs-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.fs-card-dark {
+  background-color: rgba(21, 26, 6, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Printable 1-Page Field Brief (@media print) */
+.print-only-brief {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only-brief {
+    display: block !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+}

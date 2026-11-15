@@ -1,0 +1,2716 @@
+.fs-proto-root {
+  /* Optical dark canvas & typography */
+  --bg: #070d0a;
+  --ink: #f4f7f4;
+  --ink-2: rgba(235, 243, 238, 0.78);
+  --ink-3: rgba(205, 220, 212, 0.56);
+  --ink-4: rgba(182, 202, 191, 0.4);
+
+  /* Liquid Glass materials (dark-adaptive optical glass) */
+  --glass-bg: rgba(13, 20, 17, 0.56);
+  --glass-bg-elev: rgba(15, 24, 20, 0.68);
+  --glass-capsule: rgba(15, 23, 19, 0.58);
+  --glass-fill: rgba(255, 255, 255, 0.055);
+  --glass-fill-hover: rgba(255, 255, 255, 0.095);
+  --glass-stroke: rgba(255, 255, 255, 0.14);
+  --glass-sep: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(28px) saturate(1.85);
+  --glass-blur-soft: blur(20px) saturate(1.65);
+
+  /* Domain semantic palette — Algerian agriculture */
+  --gold: #eab34d;
+  --gold-tint: rgba(234, 179, 77, 0.18);
+  --gold-stroke: rgba(234, 179, 77, 0.46);
+  --leaf: #4ade80;
+  --leaf-muted: #7fb069;
+  --leaf-tint: rgba(74, 222, 128, 0.15);
+  --clay: #f06449;
+  --clay-tint: rgba(240, 100, 73, 0.16);
+  --sky: #60a5fa;
+
+  /* Typography stacks */
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Concentric radii & spring curves */
+  --r-window: 24px;
+  --r-card: 16px;
+  --r-tile: 13px;
+  --r-pill: 9999px;
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-window: 0 20px 50px rgba(0, 0, 0, 0.48), 0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-capsule: 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.24);
+
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.fs-proto-root * {
+  box-sizing: border-box;
+}
+
+.fs-proto-root button,
+.fs-proto-root input,
+.fs-proto-root select {
+  font-family: inherit;
+  color: inherit;
+}
+
+.fs-proto-root .num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- full-bleed map canvas (Content Layer) ---------- */
+.fs-proto-root .fs-map {
+  position: absolute;
+  inset: 0;
+  background: #0a1310;
+}
+
+.fs-proto-root .vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(120% 95% at 50% 48%, transparent 52%, rgba(4, 9, 7, 0.46) 100%),
+    linear-gradient(180deg, rgba(4, 9, 7, 0.36) 0%, transparent 14%, transparent 84%, rgba(4, 9, 7, 0.45) 100%);
+}
+
+/* ---------- Liquid Glass surface primitive ---------- */
+.fs-proto-root .lg-surface {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    var(--shadow-window);
+  transition: transform 0.28s var(--ease-spring), opacity 0.24s ease, box-shadow 0.28s ease;
+}
+
+.fs-proto-root .lg-capsule {
+  position: relative;
+  border-radius: var(--r-pill);
+  background: var(--glass-capsule);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow-capsule);
+}
+
+.fs-proto-root .lg-surface::after,
+.fs-proto-root .lg-capsule::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    142deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(215, 245, 228, 0.14) 28%,
+    rgba(255, 255, 255, 0.04) 62%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.fs-proto-root .lg-surface > *,
+.fs-proto-root .lg-capsule > * {
+  position: relative;
+  z-index: 1;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fs-proto-root .lg-surface,
+  .fs-proto-root .lg-capsule {
+    background: rgba(12, 19, 16, 0.92);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .fs-proto-root .lg-surface,
+  .fs-proto-root .lg-capsule {
+    background: rgba(11, 17, 14, 0.94);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .fs-proto-root .lg-surface,
+  .fs-proto-root .lg-capsule {
+    background: rgba(8, 12, 10, 0.96);
+  }
+  .fs-proto-root .lg-surface::after,
+  .fs-proto-root .lg-capsule::after {
+    background: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.fs-proto-root .tap {
+  transition: transform 0.22s var(--ease-spring), background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.22s ease;
+}
+
+.fs-proto-root .tap:active {
+  transform: scale(0.968);
+}
+
+/* ---------- boot splash (Minimalist Obsidian Liquid Glass) ---------- */
+.fs-proto-root .boot {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(58% 44% at 50% 45%, rgba(234, 179, 77, 0.055) 0%, transparent 72%),
+    linear-gradient(180deg, #080b09 0%, #050706 100%);
+  transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.38s ease;
+}
+
+.fs-proto-root .boot.gone {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fs-proto-root .boot-card {
+  position: relative;
+  width: min(316px, calc(100vw - 32px));
+  padding: 34px 28px 28px;
+  border-radius: 26px;
+  text-align: center;
+  overflow: hidden;
+  background: rgba(15, 19, 17, 0.78);
+  backdrop-filter: blur(28px) saturate(1.25);
+  -webkit-backdrop-filter: blur(28px) saturate(1.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 28px 64px rgba(0, 0, 0, 0.68);
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+.fs-proto-root .boot.gone .boot-card {
+  transform: scale(0.985);
+  opacity: 0;
+}
+
+.fs-proto-root .boot-emblem {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 14px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.fs-proto-root .boot-emblem svg {
+  width: 19px;
+  height: 19px;
+  color: var(--gold);
+}
+
+.fs-proto-root .boot-mark {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: #f5f6f5;
+}
+
+.fs-proto-root .boot-mark em {
+  color: var(--gold);
+  font-style: normal;
+}
+
+.fs-proto-root .boot-sub {
+  margin-top: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 246, 244, 0.48);
+}
+
+[dir="rtl"] .fs-proto-root .boot-sub {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 11.5px;
+}
+
+.fs-proto-root .boot-track {
+  position: relative;
+  margin: 22px auto 0;
+  width: 168px;
+  height: 2px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.fs-proto-root .boot-track span {
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent 0%, rgba(234, 179, 77, 0.85) 55%, rgba(255, 245, 220, 0.95) 85%, transparent 100%);
+  animation: fsBootSweep 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes fsBootSweep {
+  0% {
+    transform: translateX(-115%);
+  }
+  100% {
+    transform: translateX(265%);
+  }
+}
+
+.fs-proto-root .boot-note {
+  display: block;
+  margin-top: 12px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(244, 246, 244, 0.58);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .fs-proto-root .boot-card {
+    background: rgba(13, 16, 14, 0.97);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ---------- top bar ---------- */
+.fs-proto-root .topbar {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.fs-proto-root .topbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  min-width: 0;
+}
+
+.fs-proto-root .brand-dock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 5px 4px 12px;
+  height: 44px;
+}
+
+[dir="rtl"] .fs-proto-root .brand-dock {
+  padding: 4px 12px 4px 5px;
+}
+
+.fs-proto-root .brand-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid var(--glass-sep);
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .brand-glyph {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: var(--gold);
+}
+
+.fs-proto-root .brand-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.fs-proto-root .brand-title span {
+  color: var(--ink-3);
+  font-weight: 500;
+  font-size: 12px;
+  margin-inline-start: 5px;
+}
+
+.fs-proto-root .lang-dock {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  height: 44px;
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fs-proto-root .lang-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
+
+.fs-proto-root .lang-btn[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.fs-proto-root .preset-pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.fs-proto-root .preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.fs-proto-root .preset-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
+
+.fs-proto-root .preset-btn[aria-pressed="true"] {
+  background: var(--gold-tint);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--gold-stroke), 0 2px 10px rgba(234, 179, 77, 0.16);
+}
+
+.fs-proto-root .preset-btn .p-slope {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .preset-btn[aria-pressed="true"] .p-slope {
+  color: var(--gold);
+}
+
+@media (max-width: 1520px) {
+  .fs-proto-root .preset-btn .p-slope {
+    display: none;
+  }
+  .fs-proto-root .preset-btn {
+    padding: 0 9px;
+  }
+  .fs-proto-root .layer-btn {
+    padding: 0 10px;
+  }
+  .fs-proto-root .tool-btn {
+    padding: 0 10px;
+  }
+}
+
+.fs-proto-root .preset-select-wrap {
+  display: none;
+}
+
+.fs-proto-root .layer-dock {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  height: 44px;
+}
+
+.fs-proto-root .layer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fs-proto-root .layer-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
+
+.fs-proto-root .layer-btn .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.26);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+
+.fs-proto-root .layer-btn[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.fs-proto-root .layer-btn[aria-pressed="true"] .dot {
+  background: var(--leaf);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.85);
+  transform: scale(1.15);
+}
+
+.fs-proto-root .layer-btn[data-layer="truecolor"][aria-pressed="true"] .dot {
+  background: var(--sky);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.85);
+}
+
+.fs-proto-root .layer-btn[data-layer="lst"][aria-pressed="true"] .dot {
+  background: var(--clay);
+  box-shadow: 0 0 8px rgba(240, 100, 73, 0.85);
+}
+
+.fs-proto-root .tools-dock {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  height: 44px;
+}
+
+.fs-proto-root .tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fs-proto-root .tool-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+}
+
+.fs-proto-root .tool-btn[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fs-proto-root .tool-btn.primary {
+  background: var(--gold-tint);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--gold-stroke);
+}
+
+.fs-proto-root .tool-btn.primary:hover {
+  background: rgba(234, 179, 77, 0.28);
+}
+
+.fs-proto-root .tool-btn svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+/* ---------- floating layer legend pill ---------- */
+.fs-proto-root .legend-pill {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.24s var(--ease-spring);
+}
+
+.fs-proto-root .legend-pill.on {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fs-proto-root .legend-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.fs-proto-root .legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .legend-src {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.fs-proto-root .legend-scale {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fs-proto-root .legend-bar {
+  width: 112px;
+  height: 7px;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.fs-proto-root .legend-lo,
+.fs-proto-root .legend-hi {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* ---------- Left Floating Window: Rotation Lab ---------- */
+.fs-proto-root .lab-window {
+  position: absolute;
+  top: 70px;
+  inset-inline-start: 16px;
+  z-index: 12;
+  width: 376px;
+  max-height: calc(100dvh - 182px);
+  border-radius: var(--r-window);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fs-proto-root .lab-window.collapsed {
+  max-height: 48px;
+}
+
+.fs-proto-root .lab-window.collapsed .lab-scroll {
+  display: none;
+}
+
+.fs-proto-root .lab-window.hidden-mode {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-18px);
+}
+
+[dir="rtl"] .fs-proto-root .lab-window.hidden-mode {
+  transform: translateX(18px);
+}
+
+.fs-proto-root .win-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--glass-sep);
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .lab-window.collapsed .win-head {
+  border-bottom-color: transparent;
+  padding: 11px 14px;
+}
+
+.fs-proto-root .win-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fs-proto-root .win-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.fs-proto-root .scen-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--glass-fill);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 165px;
+}
+
+.fs-proto-root .scen-badge.active {
+  color: var(--gold);
+  background: var(--gold-tint);
+}
+
+.fs-proto-root .icon-pill {
+  width: 26px;
+  height: 26px;
+  border-radius: 99px;
+  border: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  background: var(--glass-fill);
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.fs-proto-root .icon-pill:hover {
+  background: var(--glass-fill-hover);
+  color: var(--ink);
+}
+
+.fs-proto-root .lab-scroll {
+  padding: 11px 13px 13px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.fs-proto-root .seg-track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .prio {
+  height: 28px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fs-proto-root .prio:hover {
+  color: var(--ink);
+}
+
+.fs-proto-root .prio[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.fs-proto-root .strats {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.fs-proto-root .strat {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-fill);
+  text-align: start;
+  cursor: pointer;
+}
+
+.fs-proto-root .strat:hover {
+  background: var(--glass-fill-hover);
+  border-color: rgba(255, 255, 255, 0.13);
+}
+
+.fs-proto-root .strat[aria-current="true"] {
+  background: rgba(234, 179, 77, 0.1);
+  border-color: rgba(234, 179, 77, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.12);
+}
+
+.fs-proto-root .strat-main {
+  min-width: 0;
+}
+
+.fs-proto-root .strat-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fs-proto-root .strat-name {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.fs-proto-root .strat-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-2);
+}
+
+.fs-proto-root .strat-tag.best {
+  background: var(--leaf-tint);
+  color: var(--leaf);
+}
+
+.fs-proto-root .strat-tag.curr {
+  background: rgba(234, 179, 77, 0.16);
+  color: var(--gold);
+}
+
+.fs-proto-root .strat-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.fs-proto-root .dims {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  align-items: end;
+  width: 72px;
+  height: 16px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.fs-proto-root .dims i {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+  transition: height 0.32s var(--ease-spring), background 0.25s ease;
+}
+
+.fs-proto-root .dims i.hi {
+  background: var(--gold);
+}
+
+.fs-proto-root .exp-pill {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .exp-pill b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .exp-delta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--leaf);
+}
+
+.fs-proto-root .exp-delta.warn {
+  color: var(--clay);
+}
+
+.fs-proto-root .strat-score {
+  text-align: end;
+  padding-inline-start: 6px;
+}
+
+.fs-proto-root .strat-score strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.fs-proto-root .strat[aria-current="true"] .strat-score strong {
+  color: var(--gold);
+}
+
+.fs-proto-root .strat-score span {
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .scen-box {
+  margin-top: 11px;
+  padding: 11px 12px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .scen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.fs-proto-root .scen-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .scen-presets {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fs-proto-root .mini-chip {
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 99px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--ink-3);
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.fs-proto-root .mini-chip:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: var(--ink);
+}
+
+.fs-proto-root .mini-chip.on {
+  background: var(--gold-tint);
+  color: var(--gold);
+}
+
+.fs-proto-root .slider-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 48px;
+  align-items: center;
+  gap: 9px;
+  margin-top: 7px;
+}
+
+.fs-proto-root .slider-row label {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.fs-proto-root .slider-row output {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: end;
+  color: var(--ink);
+}
+
+.fs-proto-root input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+}
+
+.fs-proto-root input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3);
+  transition: transform 0.16s var(--ease-spring), box-shadow 0.16s ease;
+}
+
+.fs-proto-root input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.14);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 3px var(--gold-tint);
+}
+
+.fs-proto-root input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+.fs-proto-root input[type="range"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 5px;
+}
+
+/* ---------- Right Floating Window: Unified Field & Audit Inspector ---------- */
+.fs-proto-root .inspector {
+  position: absolute;
+  top: 70px;
+  inset-inline-end: 16px;
+  z-index: 12;
+  width: 348px;
+  max-height: calc(100dvh - 182px);
+  border-radius: var(--r-window);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fs-proto-root .inspector.collapsed {
+  max-height: 48px;
+}
+
+.fs-proto-root .inspector.collapsed .insp-body {
+  display: none;
+}
+
+.fs-proto-root .inspector.hidden-mode {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(18px);
+}
+
+[dir="rtl"] .fs-proto-root .inspector.hidden-mode {
+  transform: translateX(-18px);
+}
+
+.fs-proto-root .insp-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  flex: 1;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .insp-tab {
+  height: 26px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fs-proto-root .insp-tab:hover {
+  color: var(--ink);
+}
+
+.fs-proto-root .insp-tab[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.fs-proto-root .insp-body {
+  padding: 13px 15px 15px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
+}
+
+.fs-proto-root .insp-pane {
+  display: none;
+}
+
+.fs-proto-root .insp-pane.active {
+  display: block;
+  animation: fsPaneIn 0.24s var(--ease-spring);
+}
+
+@keyframes fsPaneIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fs-proto-root .place-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.01em;
+}
+
+.fs-proto-root .place-kicker i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: block;
+}
+
+.fs-proto-root .insp-h2 {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 4px 0 4px;
+}
+
+.fs-proto-root .coords-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .zone-note {
+  margin: 9px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.fs-proto-root .stat-tile {
+  padding: 10px 11px;
+  border-radius: var(--r-tile);
+  background: var(--glass-fill);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .stat-tile span {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .stat-tile b {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.fs-proto-root .stat-tile b i {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  margin-inline-start: 2px;
+}
+
+.fs-proto-root .overlap-card {
+  margin-top: 11px;
+  padding: 11px 12px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .overlap-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fs-proto-root .overlap-top strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .overlap-top span {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .overlap-bars {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  align-items: end;
+  height: 46px;
+  margin-top: 10px;
+}
+
+.fs-proto-root .ov-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.fs-proto-root .ov-stack {
+  width: 100%;
+  height: 34px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.fs-proto-root .ov-rain {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: rgba(96, 165, 250, 0.45);
+  transition: height 0.32s var(--ease-spring), background 0.25s ease;
+}
+
+.fs-proto-root .ov-col.risk .ov-rain {
+  background: rgba(240, 100, 73, 0.78);
+}
+
+.fs-proto-root .ov-col.covered .ov-rain {
+  background: rgba(74, 222, 128, 0.62);
+}
+
+.fs-proto-root .ov-col.cur-m .ov-stack {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+.fs-proto-root .ov-col em {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--ink-3);
+  line-height: 1;
+}
+
+.fs-proto-root .ov-col.cur-m em {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.fs-proto-root .overlap-cap {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .btn-primary {
+  width: 100%;
+  margin-top: 11px;
+  height: 38px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--gold-tint);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--gold-stroke), 0 4px 16px rgba(234, 179, 77, 0.16);
+}
+
+.fs-proto-root .btn-primary:hover {
+  background: rgba(234, 179, 77, 0.28);
+}
+
+.fs-proto-root .prov-card {
+  margin-top: 11px;
+  padding: 9px 11px;
+  border-radius: var(--r-tile);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* Strategy Audit Pane */
+.fs-proto-root .audit-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.fs-proto-root .audit-back:hover {
+  color: var(--gold);
+}
+
+.fs-proto-root .audit-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 11px 12px;
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fs-proto-root .audit-score {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+
+.fs-proto-root .audit-score small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+  margin-inline-start: 2px;
+}
+
+.fs-proto-root .audit-exp {
+  text-align: end;
+}
+
+.fs-proto-root .audit-exp b {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .audit-exp span {
+  font-size: 11.5px;
+  color: var(--leaf);
+}
+
+.fs-proto-root .audit-exp span.warn {
+  color: var(--clay);
+}
+
+.fs-proto-root .conf-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+
+.fs-proto-root .conf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: var(--gold-tint);
+  border: 1px solid rgba(234, 179, 77, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.fs-proto-root .conf-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.fs-proto-root .dim-breakdown {
+  margin-top: 11px;
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  background: var(--glass-fill);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fs-proto-root .dim-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 34px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+}
+
+.fs-proto-root .dim-row span {
+  color: var(--ink-3);
+}
+
+.fs-proto-root .dim-row b {
+  text-align: end;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .dim-track {
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.fs-proto-root .dim-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--leaf);
+  transition: width 0.35s var(--ease-spring);
+}
+
+.fs-proto-root .audit-block {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--glass-sep);
+}
+
+.fs-proto-root .audit-block h3 {
+  margin: 0 0 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fs-proto-root .audit-block p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .audit-block ul {
+  margin: 0;
+  padding-inline-start: 16px;
+}
+
+.fs-proto-root .audit-block li {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+/* ---------- Bottom Floating Timeline Capsule ---------- */
+.fs-proto-root .timeline-wrap {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  width: min(690px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.fs-proto-root .timeline-dock {
+  width: 100%;
+  border-radius: 22px;
+  padding: 8px 14px 8px 13px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fs-proto-root .time-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fs-proto-root .time-purpose {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fs-proto-root .time-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(234, 179, 77, 0.75);
+}
+
+.fs-proto-root .time-kicker {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fs-proto-root .time-sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border-radius: 99px;
+  cursor: pointer;
+  border: 1px solid rgba(234, 179, 77, 0.36);
+  background: rgba(234, 179, 77, 0.13);
+  color: var(--gold);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
+}
+
+.fs-proto-root .time-sync-btn:hover {
+  background: rgba(234, 179, 77, 0.22);
+  transform: translateY(-0.5px);
+}
+
+.fs-proto-root .time-sync-btn.live {
+  border-color: rgba(74, 222, 128, 0.42);
+  background: rgba(74, 222, 128, 0.14);
+  color: var(--leaf);
+}
+
+.fs-proto-root .time-sync-btn.live::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--leaf);
+  box-shadow: 0 0 6px var(--leaf);
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .time-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.fs-proto-root .play-btn {
+  width: 35px;
+  height: 35px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.fs-proto-root .play-btn:hover {
+  background: var(--gold-tint);
+  color: var(--gold);
+}
+
+.fs-proto-root .play-btn svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+  margin-left: 1px;
+}
+
+.fs-proto-root .time-meta {
+  min-width: 176px;
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .time-date-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.fs-proto-root .time-date {
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.fs-proto-root .time-rain-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.fs-proto-root .time-rain-pill.wet {
+  background: rgba(95, 168, 216, 0.22);
+  color: #9ad8ff;
+}
+
+.fs-proto-root .time-rain-pill.hot {
+  background: rgba(240, 100, 73, 0.18);
+  color: #ffa492;
+}
+
+.fs-proto-root .time-tag {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.8px;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+}
+
+.fs-proto-root .time-tag.wet {
+  color: var(--gold);
+}
+
+.fs-proto-root .time-tag.grow {
+  color: var(--leaf);
+}
+
+.fs-proto-root .time-tag.arid {
+  color: #e6bc6e;
+}
+
+.fs-proto-root .time-tag.hot {
+  color: var(--clay);
+}
+
+.fs-proto-root .time-scrubber {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fs-proto-root .time-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.01em;
+}
+
+.fs-proto-root .spark-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .spark-hdr {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+[dir="rtl"] .fs-proto-root .spark-hdr,
+[dir="rtl"] .fs-proto-root .time-kicker {
+  letter-spacing: 0;
+}
+
+.fs-proto-root .spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .spark button {
+  width: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.16s, height 0.2s, transform 0.16s;
+}
+
+.fs-proto-root .spark button:hover {
+  background: rgba(255, 255, 255, 0.52);
+  transform: scaleY(1.08);
+}
+
+.fs-proto-root .spark button.on {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(234, 179, 77, 0.55);
+}
+
+.fs-proto-root .disclaimer-line {
+  font-size: 10.5px;
+  color: rgba(235, 243, 238, 0.55);
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ---------- Map Pin & MapLibre Popups ---------- */
+.fs-proto-root .pin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.fs-proto-root .pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid #fff;
+  flex: 0 0 auto;
+  animation: fsPinPulse 2.6s ease-in-out infinite;
+}
+
+.fs-proto-root .pin-lbl {
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(12, 19, 16, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  transition: opacity 0.38s ease, transform 0.42s var(--ease-spring);
+}
+
+@keyframes fsPinPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(234, 179, 77, 0.28), 0 0 14px rgba(234, 179, 77, 0.75);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(234, 179, 77, 0.04), 0 0 22px rgba(234, 179, 77, 0.95);
+  }
+}
+
+.fs-proto-root .maplibregl-popup-content {
+  background: rgba(14, 22, 18, 0.78) !important;
+  color: var(--ink) !important;
+  backdrop-filter: blur(22px) saturate(1.7) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 14px !important;
+  padding: 9px 13px !important;
+  font-family: var(--font-ui) !important;
+  font-size: 12px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+.fs-proto-root .maplibregl-popup-tip {
+  display: none !important;
+}
+
+/* ---------- Mobile Nav Dock ---------- */
+.fs-proto-root .mobile-dock {
+  display: none;
+}
+
+/* ---------- Scrollbars inside prototype ---------- */
+.fs-proto-root ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.fs-proto-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fs-proto-root ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+}
+
+.fs-proto-root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ---------- Responsive Breakpoints ---------- */
+@media (max-width: 1380px) {
+  .fs-proto-root .preset-btn {
+    padding: 0 8.5px;
+    font-size: 11.8px;
+  }
+  .fs-proto-root .layer-btn {
+    padding: 0 9px;
+    font-size: 11.8px;
+  }
+  .fs-proto-root .tool-btn {
+    padding: 0 9.5px;
+    font-size: 11.8px;
+  }
+  .fs-proto-root .lang-btn {
+    padding: 0 7.5px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .fs-proto-root .lab-window {
+    width: 342px;
+  }
+  .fs-proto-root .inspector {
+    width: 324px;
+  }
+  .fs-proto-root .preset-pills {
+    display: none;
+  }
+  .fs-proto-root .preset-select-wrap {
+    display: flex;
+    align-items: center;
+    padding-inline-end: 4px;
+  }
+  .fs-proto-root .preset-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 99px;
+    padding: 6px 26px 6px 11px;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23d8e2dc' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+  }
+  [dir="rtl"] .fs-proto-root .preset-select {
+    padding: 6px 11px 6px 26px;
+    background-position: left 9px center;
+  }
+  .fs-proto-root .preset-select option {
+    background: #101914;
+    color: #f4f7f4;
+  }
+  .fs-proto-root .layer-btn {
+    padding: 0 9px;
+    font-size: 11.5px;
+  }
+  .fs-proto-root .tool-btn span {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .fs-proto-root .topbar {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .fs-proto-root .topbar-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .fs-proto-root .brand-dock {
+    min-width: 0;
+    max-width: calc(100% - 122px);
+  }
+  .fs-proto-root .layer-dock {
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .fs-proto-root .layer-dock::-webkit-scrollbar {
+    display: none;
+  }
+  .fs-proto-root .legend-pill {
+    top: 112px;
+    max-width: calc(100vw - 20px);
+  }
+  .fs-proto-root .legend-bar {
+    width: 68px;
+  }
+
+  .fs-proto-root .lab-window,
+  .fs-proto-root .inspector {
+    top: auto;
+    inset-inline: 10px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    bottom: 154px;
+    max-height: 44dvh;
+    display: none;
+  }
+  .fs-proto-root .lab-window.mob-open,
+  .fs-proto-root .inspector.mob-open {
+    display: flex;
+  }
+  .fs-proto-root .lab-window.hidden-mode,
+  .fs-proto-root .inspector.hidden-mode {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .fs-proto-root .timeline-wrap {
+    bottom: 58px;
+    width: calc(100vw - 20px);
+  }
+  .fs-proto-root .timeline-dock {
+    gap: 5px;
+    padding: 7px 11px;
+    border-radius: 18px;
+  }
+  .fs-proto-root .time-header {
+    padding-bottom: 4px;
+  }
+  .fs-proto-root .time-main {
+    gap: 9px;
+  }
+  .fs-proto-root .time-meta {
+    min-width: 128px;
+  }
+  .fs-proto-root .time-tag {
+    max-width: 142px;
+    font-size: 10px;
+  }
+  .fs-proto-root .spark-wrap,
+  .fs-proto-root .disclaimer-line {
+    display: none;
+  }
+
+  .fs-proto-root .mobile-dock {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    width: min(420px, calc(100vw - 20px));
+  }
+  .fs-proto-root .mob-btn {
+    flex: 1;
+    height: 36px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 99px;
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .fs-proto-root .mob-btn[aria-pressed="true"] {
+    background: var(--gold-tint);
+    color: #fff;
+    box-shadow: inset 0 0 0 1px var(--gold-stroke);
+  }
+}
+
+/* ---------- Orbital Sky-Dive Intro Overlay ---------- */
+.fs-proto-root .topbar,
+.fs-proto-root .timeline-wrap,
+.fs-proto-root .mobile-dock {
+  transition: transform 0.52s var(--ease-spring), opacity 0.42s ease;
+}
+
+.fs-proto-root.sky-diving .topbar {
+  opacity: 0;
+  transform: translateY(-14px);
+  pointer-events: none;
+}
+
+.fs-proto-root.sky-diving .topbar-group {
+  pointer-events: none;
+}
+
+.fs-proto-root.sky-diving .lg-surface,
+.fs-proto-root.sky-diving .lg-capsule {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.fs-proto-root.sky-diving .lab-window {
+  opacity: 0;
+  transform: translateX(-28px);
+  pointer-events: none;
+}
+
+.fs-proto-root.sky-diving .inspector {
+  opacity: 0;
+  transform: translateX(28px);
+  pointer-events: none;
+}
+
+[dir="rtl"] .fs-proto-root.sky-diving .lab-window {
+  transform: translateX(28px);
+}
+
+[dir="rtl"] .fs-proto-root.sky-diving .inspector {
+  transform: translateX(-28px);
+}
+
+.fs-proto-root.sky-diving .timeline-wrap,
+.fs-proto-root.sky-diving .mobile-dock {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+  pointer-events: none;
+}
+
+.fs-proto-root.sky-diving .timeline-dock {
+  pointer-events: none;
+}
+
+.fs-proto-root.sky-diving .pin-lbl {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.fs-proto-root .sky-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.42s ease, visibility 0.42s ease;
+}
+
+.fs-proto-root .sky-fx.done {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.fs-proto-root .sky-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 36% at 30% 38%, rgba(232, 244, 248, 0.16) 0%, rgba(220, 236, 245, 0.06) 42%, transparent 74%),
+    radial-gradient(50% 40% at 70% 46%, rgba(220, 236, 245, 0.14) 0%, rgba(205, 226, 240, 0.05) 44%, transparent 76%),
+    radial-gradient(54% 42% at 48% 68%, rgba(240, 248, 252, 0.12) 0%, rgba(210, 230, 245, 0.04) 42%, transparent 74%),
+    radial-gradient(66% 52% at 50% 50%, rgba(125, 180, 215, 0.07) 0%, transparent 76%);
+  transform: scale(1);
+  opacity: 0;
+  transition: transform 2s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.65s ease;
+  will-change: transform, opacity;
+}
+
+.fs-proto-root .sky-fx.step-0 .sky-clouds {
+  transform: scale(1);
+  opacity: 0.72;
+}
+
+.fs-proto-root .sky-fx.step-1 .sky-clouds,
+.fs-proto-root .sky-fx.step-2 .sky-clouds,
+.fs-proto-root .sky-fx.step-3 .sky-clouds {
+  transform: scale(1.88);
+  opacity: 0;
+}
+
+.fs-proto-root .sky-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(244, 250, 255, 0.46) 0%, rgba(204, 230, 246, 0.16) 52%, transparent 85%);
+}
+
+.fs-proto-root .sky-flash.pulse {
+  animation: fsSkyPulse 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fs-proto-root .sky-flash.lock {
+  background: radial-gradient(circle at 50% 50%, rgba(234, 179, 77, 0.28) 0%, rgba(234, 179, 77, 0.08) 46%, transparent 78%);
+  animation: fsSkyPulse 0.46s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fsSkyPulse {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fs-proto-root .sky-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 196px;
+  height: 196px;
+  transform: translate(-50%, -50%) scale(1.06);
+  opacity: 0;
+  transition: width 0.52s var(--ease-spring), height 0.52s var(--ease-spring), transform 0.52s var(--ease-spring), opacity 0.34s ease;
+}
+
+.fs-proto-root .sky-fx.step-0 .sky-reticle {
+  width: 196px;
+  height: 196px;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.fs-proto-root .sky-fx.step-1 .sky-reticle {
+  width: 138px;
+  height: 138px;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.fs-proto-root .sky-fx.step-2 .sky-reticle {
+  width: 92px;
+  height: 92px;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.fs-proto-root .sky-fx.step-3 .sky-reticle {
+  width: 70px;
+  height: 70px;
+  transform: translate(-50%, -50%) scale(0.96);
+  opacity: 0.95;
+}
+
+.fs-proto-root .sky-reticle i {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  transition: border-color 0.22s ease, width 0.3s var(--ease-spring), height 0.3s var(--ease-spring);
+}
+
+.fs-proto-root .sky-fx.step-3 .sky-reticle i {
+  border-color: var(--gold);
+  width: 14px;
+  height: 14px;
+}
+
+.fs-proto-root .sky-reticle .c1 {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 4px;
+}
+
+.fs-proto-root .sky-reticle .c2 {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 4px;
+}
+
+.fs-proto-root .sky-reticle .c3 {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: 4px;
+}
+
+.fs-proto-root .sky-reticle .c4 {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 4px;
+}
+
+.fs-proto-root .sky-alt {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(10, 17, 14, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(244, 247, 244, 0.88);
+  transition: color 0.22s ease, border-color 0.22s ease;
+}
+
+.fs-proto-root .sky-fx.step-3 .sky-alt {
+  color: var(--gold);
+  border-color: var(--gold-stroke);
+}
+
+/* ---------- Farmer Constraints, Thermal/Soil Health & Plain Mode ---------- */
+.fs-proto-root .constraint-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.fs-proto-root .const-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fs-proto-root .const-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--ink);
+}
+
+.fs-proto-root .const-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.28);
+  transition: background 0.18s, box-shadow 0.18s;
+}
+
+.fs-proto-root .const-btn[aria-pressed="true"] {
+  background: rgba(74, 222, 128, 0.14);
+  border-color: rgba(74, 222, 128, 0.42);
+  color: #e9ffef;
+}
+
+.fs-proto-root .const-btn[aria-pressed="true"] .const-dot {
+  background: var(--leaf);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.85);
+}
+
+.fs-proto-root .const-btn.is-irrig[aria-pressed="true"] {
+  background: rgba(96, 165, 250, 0.16);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #eaf4ff;
+}
+
+.fs-proto-root .const-btn.is-irrig[aria-pressed="true"] .const-dot {
+  background: var(--sky);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.85);
+}
+
+.fs-proto-root .health-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.fs-proto-root .health-card {
+  padding: 9px 11px;
+  border-radius: var(--r-tile);
+  background: var(--glass-fill);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fs-proto-root .health-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fs-proto-root .health-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .conf-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.fs-proto-root .conf-tag.med {
+  background: rgba(234, 179, 77, 0.16);
+  color: var(--gold);
+  border: 1px solid rgba(234, 179, 77, 0.28);
+}
+
+.fs-proto-root .conf-tag.low {
+  background: rgba(240, 100, 73, 0.16);
+  color: #ff9e8a;
+  border: 1px solid rgba(240, 100, 73, 0.32);
+}
+
+.fs-proto-root .health-val {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+
+.fs-proto-root .health-sub {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .plain-hint {
+  display: none;
+  font-size: 11px;
+  line-height: 1.42;
+  color: var(--gold);
+  margin-top: 2px;
+}
+
+.fs-proto-root.plain-mode .plain-hint {
+  display: block;
+}
+
+.fs-proto-root.plain-mode {
+  font-size: 15px;
+}
+
+.fs-proto-root.plain-mode .zone-note,
+.fs-proto-root.plain-mode .audit-block p,
+.fs-proto-root.plain-mode .audit-block li {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* ---------- Side-by-Side 3-Strategy Compare Matrix ---------- */
+.fs-proto-root .cmp-sub {
+  margin: 4px 0 9px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .cmp-wrap {
+  border-radius: var(--r-card);
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow-x: auto;
+}
+
+.fs-proto-root .cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.fs-proto-root .cmp-table th,
+.fs-proto-root .cmp-table td {
+  padding: 7px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.fs-proto-root .cmp-table th:first-child,
+.fs-proto-root .cmp-table td:first-child {
+  text-align: start;
+  padding-inline-start: 9px;
+  color: var(--ink-3);
+  font-weight: 500;
+  width: 31%;
+}
+
+.fs-proto-root .cmp-col-btn {
+  width: 100%;
+  padding: 4px 3px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.25;
+}
+
+.fs-proto-root .cmp-col-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fs-proto-root .cmp-col-btn.sel {
+  background: var(--gold-tint);
+  color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold-stroke);
+}
+
+.fs-proto-root .cmp-col-btn small {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+.fs-proto-root .cmp-col-btn.sel small {
+  color: #f9d88b;
+}
+
+.fs-proto-root .cmp-best {
+  color: var(--leaf);
+  font-weight: 700;
+}
+
+.fs-proto-root .cmp-warn {
+  color: #ff9e8a;
+  font-weight: 600;
+}
+
+.fs-proto-root .cmp-sel-col {
+  background: rgba(234, 179, 77, 0.06);
+}
+
+.fs-proto-root .cmp-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.fs-proto-root .local-review-strip {
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: var(--r-tile);
+  background: rgba(234, 179, 77, 0.08);
+  border: 1px solid rgba(234, 179, 77, 0.22);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* ---------- Science & Data Guide Liquid Glass Modal ---------- */
+.fs-proto-root .guide-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: none;
+  place-items: center;
+  padding: 18px;
+  background: rgba(5, 10, 8, 0.68);
+}
+
+.fs-proto-root .guide-modal.open {
+  display: grid;
+  animation: fsPaneIn 0.22s var(--ease-spring);
+}
+
+.fs-proto-root .guide-card {
+  width: min(820px, calc(100vw - 28px));
+  max-height: calc(100dvh - 38px);
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fs-proto-root .guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--glass-sep);
+  flex: 0 0 auto;
+}
+
+.fs-proto-root .guide-title-wrap h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fs-proto-root .guide-title-wrap p {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.fs-proto-root .guide-body {
+  padding: 15px 18px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overscroll-behavior: contain;
+}
+
+.fs-proto-root .guide-sec h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.01em;
+}
+
+.fs-proto-root .glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.fs-proto-root .gloss-item {
+  padding: 10px 11px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.fs-proto-root .gloss-item b {
+  display: block;
+  font-size: 12px;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.fs-proto-root .gloss-item span {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.48;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .fusion-wrap {
+  border-radius: 14px;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.fs-proto-root .fusion-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.fs-proto-root .fusion-table th,
+.fs-proto-root .fusion-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: start;
+}
+
+.fs-proto-root .fusion-table th {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fs-proto-root .fusion-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.fs-proto-root .math-box {
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(74, 222, 128, 0.07);
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.fs-proto-root .guide-warn {
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(240, 100, 73, 0.09);
+  border: 1px solid rgba(240, 100, 73, 0.26);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fs-proto-root * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .fs-proto-root .sky-fx {
+    display: none !important;
+  }
+}
+
