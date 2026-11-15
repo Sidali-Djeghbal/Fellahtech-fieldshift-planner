@@ -156,7 +156,10 @@ def create_mock_ml_app(
         except MLClientError as exc:
             return _build_error_json_response(exc)
 
-        raw = catalog.model_dump(mode="json")
+        # Omit null optional fields (e.g. `synced_at`) and default `has_more` per CropCatalog.
+        raw = catalog.model_dump(mode="json", exclude_none=True)
+        raw.setdefault("has_more", False)
+        raw.setdefault("next_cursor", None)
         configured_page_size: int | None = getattr(
             request.app.state, "catalog_page_size", None
         )

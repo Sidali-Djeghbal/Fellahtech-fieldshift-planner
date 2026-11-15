@@ -100,6 +100,14 @@ async def _cleanup_all(sessionmaker: async_sessionmaker[AsyncSession]) -> None:
             ),
             {"ver": DEFAULT_DATASET_VERSION},
         )
+        await db.execute(
+            text(
+                "UPDATE public.ml_breaker_state "
+                "SET state = 'closed', consecutive_failures = 0, "
+                "opened_at = NULL, half_open_probe_at = NULL, updated_at = NOW() "
+                "WHERE id = 1"
+            )
+        )
         await db.commit()
 
 
@@ -478,7 +486,8 @@ async def test_advisory_lock_bulkhead_cap_and_e4_pool_headroom(
 async def test_concurrent_guest_ml_refund_cap_under_row_locks(
     race_ctx: tuple[Settings, AsyncEngine, async_sessionmaker[AsyncSession], redis_async.Redis],
 ) -> None:
-    settings, engine, sessionmaker, redis_client = race_ctx
+    _, engine, sessionmaker, redis_client = race_ctx
+    refund_settings = _race_settings(ML_CIRCUIT_BREAKER_THRESHOLD=20)
     base_out = json.loads(
         (TEST_FIXTURES_DIR / "fixture_9_3_output.json").read_text(encoding="utf-8")
     )
@@ -486,9 +495,9 @@ async def test_concurrent_guest_ml_refund_cap_under_row_locks(
         json.loads((TEST_FIXTURES_DIR / "fixture_9_4_catalog.json").read_text(encoding="utf-8"))
     )
     probe = _ConcurrencyProbeMLAdapter(base_out, base_cat, sleep_seconds=0.05, fail_503=True)
-    ml_manager = MLProviderManager(settings, mock_adapter=probe, redis_client=redis_client)
+    ml_manager = MLProviderManager(refund_settings, mock_adapter=probe, redis_client=redis_client)
 
-    app = create_app(settings)
+    app = create_app(refund_settings)
     app.state.db_engine = engine
     app.state.db_sessionmaker = sessionmaker
     app.state.redis = redis_client
@@ -504,7 +513,7 @@ async def test_concurrent_guest_ml_refund_cap_under_row_locks(
 
     tok_hash = hash_token(guest_tok)
     runner = WorkerRunner(
-        settings=settings,
+        settings=refund_settings,
         engine=engine,
         sessionmaker=sessionmaker,
         redis_client=redis_client,

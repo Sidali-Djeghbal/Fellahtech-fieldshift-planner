@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import secrets
 import uuid
@@ -930,4 +931,128 @@ async def list_reaper_stale_candidates(
     )
     rows = (await db.execute(stmt)).all()
     return [(str(row[0]), bool(row[1])) for row in rows]
+
+
+@dataclass(frozen=True, slots=True)
+class ReplaySourceCandidate:
+    """Validated live ML result eligible for `last_good_replay` degraded serving."""
+
+    source_analysis_id: str
+    status: str
+    dataset_version_used: str
+    ml_engine_version: str
+    catalog_version_used: str
+    result_json: dict[str, Any]
+    source_created_at: datetime
+
+
+async def find_last_good_replay_candidate(
+    db: AsyncSession,
+    *,
+    farm_id: int,
+    full_input_hash: str,
+    exclude_request_id: str,
+    max_age_hours: int,
+    now: datetime,
+) -> ReplaySourceCandidate | None:
+    """Find newest live (`received_at IS NOT NULL`) validated result for replay (`IMPL-017`)."""
+    current_now = _ensure_utc_dt(now)
+    cutoff = current_now - timedelta(hours=max(1, max_age_hours))
+    stmt = (
+        select(
+            AnalysisResult.analysis_id,
+            AnalysisResult.status,
+            AnalysisResult.dataset_version_used,
+            AnalysisResult.ml_engine_version,
+            AnalysisRequest.catalog_version,
+            AnalysisResult.result_json,
+            AnalysisResult.created_at,
+        )
+        .select_from(AnalysisResult)
+        .join(AnalysisRequest, AnalysisRequest.request_id == AnalysisResult.request_id)
+        .where(
+            AnalysisRequest.farm_id == farm_id,
+            AnalysisRequest.full_input_hash == full_input_hash,
+            AnalysisRequest.request_id != exclude_request_id,
+            AnalysisRequest.received_at.is_not(None),
+            AnalysisResult.validation_passed.is_(True),
+            AnalysisResult.status.in_(("ok", "partial")),
+            AnalysisResult.created_at >= cutoff,
+        )
+        .order_by(AnalysisResult.created_at.desc(), AnalysisResult.id.desc())
+        .limit(1)
+    )
+    row = (await db.execute(stmt)).one_or_none()
+    if row is None or not isinstance(row[5], dict):
+        return None
+    return ReplaySourceCandidate(
+        source_analysis_id=str(row[0]),
+        status=str(row[1]),
+        dataset_version_used=str(row[2]),
+        ml_engine_version=str(row[3]),
+        catalog_version_used=str(row[4]),
+        result_json=copy.deepcopy(row[5]),
+        source_created_at=_ensure_utc_dt(row[6]),
+    )
+
+
+async def finalize_worker_last_good_replay(
+    db: AsyncSession,
+    *,
+    request_id: str,
+    candidate: ReplaySourceCandidate,
+    duration_ms: int,
+    now: datetime,
+) -> WorkerFinalizeOutcome:
+    """Persist copied replay result + `last_good_replay:<id>` marker (`IMPL-017`)."""
+    del now
+    req, guest_token_hash = await _lock_guest_and_request(
+        db,
+        request_id=request_id,
+        lock_guest_row=False,
+    )
+    if req is None:
+        return WorkerFinalizeOutcome(outcome="vanished")
+    if req.cancelled_at is not None:
+        refunded = 0
+        if req.status == "running":
+            req.status = "cancelled"
+            if req.sent_at is None and req.quota_units > 0:
+                refunded = int(req.quota_units)
+                req.quota_units = 0
+        return WorkerFinalizeOutcome(
+            outcome="cancelled",
+            refunded_quarters=refunded,
+            guest_token_hash=guest_token_hash,
+            final_status=req.status,
+        )
+    if req.status != "running":
+        return WorkerFinalizeOutcome(outcome="skipped", final_status=req.status)
+
+    copied_result = copy.deepcopy(candidate.result_json)
+    copied_result["request_id"] = request_id
+    analysis_id = await _insert_analysis_result_with_retry(
+        db,
+        request_id=request_id,
+        status=candidate.status,
+        dataset_version_used=candidate.dataset_version_used,
+        ml_engine_version=candidate.ml_engine_version,
+        result_json=copied_result,
+        validation_passed=True,
+        validation_errors=None,
+    )
+    req.status = candidate.status
+    req.catalog_version = candidate.catalog_version_used
+    req.received_at = None
+    req.error_code = f"last_good_replay:{candidate.source_analysis_id}"
+    req.duration_ms = max(0, duration_ms)
+    return WorkerFinalizeOutcome(
+        outcome="completed",
+        analysis_id=analysis_id,
+        refunded_quarters=0,
+        guest_token_hash=guest_token_hash,
+        final_status=req.status,
+        final_error_code=req.error_code,
+    )
+
 

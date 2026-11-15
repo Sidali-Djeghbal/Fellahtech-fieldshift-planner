@@ -110,6 +110,14 @@ async def _cleanup_all(sessionmaker: async_sessionmaker[AsyncSession]) -> None:
             ),
             {"ver": DEFAULT_DATASET_VERSION},
         )
+        await db.execute(
+            text(
+                "UPDATE public.ml_breaker_state "
+                "SET state = 'closed', consecutive_failures = 0, "
+                "opened_at = NULL, half_open_probe_at = NULL, updated_at = NOW() "
+                "WHERE id = 1"
+            )
+        )
         await db.commit()
 
 
