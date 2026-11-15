@@ -1,5 +1,7 @@
 package com.example.myapplication.core.network
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -29,12 +31,16 @@ data class PriorityWeightsDto(
     @SerialName("forage_value") val forageValue: Int
 )
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class PrioritiesDto(
     @SerialName("weights") val weights: PriorityWeightsDto,
     @SerialName("market_preference") val marketPreference: String,
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
     @SerialName("target_crop_ids") val targetCropIds: List<String> = emptyList(),
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
     @SerialName("excluded_crop_ids") val excludedCropIds: List<String> = emptyList(),
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
     @SerialName("equipment_constraints") val equipmentConstraints: List<String> = emptyList()
 )
 

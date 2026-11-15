@@ -1,5 +1,8 @@
 package com.example.myapplication
 
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.myapplication.core.common.AppLanguage
 import com.example.myapplication.core.common.UiState
 import com.example.myapplication.core.network.AnalysisApiService
@@ -18,11 +21,13 @@ import com.example.myapplication.core.network.DegradedModeMetadataDto
 import com.example.myapplication.core.network.FarmAnalysesPageDto
 import com.example.myapplication.core.network.FieldInsightsDto
 import com.example.myapplication.core.network.FieldPlanDto
+import com.example.myapplication.core.network.NetworkModule
 import com.example.myapplication.core.network.PlanningDto
 import com.example.myapplication.core.network.PrioritiesDto
 import com.example.myapplication.core.network.PriorityWeightsDto
 import com.example.myapplication.data.analysis.ActiveAnalysisStore
 import com.example.myapplication.data.analysis.AnalysisRepositoryImpl
+import com.example.myapplication.data.analysis.DataStoreActiveAnalysisStore
 import com.example.myapplication.data.analysis.toDomain
 import com.example.myapplication.domain.analysis.ActiveAnalysisRequest
 import com.example.myapplication.domain.analysis.AnalysisCallResult
@@ -43,6 +48,7 @@ import com.example.myapplication.domain.analysis.FarmAnalysesPage
 import com.example.myapplication.domain.analysis.FieldPlan
 import com.example.myapplication.domain.analysis.MarketPreference
 import com.example.myapplication.domain.analysis.PlanningConfig
+import com.example.myapplication.domain.analysis.PollErrorInfo
 import com.example.myapplication.domain.analysis.PriorityWeights
 import com.example.myapplication.domain.auth.WarningNotice
 import com.example.myapplication.domain.farm.Farm
@@ -69,9 +75,11 @@ import com.example.myapplication.feature.analysis.AnalysisProgressViewModel
 import com.example.myapplication.feature.analysis.AnalysisResultViewModel
 import com.example.myapplication.feature.analysis.AnalysisValidationError
 import java.io.IOException
+import java.nio.file.Files
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -81,6 +89,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -444,6 +454,243 @@ class AnalysisManagementTest {
         }
     }
 
+    @Test
+    fun `NetworkModule provideJson serializes required empty priorities arrays for OpenAPI v3_2`() {
+        val prodJson = NetworkModule.provideJson()
+        val submitDto = AnalysisSubmitRequestDto(
+            farmId = "farm_1",
+            language = "en",
+            planning = PlanningDto(
+                startSeason = "autumn",
+                startYear = 2026,
+                horizonSeasons = 3
+            ),
+            priorities = PrioritiesDto(
+                weights = PriorityWeightsDto(80, 70, 90, 75, 40),
+                marketPreference = "mixed"
+            ),
+            fieldIds = listOf("field_01")
+        )
+
+        val encoded = prodJson.encodeToString(submitDto)
+        val root = prodJson.parseToJsonElement(encoded).jsonObject
+        val priorities = root.getValue("priorities").jsonObject
+
+        assertTrue(priorities.containsKey("target_crop_ids"))
+        assertTrue(priorities.containsKey("excluded_crop_ids"))
+        assertTrue(priorities.containsKey("equipment_constraints"))
+        assertEquals(0, priorities.getValue("target_crop_ids").jsonArray.size)
+        assertEquals(0, priorities.getValue("excluded_crop_ids").jsonArray.size)
+        assertEquals(0, priorities.getValue("equipment_constraints").jsonArray.size)
+    }
+
+    @Test
+    fun `AnalysisConfigViewModel invalidates Idempotency-Key when language changes and preserves on same-language reinit`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val farmRepo = FakeFarmRepository(listOf(Farm("farm_1", "Atlas Farm", "DZ", "Guelma", null, 1, "2026-10-01T00:00:00Z")))
+            val fieldRepo = FakeFieldRepository(listOf(sampleFieldSummary("f1", "North Plot")))
+            val analysisRepo = FakeAnalysisRepository()
+            analysisRepo.submitResult = AnalysisCallResult.Failure(AnalysisError.Network("Timeout"))
+
+            val vm = AnalysisConfigViewModel(farmRepo, fieldRepo, analysisRepo)
+            vm.initialize(AppLanguage.ENGLISH)
+            advanceUntilIdle()
+
+            vm.submit()
+            advanceUntilIdle()
+            val firstKey = analysisRepo.lastIdempotencyKey
+            assertNotNull(firstKey)
+
+            // Same-language re-initialization preserves the existing key
+            vm.initialize(AppLanguage.ENGLISH)
+            advanceUntilIdle()
+            vm.submit()
+            advanceUntilIdle()
+            assertEquals(firstKey, analysisRepo.lastIdempotencyKey)
+
+            // Changing language invalidates the key for the next submission
+            vm.initialize(AppLanguage.FRENCH)
+            advanceUntilIdle()
+            vm.submit()
+            advanceUntilIdle()
+            assertNotEquals(firstKey, analysisRepo.lastIdempotencyKey)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisProgressViewModel handles foreground activation before active-request lookup completes`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val analysisRepo = FakeAnalysisRepository()
+            val activeDeferred = CompletableDeferred<ActiveAnalysisRequest?>()
+            analysisRepo.deferredActiveRequest = activeDeferred
+
+            val vm = AnalysisProgressViewModel(analysisRepo)
+            vm.initialize("req-early")
+            assertEquals("req-early", vm.uiState.value.requestId)
+
+            // Foreground becomes active before getActiveRequest() resumes
+            vm.setForegroundActive(true)
+            runCurrent()
+            assertEquals(1, analysisRepo.pollCalls)
+
+            activeDeferred.complete(ActiveAnalysisRequest("req-early", "farm_1", 1500L, 100L))
+            runCurrent()
+            // Still only 1 poll call (no duplicate polling loop started)
+            assertEquals(1, analysisRepo.pollCalls)
+            assertEquals(1500L, vm.uiState.value.lastPollIntervalMs)
+
+            vm.setForegroundActive(false)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `AnalysisProgressViewModel 409 cancel with transient poll failure preserves active request and recovers on retry`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            val analysisRepo = FakeAnalysisRepository()
+            analysisRepo.activeRequest = ActiveAnalysisRequest("req-409", "farm_1", 1000L, 100L)
+            analysisRepo.cancelResult = AnalysisCallResult.Failure(
+                AnalysisError.Api(409, "CONFLICT", "Already completed")
+            )
+            analysisRepo.pollResponses.addAll(
+                listOf(
+                    AnalysisCallResult.Failure(AnalysisError.Network("Temporary drop")),
+                    AnalysisCallResult.Success(
+                        AnalysisPollState("req-409", AnalysisJobStatus.OK, null, null, "analysis_0123456789ab", emptyList(), null, null, null)
+                    )
+                )
+            )
+
+            val vm = AnalysisProgressViewModel(analysisRepo)
+            vm.initialize("req-409")
+            advanceUntilIdle()
+
+            vm.cancelAnalysis()
+            advanceUntilIdle()
+
+            assertNotNull(analysisRepo.activeRequest)
+            assertFalse(vm.uiState.value.status.isTerminal)
+            assertTrue(vm.uiState.value.cancelError is AnalysisError.Network)
+            assertTrue(vm.uiState.value.transportError is AnalysisError.Network)
+
+            vm.setForegroundActive(true)
+            vm.retryPolling()
+            runCurrent()
+
+            assertEquals(AnalysisJobStatus.OK, vm.uiState.value.status)
+            assertEquals("analysis_0123456789ab", vm.uiState.value.analysisId)
+            assertNull(analysisRepo.activeRequest)
+            assertNull(vm.uiState.value.cancelError)
+            assertNull(vm.uiState.value.transportError)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun `DataStoreActiveAnalysisStore persists restores and recovers from corrupt stored data`() = runTest {
+        val tempDir = Files.createTempDirectory("active_analysis_store_test").toFile()
+        try {
+            val dataStore = PreferenceDataStoreFactory.create(
+                scope = backgroundScope,
+                produceFile = { tempDir.resolve("active_analysis.preferences_pb") }
+            )
+            val store = DataStoreActiveAnalysisStore(dataStore, NetworkModule.provideJson())
+
+            val expected = ActiveAnalysisRequest(
+                requestId = "req-ds-1",
+                farmId = "farm_42",
+                pollIntervalMs = 2500L,
+                createdAtEpochMs = 1_700_000_000_000L
+            )
+            store.saveActiveRequest(expected)
+            assertEquals(expected, store.getActiveRequest())
+
+            val key = stringPreferencesKey("active_analysis_request")
+            dataStore.edit { prefs -> prefs[key] = "{not-valid-json" }
+
+            assertNull(store.getActiveRequest())
+            assertNull(dataStore.data.first()[key])
+        } finally {
+            tempDir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `AnalysisProgressViewModel handles FAILED and CANCELLED terminal polls and 200 cancel`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        try {
+            // 1. FAILED terminal poll
+            val failedRepo = FakeAnalysisRepository()
+            failedRepo.activeRequest = ActiveAnalysisRequest("req-fail", "farm_1", 1000L, 100L)
+            failedRepo.pollResponses.add(
+                AnalysisCallResult.Success(
+                    AnalysisPollState(
+                        requestId = "req-fail",
+                        status = AnalysisJobStatus.FAILED,
+                        pollIntervalMs = null,
+                        retryAfterSeconds = null,
+                        analysisId = null,
+                        warnings = emptyList(),
+                        degradedMode = null,
+                        error = PollErrorInfo("ML_TIMEOUT", 504, "Engine timed out"),
+                        result = null
+                    )
+                )
+            )
+            val failedVm = AnalysisProgressViewModel(failedRepo)
+            failedVm.initialize("req-fail")
+            failedVm.setForegroundActive(true)
+            runCurrent()
+            assertEquals(AnalysisJobStatus.FAILED, failedVm.uiState.value.status)
+            assertEquals("ML_TIMEOUT", failedVm.uiState.value.pollErrorInfo?.code)
+            assertNull(failedRepo.activeRequest)
+            assertFalse(failedVm.uiState.value.isPolling)
+
+            // 2. CANCELLED terminal poll
+            val cancelledRepo = FakeAnalysisRepository()
+            cancelledRepo.activeRequest = ActiveAnalysisRequest("req-canc", "farm_1", 1000L, 100L)
+            cancelledRepo.pollResponses.add(
+                AnalysisCallResult.Success(
+                    AnalysisPollState("req-canc", AnalysisJobStatus.CANCELLED, null, null, null, emptyList(), null, null, null)
+                )
+            )
+            val cancelledVm = AnalysisProgressViewModel(cancelledRepo)
+            cancelledVm.initialize("req-canc")
+            cancelledVm.setForegroundActive(true)
+            runCurrent()
+            assertEquals(AnalysisJobStatus.CANCELLED, cancelledVm.uiState.value.status)
+            assertNull(cancelledRepo.activeRequest)
+            assertFalse(cancelledVm.uiState.value.isPolling)
+
+            // 3. 200 cancel success
+            val cancel200Repo = FakeAnalysisRepository()
+            cancel200Repo.activeRequest = ActiveAnalysisRequest("req-200", "farm_1", 1000L, 100L)
+            cancel200Repo.cancelResult = AnalysisCallResult.Success(AnalysisJobStatus.CANCELLED)
+            val cancel200Vm = AnalysisProgressViewModel(cancel200Repo)
+            cancel200Vm.initialize("req-200")
+            advanceUntilIdle()
+            cancel200Vm.cancelAnalysis()
+            advanceUntilIdle()
+            assertEquals(AnalysisJobStatus.CANCELLED, cancel200Vm.uiState.value.status)
+            assertNull(cancel200Repo.activeRequest)
+            assertFalse(cancel200Vm.uiState.value.isCancelling)
+            assertFalse(cancel200Vm.uiState.value.isPolling)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
     private fun httpException(code: Int, body: String, retryAfter: String? = null): HttpException {
         val responseBody = body.toResponseBody("application/json".toMediaType())
         val raw = if (retryAfter != null) {
@@ -536,6 +783,7 @@ class AnalysisManagementTest {
         var resultResponse: AnalysisCallResult<AnalysisResultEnvelope> =
             AnalysisCallResult.Failure(AnalysisError.Network("unset"))
         var activeRequest: ActiveAnalysisRequest? = null
+        var deferredActiveRequest: CompletableDeferred<ActiveAnalysisRequest?>? = null
         var submitCalls: Int = 0
         var pollCalls: Int = 0
         var lastIdempotencyKey: String? = null
@@ -566,7 +814,8 @@ class AnalysisManagementTest {
         override suspend fun getAnalysisResult(analysisId: String) = resultResponse
         override suspend fun listFarmAnalyses(farmId: String, limit: Int, cursor: String?, status: AnalysisJobStatus?): AnalysisCallResult<FarmAnalysesPage> =
             AnalysisCallResult.Success(FarmAnalysesPage(emptyList(), null, false))
-        override suspend fun getActiveRequest(): ActiveAnalysisRequest? = activeRequest
+        override suspend fun getActiveRequest(): ActiveAnalysisRequest? =
+            deferredActiveRequest?.await() ?: activeRequest
         override suspend fun saveActiveRequest(request: ActiveAnalysisRequest) {
             activeRequest = request
         }

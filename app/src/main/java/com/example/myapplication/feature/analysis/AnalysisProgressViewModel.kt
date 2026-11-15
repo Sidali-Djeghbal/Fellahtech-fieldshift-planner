@@ -49,16 +49,22 @@ class AnalysisProgressViewModel @Inject constructor(
 
     fun initialize(requestId: String) {
         if (_uiState.value.requestId == requestId) return
+        stopPollingLoop()
+        consecutiveFailures = 0
+        _uiState.value = AnalysisProgressUiState(requestId = requestId)
         viewModelScope.launch {
             val saved = analysisRepository.getActiveRequest()
-            val initialInterval = saved?.takeIf { it.requestId == requestId }?.pollIntervalMs ?: 2000L
-            _uiState.update {
-                AnalysisProgressUiState(
-                    requestId = requestId,
-                    lastPollIntervalMs = initialInterval
-                )
+            val initialInterval = saved?.takeIf { it.requestId == requestId }?.pollIntervalMs
+            if (initialInterval != null) {
+                _uiState.update { current ->
+                    if (current.requestId == requestId) {
+                        current.copy(lastPollIntervalMs = initialInterval)
+                    } else {
+                        current
+                    }
+                }
             }
-            if (isForeground) {
+            if (isForeground && !_uiState.value.status.isTerminal) {
                 startPollingLoop()
             }
         }
@@ -77,7 +83,7 @@ class AnalysisProgressViewModel @Inject constructor(
 
     fun retryPolling() {
         consecutiveFailures = 0
-        _uiState.update { it.copy(transportError = null) }
+        _uiState.update { it.copy(transportError = null, cancelError = null) }
         if (isForeground && _uiState.value.requestId.isNotBlank() && !_uiState.value.status.isTerminal) {
             startPollingLoop()
         }
@@ -106,6 +112,12 @@ class AnalysisProgressViewModel @Inject constructor(
                         // 409: Job may already be terminal (including ok/partial). Fetch latest state first.
                         _uiState.update { it.copy(isCancelling = false) }
                         pollOnce()
+                        val latest = _uiState.value
+                        if (!latest.status.isTerminal && latest.transportError != null) {
+                            _uiState.update {
+                                it.copy(cancelError = latest.transportError)
+                            }
+                        }
                     } else {
                         _uiState.update {
                             it.copy(
@@ -192,7 +204,8 @@ class AnalysisProgressViewModel @Inject constructor(
                 warnings = poll.warnings,
                 degradedMode = poll.degradedMode,
                 pollErrorInfo = poll.error,
-                transportError = null
+                transportError = null,
+                cancelError = null
             )
         }
         if (poll.status.isTerminal) {

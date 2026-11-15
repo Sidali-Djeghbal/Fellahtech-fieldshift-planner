@@ -85,6 +85,9 @@ class AnalysisConfigViewModel @Inject constructor(
             refreshActiveRequestBanner()
             return
         }
+        if (initialized && _uiState.value.language != language) {
+            invalidateIdempotencyKey()
+        }
         initialized = true
         _uiState.update { it.copy(language = language) }
         loadInitialData(language)
