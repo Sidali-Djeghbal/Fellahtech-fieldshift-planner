@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import delete, func, select
@@ -62,6 +63,24 @@ async def list_catalog_versions(db: AsyncSession) -> list[str]:
         .order_by(max_synced.desc(), CropCatalog.catalog_version.desc())
     )
     return [str(v) for v in (await db.execute(stmt)).scalars().all()]
+
+
+async def find_missing_crop_ids(
+    db: AsyncSession,
+    *,
+    catalog_version: str,
+    crop_ids: Sequence[str],
+) -> list[str]:
+    """Return sorted subset of `crop_ids` absent from `(catalog_version, crop_id)`."""
+    unique_ids = sorted(set(crop_ids))
+    if not unique_ids:
+        return []
+    stmt = select(CropCatalog.crop_id).where(
+        CropCatalog.catalog_version == catalog_version,
+        CropCatalog.crop_id.in_(unique_ids),
+    )
+    found = {str(cid) for cid in (await db.execute(stmt)).scalars().all()}
+    return [cid for cid in unique_ids if cid not in found]
 
 
 async def list_catalog_crops(

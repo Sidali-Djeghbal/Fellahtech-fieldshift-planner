@@ -10,7 +10,7 @@ from typing import Annotated
 
 import structlog
 from fastapi import Depends, Request
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
 from app.core.errors import ErrorCode, FieldShiftError
@@ -76,9 +76,15 @@ async def get_db(request: Request) -> AsyncIterator[AsyncSession]:
             raise
 
 
+def get_db_sessionmaker(request: Request) -> async_sessionmaker[AsyncSession]:
+    """Return initialized async sessionmaker from FastAPI application state."""
+    return request.app.state.db_sessionmaker  # type: ignore[no-any-return]
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 RedisDep = Annotated[AsyncRedisLike | None, Depends(get_redis)]
 DbSessionDep = Annotated[AsyncSession, Depends(get_db)]
+DbSessionMakerDep = Annotated[async_sessionmaker[AsyncSession], Depends(get_db_sessionmaker)]
 MLProviderManagerDep = Annotated[MLProviderManager, Depends(get_ml_provider_manager)]
 
 
