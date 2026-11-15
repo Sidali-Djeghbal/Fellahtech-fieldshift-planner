@@ -147,7 +147,40 @@ def load_input_schema() -> Dict[str, Any]:
 
 @lru_cache(maxsize=1)
 def _load_knowledge_base() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    return pd.read_csv(CROP_INVENTORY_CSV), pd.read_csv(CONSTRAINTS_CSV)
+    if CROP_INVENTORY_CSV.is_file() and CONSTRAINTS_CSV.is_file():
+        return pd.read_csv(CROP_INVENTORY_CSV), pd.read_csv(CONSTRAINTS_CSV)
+
+    crop_profiles_path = PROJECT_ROOT / "agronomic_knowledge" / "crop_profiles.json"
+    constraint_rules_path = PROJECT_ROOT / "agronomic_knowledge" / "constraint_rules.json"
+    cp_raw = json.loads(crop_profiles_path.read_text(encoding="utf-8"))
+    crops_map = cp_raw.get("crops") or {}
+    inv_rows: List[Dict[str, Any]] = []
+    for cid, cobj in crops_map.items():
+        params = cobj.get("parameters") or {}
+        inv_rows.append(
+            {
+                "crop_id": cobj.get("crop_id") or cid,
+                "common_name": cobj.get("canonical_name") or cid,
+                "crop_group": cobj.get("crop_category") or "Other",
+                "in_annual_rotation_scope": bool(cobj.get("in_annual_rotation_scope", True)),
+                "water_regime": str((params.get("water_requirement_category") or {}).get("value") or "unknown"),
+                "planting_window": str((params.get("planting_window") or {}).get("value") or "Seasonal"),
+                "harvest_window": str((params.get("harvest_window") or {}).get("value") or "Seasonal"),
+                "guelma_evidence_status": str(cobj.get("guelma_evidence_status") or "REGIONAL"),
+            }
+        )
+    cr_raw = json.loads(constraint_rules_path.read_text(encoding="utf-8"))
+    rules = cr_raw.get("rules") or []
+    con_rows = [
+        {
+            "constraint_id": r.get("rule_id") or f"RULE_{idx}",
+            "domain": r.get("category") or "agronomic",
+            "workspace_variable_or_status": r.get("target_scope") or "",
+            "constraint_role_in_model": r.get("severity") or "SOFT_CONSTRAINT",
+        }
+        for idx, r in enumerate(rules, start=1)
+    ]
+    return pd.DataFrame(inv_rows), pd.DataFrame(con_rows)
 
 
 def _normalize_text(text: str) -> str:

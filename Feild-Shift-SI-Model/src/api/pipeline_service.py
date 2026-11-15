@@ -17,6 +17,7 @@ from fieldshift_integration.config import (
     BOUNDARY_COMMUNES_GPKG,
     BOUNDARY_WILAYA_GPKG,
     CROP_FREQ_ALIGNED_10M_TIF,
+    DATA_DIR,
     NASA_POWER_DAILY_CELLS_CSV,
     S2_PHASEA_10M_TIF,
     SOILGRIDS_V6_ZIP,
@@ -200,16 +201,29 @@ def run_field_analysis_pipeline(
 
 def check_geospatial_assets_status() -> Dict[str, Any]:
     """Inspect presence of core local geospatial archives without executing GEE calls."""
+    processed_wilaya = DATA_DIR / "boundaries" / "processed" / "guelma_wilaya_boundary.geojson.gpkg"
+    processed_communes = DATA_DIR / "boundaries" / "processed" / "guelma_communes_boundaries.gpkg"
+    integrated_zip = DATA_DIR / "tables" / "dataset" / "guelma_integrated_agricultural_database_v1.zip"
+    crop_profiles = DATA_DIR.parent / "agronomic_knowledge" / "crop_profiles.json"
     assets = {
-        "wilaya_boundary_gpkg": BOUNDARY_WILAYA_GPKG.exists(),
-        "communes_boundary_gpkg": BOUNDARY_COMMUNES_GPKG.exists(),
-        "soilgrids_v6_zip": SOILGRIDS_V6_ZIP.exists(),
-        "crop_frequency_10m_tif": CROP_FREQ_ALIGNED_10M_TIF.exists(),
-        "s2_2024_03_10m_tif": S2_PHASEA_10M_TIF.exists(),
-        "nasa_power_daily_cells_csv": NASA_POWER_DAILY_CELLS_CSV.exists(),
+        "wilaya_boundary_gpkg": BOUNDARY_WILAYA_GPKG.exists() or processed_wilaya.exists(),
+        "communes_boundary_gpkg": BOUNDARY_COMMUNES_GPKG.exists() or processed_communes.exists(),
+        "soilgrids_250m_source": SOILGRIDS_V6_ZIP.exists() or integrated_zip.exists(),
+        "integrated_agri_db_zip": integrated_zip.exists(),
+        "agronomic_knowledge_base": crop_profiles.exists(),
+        "crop_frequency_10m_tif_optional": CROP_FREQ_ALIGNED_10M_TIF.exists(),
+        "s2_2024_03_10m_tif_optional": S2_PHASEA_10M_TIF.exists(),
+        "nasa_power_daily_cells_csv_optional": NASA_POWER_DAILY_CELLS_CSV.exists(),
     }
+    core_ok = (
+        assets["wilaya_boundary_gpkg"]
+        and assets["communes_boundary_gpkg"]
+        and assets["soilgrids_250m_source"]
+        and assets["integrated_agri_db_zip"]
+        and assets["agronomic_knowledge_base"]
+    )
     return {
-        "all_core_assets_present": all(assets.values()),
+        "all_core_assets_present": core_ok,
         "assets": assets,
         "gee_tasks_submitted": False,
     }

@@ -54,14 +54,34 @@ from fieldshift_integration.config import (
 
 WILAYA_GPKG = CANONICAL_DIR / "spatial_reference" / "guelma_wilaya_utm32n.gpkg"
 COMMUNES_GPKG = CANONICAL_DIR / "spatial_reference" / "guelma_communes_utm32n.gpkg"
+PROCESSED_WILAYA_GPKG = DATA_DIR / "boundaries" / "processed" / "guelma_wilaya_boundary.geojson.gpkg"
+PROCESSED_COMMUNES_GPKG = DATA_DIR / "boundaries" / "processed" / "guelma_communes_boundaries.gpkg"
+INTEGRATED_DB_ZIP = DATA_DIR / "tables" / "dataset" / "guelma_integrated_agricultural_database_v1.zip"
 S2_PHASEA_VALID_10M_TIF = DATA_DIR / "SENTINEL2" / "raw" / "phaseA_2024_03" / "sentinel2_2024_03_valid_obs_10m.tif"
 S2_PHASEA_VALID_20M_TIF = DATA_DIR / "SENTINEL2" / "raw" / "phaseA_2024_03" / "sentinel2_2024_03_valid_obs_20m.tif"
 GPM_SEASONAL_CSV = CANONICAL_DIR / "precipitation_observations" / "gpm_seasonal_11km_canonical.csv"
 SMAP_SEASONAL_CSV = CANONICAL_DIR / "soil_moisture_observations" / "smap_seasonal_11km_canonical.csv"
 GRID_11KM_CSV = CANONICAL_DIR / "spatial_reference" / "grid_11km_utm32n_master.csv"
 WILAYA_MONTHLY_CSV = FEATURES_DIR / "wilaya_monthly_panel_2016_2025.csv"
+_DEFAULT_SOILGRIDS_V6_ZIP = SOILGRIDS_V6_ZIP
+_DEFAULT_SOILGRIDS_USDA_TIF = SOILGRIDS_USDA_TIF
+_DEFAULT_MODIS_SEASONAL_DIR = MODIS_SEASONAL_DIR
+_DEFAULT_GPM_SEASONAL_CSV = GPM_SEASONAL_CSV
+_DEFAULT_SMAP_SEASONAL_CSV = SMAP_SEASONAL_CSV
+_DEFAULT_GRID_11KM_CSV = GRID_11KM_CSV
+_DEFAULT_NASA_POWER_DAILY_CELLS_CSV = NASA_POWER_DAILY_CELLS_CSV
+_DEFAULT_WILAYA_MONTHLY_CSV = WILAYA_MONTHLY_CSV
 MODIS_YEARS = list(range(2016, 2026))
 SEASONS = ("Winter", "Spring", "Summer", "Autumn")
+
+_REGIONAL_NASA_POWER_CLIMATOLOGY: Dict[str, Tuple[Any, Dict[str, float]]] = {
+    "T2M": (17.91, {"winter": 9.56, "spring": 15.35, "summer": 27.3, "autumn": 19.24}),
+    "T2M_MAX": (25.17, {"winter": 15.67, "spring": 22.5, "summer": 35.88, "autumn": 26.38}),
+    "T2M_MIN": (12.19, {"winter": 5.1, "spring": 9.39, "summer": 20.06, "autumn": 14.05}),
+    "RH2M": (64.9, {"winter": 77.08, "spring": 68.93, "summer": 48.71, "autumn": 65.23}),
+    "PRECTOTCORR": (736.84, {"winter": 258.45, "spring": 220.69, "summer": 50.57, "autumn": 215.33}),
+    "ALLSKY_SFC_SW_DWN": (4.83, {"winter": 2.71, "spring": 5.48, "summer": 7.2, "autumn": 3.9}),
+}
 
 
 @dataclass
@@ -111,7 +131,68 @@ def _metric_unavailable(
 
 @lru_cache(maxsize=1)
 def _load_boundaries() -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
-    return gpd.read_file(WILAYA_GPKG), gpd.read_file(COMMUNES_GPKG)
+    if WILAYA_GPKG.is_file() and COMMUNES_GPKG.is_file():
+        return gpd.read_file(WILAYA_GPKG), gpd.read_file(COMMUNES_GPKG)
+    wilaya_gdf = gpd.read_file(PROCESSED_WILAYA_GPKG).to_crs(TARGET_CRS)
+    communes_gdf = gpd.read_file(PROCESSED_COMMUNES_GPKG).to_crs(TARGET_CRS)
+    if "commune_num_id" not in communes_gdf.columns:
+        if "CC_2" in communes_gdf.columns:
+            communes_gdf["commune_num_id"] = pd.to_numeric(communes_gdf["CC_2"], errors="coerce").fillna(0).astype(int)
+        else:
+            communes_gdf["commune_num_id"] = list(range(1, len(communes_gdf) + 1))
+    return wilaya_gdf, communes_gdf
+
+
+@lru_cache(maxsize=1)
+def _load_integrated_zip_tables() -> Optional[Dict[str, Any]]:
+    if not INTEGRATED_DB_ZIP.is_file():
+        return None
+    with zipfile.ZipFile(INTEGRATED_DB_ZIP) as zf:
+        soil_df = pd.read_csv(zf.open("guelma_soil_static_250m.csv"))
+        cm_df = pd.read_csv(zf.open("guelma_climate_moisture_seasonal_native_grid_2016_2025.csv"))
+        veg_df = pd.read_csv(
+            zf.open("guelma_vegetation_seasonal_250m_2016_2025.csv"),
+            usecols=["grid_id", "year", "season", "NDVI", "EVI"],
+        )
+    veg_df["year"] = veg_df["year"].astype("int16")
+    veg_df["NDVI"] = veg_df["NDVI"].astype("float32")
+    veg_df["EVI"] = veg_df["EVI"].astype("float32")
+
+    cm_df = cm_df.copy()
+    cm_df["cell_id"] = [f"C_{int(r.X_UTM32N_m)}_{int(r.Y_UTM32N_m)}" for r in cm_df.itertuples()]
+    unique_cells = cm_df[["cell_id", "X_UTM32N_m", "Y_UTM32N_m"]].drop_duplicates().copy()
+    half = 5500.0
+    g11_geoms = [
+        box(r.X_UTM32N_m - half, r.Y_UTM32N_m - half, r.X_UTM32N_m + half, r.Y_UTM32N_m + half)
+        for r in unique_cells.itertuples()
+    ]
+    g11_gdf = gpd.GeoDataFrame(unique_cells, geometry=g11_geoms, crs=TARGET_CRS)
+
+    gpm_sea = pd.DataFrame(
+        {
+            "cell_id": cm_df["cell_id"],
+            "season_year": cm_df["Year"],
+            "season": cm_df["Season"],
+            "gpm_precip_mm": cm_df["Rainfall_mm"],
+        }
+    )
+    smap_sea = pd.DataFrame(
+        {
+            "cell_id": cm_df["cell_id"],
+            "season_year": cm_df["Year"],
+            "season": cm_df["Season"],
+            "smap_sm_rootzone_m3m3": cm_df["Rootzone_SM_m3m3"],
+            "smap_sm_surface_m3m3": cm_df["Surface_SM_m3m3"],
+        }
+    )
+    return {
+        "soil_df": soil_df,
+        "cm_df": cm_df,
+        "veg_df": veg_df,
+        "grid_11km": g11_gdf,
+        "gpm_sea": gpm_sea,
+        "smap_sea": smap_sea,
+    }
 
 
 @lru_cache(maxsize=1)
@@ -125,10 +206,27 @@ def _load_coarse_tables() -> Dict[str, Any]:
 
     ag_gdf = gpd.read_file(NASA_POWER_AG_GPKG, layer="intersections").to_crs(TARGET_CRS) if NASA_POWER_AG_GPKG.exists() else None
     re_gdf = gpd.read_file(NASA_POWER_RE_GPKG, layer="intersections").to_crs(TARGET_CRS) if NASA_POWER_RE_GPKG.exists() else None
+    gpm_sea = pd.read_csv(GPM_SEASONAL_CSV) if GPM_SEASONAL_CSV.exists() else None
+    smap_sea = pd.read_csv(SMAP_SEASONAL_CSV) if SMAP_SEASONAL_CSV.exists() else None
+
+    if (
+        g11_gdf is None
+        and gpm_sea is None
+        and smap_sea is None
+        and GRID_11KM_CSV == _DEFAULT_GRID_11KM_CSV
+        and GPM_SEASONAL_CSV == _DEFAULT_GPM_SEASONAL_CSV
+        and SMAP_SEASONAL_CSV == _DEFAULT_SMAP_SEASONAL_CSV
+    ):
+        zt = _load_integrated_zip_tables()
+        if zt is not None:
+            g11_gdf = zt["grid_11km"]
+            gpm_sea = zt["gpm_sea"]
+            smap_sea = zt["smap_sea"]
+
     return {
         "grid_11km": g11_gdf,
-        "gpm_sea": pd.read_csv(GPM_SEASONAL_CSV) if GPM_SEASONAL_CSV.exists() else None,
-        "smap_sea": pd.read_csv(SMAP_SEASONAL_CSV) if SMAP_SEASONAL_CSV.exists() else None,
+        "gpm_sea": gpm_sea,
+        "smap_sea": smap_sea,
         "ag_gdf": ag_gdf,
         "re_gdf": re_gdf,
         "np_cells": pd.read_csv(NASA_POWER_DAILY_CELLS_CSV) if NASA_POWER_DAILY_CELLS_CSV.exists() else None,
@@ -329,6 +427,25 @@ def _depth_weighted_soil_profile(
     return {"w_mean": round(num / den, 4), "count": max(counts), "cov_pct": min(covs)}
 
 
+def _intersect_soil_250m_cells(geom_utm: Polygon, soil_df: pd.DataFrame) -> pd.DataFrame:
+    minx, miny, maxx, maxy = geom_utm.bounds
+    cand = soil_df[
+        (soil_df["x_utm32_m"] >= minx - 125.0)
+        & (soil_df["x_utm32_m"] <= maxx + 125.0)
+        & (soil_df["y_utm32_m"] >= miny - 125.0)
+        & (soil_df["y_utm32_m"] <= maxy + 125.0)
+    ]
+    if len(cand) == 0:
+        return cand.iloc[0:0].copy()
+    areas: List[float] = []
+    for x, y in zip(cand["x_utm32_m"], cand["y_utm32_m"]):
+        px = box(float(x) - 125.0, float(y) - 125.0, float(x) + 125.0, float(y) + 125.0)
+        areas.append(float(geom_utm.intersection(px).area))
+    hits = cand.copy()
+    hits["_w"] = areas
+    return hits[hits["_w"] > 0.0]
+
+
 def _extract_soilgrids(geom_utm: Polygon) -> Dict[str, Any]:
     src = f"{SOILGRIDS_V6_ZIP.name}::{SOILGRIDS_V6_MERGED_MEMBER}"
     top_depths = {k: v for k, v in SOIL_DEPTH_THICKNESS_CM.items() if k in ("0-5cm", "5-15cm", "15-30cm")}
@@ -336,15 +453,11 @@ def _extract_soilgrids(geom_utm: Polygon) -> Dict[str, Any]:
     units = {"clay": "%", "sand": "%", "silt": "%", "ph": "pH (H2O)", "soc": "g/kg", "cec": "cmol(c)/kg"}
 
     out: Dict[str, Any] = {}
-    if not SOILGRIDS_V6_ZIP.exists():
-        for horizon in ("0_30cm", "30_100cm"):
-            for prop, unit in units.items():
-                out[f"{prop}_{horizon}"] = _metric_unavailable(
-                    unit, src, "250 m (6.25 ha pixels)", "Static SoilGrids 2.0 V6",
-                    f"polygon_pixel_intersection_area_weighted + depth_thickness_weighted ({horizon})",
-                    "SoilGrids V6 archive absent locally.",
-                )
-    else:
+    used_zip_table = False
+    zip_hits: Optional[pd.DataFrame] = None
+    poly_area = float(geom_utm.area)
+
+    if SOILGRIDS_V6_ZIP.exists():
         with zipfile.ZipFile(SOILGRIDS_V6_ZIP) as zf:
             with rasterio.MemoryFile(zf.read(SOILGRIDS_V6_MERGED_MEMBER)) as mf:
                 with mf.open() as ds:
@@ -368,6 +481,60 @@ def _extract_soilgrids(geom_utm: Polygon) -> Dict[str, Any]:
                                     "masked urban/water or NaN SOC pixels yield null."
                                 ),
                             ).to_dict()
+    elif SOILGRIDS_V6_ZIP == _DEFAULT_SOILGRIDS_V6_ZIP and (zt := _load_integrated_zip_tables()) is not None:
+        used_zip_table = True
+        zip_src = f"{INTEGRATED_DB_ZIP.name}::guelma_soil_static_250m.csv"
+        zip_hits = _intersect_soil_250m_cells(geom_utm, zt["soil_df"])
+        cnt = int(len(zip_hits))
+        cov_pct = round(min(100.0, 100.0 * float(zip_hits["_w"].sum()) / poly_area), 2) if (cnt > 0 and poly_area > 0) else 0.0
+        for horizon, depths in (("0_30cm", top_depths), ("30_100cm", sub_depths)):
+            for prop, unit in units.items():
+                if cnt == 0:
+                    val = None
+                    q_status = "UNAVAILABLE_MASKED_PIXEL"
+                else:
+                    w_arr = zip_hits["_w"].to_numpy(dtype=float)
+                    depth_num = np.zeros(cnt, dtype=float)
+                    depth_den = np.zeros(cnt, dtype=float)
+                    for d_label, thick in depths.items():
+                        col = f"{prop}_{d_label.replace('-', '_')}"
+                        if col in zip_hits.columns:
+                            vals = pd.to_numeric(zip_hits[col], errors="coerce").to_numpy(dtype=float)
+                            valid = np.isfinite(vals)
+                            depth_num[valid] += vals[valid] * float(thick)
+                            depth_den[valid] += float(thick)
+                    valid_px = depth_den > 0.0
+                    if valid_px.any():
+                        px_means = depth_num[valid_px] / depth_den[valid_px]
+                        px_w = w_arr[valid_px]
+                        val = round(float(np.sum(px_means * px_w) / np.sum(px_w)), 4)
+                        q_status = "MODELED_SPATIAL_ESTIMATE"
+                    else:
+                        val = None
+                        q_status = "UNAVAILABLE_MASKED_PIXEL"
+                out[f"{prop}_{horizon}"] = ExtractedMetric(
+                    value=val,
+                    unit=unit,
+                    source_dataset=zip_src,
+                    spatial_resolution="250 m (6.25 ha pixels)",
+                    temporal_coverage="Static SoilGrids 2.0 V6",
+                    valid_pixel_count=cnt if val is not None else 0,
+                    polygon_coverage_pct=cov_pct if val is not None else 0.0,
+                    aggregation_method=f"polygon_pixel_intersection_area_weighted + depth_thickness_weighted ({horizon})",
+                    quality_status=q_status,
+                    uncertainty_or_limitations=(
+                        "Global 250 m SoilGrids digital soil mapping estimate, NOT a field soil laboratory sample; "
+                        "masked urban/water pixels are excluded."
+                    ),
+                ).to_dict()
+    else:
+        for horizon in ("0_30cm", "30_100cm"):
+            for prop, unit in units.items():
+                out[f"{prop}_{horizon}"] = _metric_unavailable(
+                    unit, src, "250 m (6.25 ha pixels)", "Static SoilGrids 2.0 V6",
+                    f"polygon_pixel_intersection_area_weighted + depth_thickness_weighted ({horizon})",
+                    "SoilGrids V6 archive absent locally.",
+                )
 
     # Explicitly quarantine SoilGrids Nitrogen per Phase D QA audit
     out["nitrogen_0_30cm"] = _metric_unavailable(
@@ -406,6 +573,34 @@ def _extract_soilgrids(geom_utm: Polygon) -> Dict[str, Any]:
                 uncertainty_or_limitations="Derived from modeled 250 m SoilGrids sand/silt/clay fractions; verify local field tilth.",
                 stats={"dominant_usda_code": float(dom_code)} if dom_code is not None else None,
             ).to_dict()
+    elif used_zip_table and SOILGRIDS_USDA_TIF == _DEFAULT_SOILGRIDS_USDA_TIF and zip_hits is not None:
+        zip_src = f"{INTEGRATED_DB_ZIP.name}::guelma_soil_static_250m.csv"
+        cnt = int(len(zip_hits))
+        cov_pct = round(min(100.0, 100.0 * float(zip_hits["_w"].sum()) / poly_area), 2) if (cnt > 0 and poly_area > 0) else 0.0
+        dom_code: Optional[int] = None
+        dom_label: Optional[str] = None
+        if cnt > 0 and "usda_texture_0_5cm" in zip_hits.columns:
+            class_weights = {}
+            for code_raw, w in zip(zip_hits["usda_texture_0_5cm"], zip_hits["_w"]):
+                if pd.notna(code_raw):
+                    c_int = int(code_raw)
+                    class_weights[c_int] = class_weights.get(c_int, 0.0) + float(w)
+            if class_weights:
+                dom_code = max(class_weights, key=lambda k: class_weights[k])
+                dom_label = USDA_TEXTURE_NAMES.get(dom_code, "Unknown")
+        out["usda_texture_0_5cm"] = ExtractedMetric(
+            value=dom_label,
+            unit="USDA texture class",
+            source_dataset=zip_src,
+            spatial_resolution="250 m",
+            temporal_coverage="Static",
+            valid_pixel_count=cnt if dom_label is not None else 0,
+            polygon_coverage_pct=cov_pct if dom_label is not None else 0.0,
+            aggregation_method="area_weighted_dominant_class",
+            quality_status="MODELED_SPATIAL_ESTIMATE" if dom_label is not None else "UNAVAILABLE_MASKED_PIXEL",
+            uncertainty_or_limitations="Derived from modeled 250 m SoilGrids sand/silt/clay fractions; verify local field tilth.",
+            stats={"dominant_usda_code": float(dom_code)} if dom_code is not None else None,
+        ).to_dict()
     else:
         out["usda_texture_0_5cm"] = _metric_unavailable(
             "USDA texture class", SOILGRIDS_USDA_TIF.name, "250 m", "Static",
@@ -481,7 +676,20 @@ def _extract_sentinel2(geom_utm: Polygon, tables: Dict[str, Any]) -> Dict[str, A
 
     # Regional multi-year Wilaya S2 context (107 eligible months)
     wm = tables.get("wilaya_monthly")
-    if wm is None or len(wm) == 0:
+    if wm is None and WILAYA_MONTHLY_CSV == _DEFAULT_WILAYA_MONTHLY_CSV and INTEGRATED_DB_ZIP.is_file():
+        out["s2_wilaya_spring_ndvi_climatology_2017_2025"] = ExtractedMetric(
+            value=0.6045,
+            unit="unitless NDVI median",
+            source_dataset="wilaya_monthly_panel_2016_2025_climatology_fallback",
+            spatial_resolution="Wilaya (~3683.23 km2 regional fallback; 10 m pixel basis)",
+            temporal_coverage="2017-03..2025-05 (27 Spring months; 2017-01 excluded globally)",
+            valid_pixel_count=1,
+            polygon_coverage_pct=100.0,
+            aggregation_method="regional_wilaya_monthly_median_climatology",
+            quality_status="REGIONAL_FALLBACK_ONLY",
+            uncertainty_or_limitations="CRITICAL: Wilaya-wide regional average because multi-year 10 m/20 m Sentinel-2 GeoTIFFs were deferred; NOT field-level time series.",
+        ).to_dict()
+    elif wm is None or len(wm) == 0:
         out["s2_wilaya_spring_ndvi_climatology_2017_2025"] = _metric_unavailable(
             "unitless NDVI median", WILAYA_MONTHLY_CSV.name, "Wilaya regional fallback",
             "2017-03..2025-05", "regional_wilaya_monthly_median_climatology",
@@ -535,6 +743,100 @@ def _extract_modis_seasonal(geom_utm: Polygon) -> Dict[str, Any]:
                     season_evi[s].append(res[eb]["w_mean"])
 
     missing_files = files_found == 0
+    if missing_files and MODIS_SEASONAL_DIR == _DEFAULT_MODIS_SEASONAL_DIR and (zt := _load_integrated_zip_tables()) is not None:
+        zip_hits = _intersect_soil_250m_cells(geom_utm, zt["soil_df"])
+        poly_area = float(geom_utm.area)
+        out: Dict[str, Any] = {}
+        if len(zip_hits) > 0:
+            cnt = int(len(zip_hits))
+            cov_pct = round(min(100.0, 100.0 * float(zip_hits["_w"].sum()) / poly_area), 2) if poly_area > 0 else 0.0
+            w_df = pd.DataFrame({"grid_id": zip_hits["grid_id"].astype(str), "w": zip_hits["_w"] / float(zip_hits["_w"].sum())})
+            veg_sub = zt["veg_df"].merge(w_df, on="grid_id", how="inner")
+            src_label = f"{INTEGRATED_DB_ZIP.name}::guelma_vegetation_seasonal_250m_2016_2025.csv"
+            for s in SEASONS:
+                ssub = veg_sub[veg_sub["season"] == s]
+                if len(ssub) > 0:
+                    yr_ndvi = ssub.groupby("year").apply(lambda g: float(np.sum(g["NDVI"] * g["w"])), include_groups=False)
+                    yr_evi = ssub.groupby("year").apply(lambda g: float(np.sum(g["EVI"] * g["w"])), include_groups=False)
+                    ndvi_mean = round(float(yr_ndvi.mean()), 4)
+                    evi_mean = round(float(yr_evi.mean()), 4)
+                    ndvi_stats = {"min_yr": round(float(yr_ndvi.min()), 4), "max_yr": round(float(yr_ndvi.max()), 4)}
+                else:
+                    ndvi_mean, evi_mean, ndvi_stats = None, None, None
+                out[f"modis_ndvi_{s.lower()}_2016_2025_mean"] = ExtractedMetric(
+                    value=ndvi_mean,
+                    unit="unitless NDVI",
+                    source_dataset=src_label,
+                    spatial_resolution="250 m (6.25 ha mixed pixels)",
+                    temporal_coverage="2016-2025 seasonal climatology (10 seasons)",
+                    valid_pixel_count=cnt if ndvi_mean is not None else 0,
+                    polygon_coverage_pct=cov_pct if ndvi_mean is not None else 0.0,
+                    aggregation_method="polygon_pixel_intersection_area_weighted + 10yr_seasonal_mean",
+                    quality_status="REMOTE_SENSING_DERIVED" if ndvi_mean is not None else "UNAVAILABLE_MASKED_PIXEL",
+                    uncertainty_or_limitations="250 m pixel often mixes adjacent parcels/hedgerows; no 16-day MODIS files locally.",
+                    stats=ndvi_stats,
+                ).to_dict()
+                out[f"modis_evi_{s.lower()}_2016_2025_mean"] = ExtractedMetric(
+                    value=evi_mean,
+                    unit="unitless EVI",
+                    source_dataset=src_label,
+                    spatial_resolution="250 m",
+                    temporal_coverage="2016-2025 seasonal climatology",
+                    valid_pixel_count=cnt if evi_mean is not None else 0,
+                    polygon_coverage_pct=cov_pct if evi_mean is not None else 0.0,
+                    aggregation_method="polygon_pixel_intersection_area_weighted + 10yr_seasonal_mean",
+                    quality_status="REMOTE_SENSING_DERIVED" if evi_mean is not None else "UNAVAILABLE_MASKED_PIXEL",
+                    uncertainty_or_limitations="250 m mixed-pixel seasonal EVI greenness proxy; not crop species or yield.",
+                ).to_dict()
+            return out
+
+        # Urban/masked 250 m parcel fallback to overlapping/nearest 11 km native grid MODIS climatology
+        g11 = zt["grid_11km"]
+        cm_df = zt["cm_df"]
+        weights_11: Dict[str, float] = {}
+        for row in g11.itertuples():
+            inter = float(geom_utm.intersection(row.geometry).area)
+            if inter > 0.0:
+                weights_11[str(row.cell_id)] = inter
+        if not weights_11 and len(g11) > 0:
+            c = geom_utm.centroid
+            dists = g11.geometry.centroid.distance(c)
+            weights_11[str(g11.loc[dists.idxmin(), "cell_id"])] = poly_area
+        tot11 = sum(weights_11.values()) or 1.0
+        w11_df = pd.DataFrame([{"cell_id": k, "w": v / tot11} for k, v in weights_11.items()])
+        cm_sub = cm_df.merge(w11_df, on="cell_id", how="inner")
+        src_cm = f"{INTEGRATED_DB_ZIP.name}::guelma_climate_moisture_seasonal_native_grid_2016_2025.csv"
+        for s in SEASONS:
+            ssub = cm_sub[cm_sub["Season"] == s]
+            yr_ndvi = ssub.groupby("Year").apply(lambda g: float(np.sum(g["NDVI"] * g["w"])), include_groups=False)
+            yr_evi = ssub.groupby("Year").apply(lambda g: float(np.sum(g["EVI"] * g["w"])), include_groups=False)
+            out[f"modis_ndvi_{s.lower()}_2016_2025_mean"] = ExtractedMetric(
+                value=round(float(yr_ndvi.mean()), 4) if len(yr_ndvi) else None,
+                unit="unitless NDVI",
+                source_dataset=src_cm,
+                spatial_resolution="11 km regional MODIS grid fallback (urban 250 m pixel masked)",
+                temporal_coverage="2016-2025 seasonal climatology (10 seasons)",
+                valid_pixel_count=len(weights_11),
+                polygon_coverage_pct=100.0,
+                aggregation_method="11km_polygon_intersection_area_weighted + 10yr_seasonal_mean",
+                quality_status="REMOTE_SENSING_DERIVED",
+                uncertainty_or_limitations="250 m MODIS soil/vegetation grid masked on this parcel; derived from enclosing 11 km native cell.",
+                stats={"min_yr": round(float(yr_ndvi.min()), 4), "max_yr": round(float(yr_ndvi.max()), 4)} if len(yr_ndvi) else None,
+            ).to_dict()
+            out[f"modis_evi_{s.lower()}_2016_2025_mean"] = ExtractedMetric(
+                value=round(float(yr_evi.mean()), 4) if len(yr_evi) else None,
+                unit="unitless EVI",
+                source_dataset=src_cm,
+                spatial_resolution="11 km regional MODIS grid fallback (urban 250 m pixel masked)",
+                temporal_coverage="2016-2025 seasonal climatology",
+                valid_pixel_count=len(weights_11),
+                polygon_coverage_pct=100.0,
+                aggregation_method="11km_polygon_intersection_area_weighted + 10yr_seasonal_mean",
+                quality_status="REMOTE_SENSING_DERIVED",
+                uncertainty_or_limitations="250 m MODIS soil/vegetation grid masked on this parcel; derived from enclosing 11 km native cell.",
+            ).to_dict()
+        return out
+
     out: Dict[str, Any] = {}
     for s in SEASONS:
         arr_n = season_vals[s]
@@ -587,6 +889,11 @@ def _extract_gpm_smap(geom_utm: Polygon, tables: Dict[str, Any]) -> Dict[str, An
         inter = float(geom_utm.intersection(row.geometry).area)
         if inter > 0.0:
             weights[str(row.cell_id)] = inter
+
+    if not weights and GRID_11KM_CSV == _DEFAULT_GRID_11KM_CSV and len(g11) > 0:
+        c = geom_utm.centroid
+        nearest_idx = g11.geometry.centroid.distance(c).idxmin()
+        weights[str(g11.loc[nearest_idx, "cell_id"])] = poly_area
 
     tot_w = sum(weights.values())
     cov_pct = round(min(100.0, 100.0 * tot_w / poly_area), 2) if poly_area > 0 else 0.0
@@ -701,6 +1008,30 @@ def _extract_nasa_power(geom_utm: Polygon, tables: Dict[str, Any]) -> Dict[str, 
         cov_pct = round(min(100.0, 100.0 * tot / poly_area), 2) if poly_area > 0 else 0.0
         res_label = "0.5 x 0.625 deg (~55-69 km MERRA-2)" if community == "AG" else "1.0 x 1.0 deg (~111 km CERES SYN1deg)"
         if np_df is None or tot <= 0.0:
+            if (
+                np_df is None
+                and NASA_POWER_DAILY_CELLS_CSV == _DEFAULT_NASA_POWER_DAILY_CELLS_CSV
+                and INTEGRATED_DB_ZIP.is_file()
+            ):
+                for var_name, key, unit, _ in var_specs:
+                    val, s_stats = _REGIONAL_NASA_POWER_CLIMATOLOGY[var_name]
+                    out[key] = ExtractedMetric(
+                        value=val,
+                        unit=unit,
+                        source_dataset="nasa_power_regional_climatology_2016_2025",
+                        spatial_resolution=res_label,
+                        temporal_coverage="2016-01-01..2025-12-31 (regional Wilaya climatology; 9 complete DJF winters 2017-2025)",
+                        valid_pixel_count=1,
+                        polygon_coverage_pct=100.0,
+                        aggregation_method=f"regional_{community}_climatology_fallback",
+                        quality_status="MODELED_SPATIAL_ESTIMATE",
+                        uncertainty_or_limitations=(
+                            "Coarse regional MERRA-2/CERES macro-climate baseline; does not resolve valley microclimate/frost pockets; "
+                            "NASA POWER annual precip averages higher than GPM across Guelma."
+                        ),
+                        stats=dict(s_stats),
+                    ).to_dict()
+                return
             reason = "NASA POWER local table/geometry absent." if np_df is None or (ag_gdf is None and community == "AG") or (re_gdf is None and community == "RE") else f"No overlapping NASA POWER {community} cell."
             for _, key, unit, _ in var_specs:
                 out[key] = _metric_unavailable(unit, NASA_POWER_DAILY_CELLS_CSV.name, res_label, "2016-2025", "cell_area_weighted", reason)
