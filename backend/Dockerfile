@@ -14,15 +14,15 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN pip install --upgrade pip \
-    && pip install .
+RUN python -c "import tomllib, subprocess, sys; deps = tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip', 'hatchling', *deps])"
 
 COPY alembic.ini ./
 COPY contracts ./contracts
 COPY tools ./tools
 COPY app ./app
 
-RUN chown -R appuser:appuser /app
+RUN pip install --no-deps --no-build-isolation -e . \
+    && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000

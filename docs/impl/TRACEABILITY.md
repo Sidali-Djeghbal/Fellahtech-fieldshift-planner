@@ -56,20 +56,20 @@
 
 | ID | DB Object | Spec Source | Target Module(s) | Target Test(s) | Milestone | Status |
 | :--- | :--- | :--- | :--- | :--- | :---: | :--- |
-| `DB-01` | `public.users` | `ENDPOINTS A.4` | `db/migrations/`, `models/user.py`, `repositories/user.py` | `tests/migration/test_schema.py` | `M1, M3` | `Pending` |
-| `DB-02` | `public.refresh_tokens` | `ENDPOINTS A.4` | `db/migrations/`, `models/user.py`, `repositories/refresh_token.py` | `tests/migration/test_schema.py`, `tests/concurrency/` | `M1, M3` | `Pending` |
-| `DB-03` | `public.demo_locations` | `ENDPOINTS A.4` | `db/migrations/`, `models/demo.py`, `db/seed.py` | `tests/migration/test_schema.py`, `tests/integration/test_demo.py` | `M1, M4` | `Pending` |
-| `DB-04` | `public.guest_sessions` | `ENDPOINTS A.4` | `db/migrations/`, `models/demo.py`, `repositories/guest_session.py` | `tests/migration/test_schema.py`, `tests/integration/test_auth.py` | `M1, M3` | `Pending` |
-| `DB-05` | `public.farms` | `ENDPOINTS A.4` | `db/migrations/`, `models/farm.py`, `repositories/farm.py` | `tests/migration/test_schema.py`, `tests/integration/test_farms.py` | `M1, M5` | `Pending` |
-| `DB-06` | `public.fields` | `ENDPOINTS A.4` | `db/migrations/`, `models/field.py`, `repositories/field.py` | `tests/migration/test_schema.py`, `tests/integration/test_fields.py` | `M1, M5` | `Pending` |
-| `DB-07` | `public.field_crop_history` | `ENDPOINTS A.4` | `db/migrations/`, `models/field.py`, `repositories/field.py` | `tests/migration/test_schema.py`, `tests/integration/test_fields.py` | `M1, M5` | `Pending` |
-| `DB-08` | `public.crop_catalog` | `ENDPOINTS A.4` | `db/migrations/`, `models/catalog.py`, `repositories/catalog.py` | `tests/migration/test_schema.py`, `tests/integration/test_catalog.py` | `M1, M6` | `Pending` |
-| `DB-09` | `public.dataset_registry` | `ENDPOINTS A.4` | `db/migrations/`, `models/dataset.py`, `repositories/dataset.py`, `db/seed.py` | `tests/migration/test_schema.py`, `tests/integration/test_analysis.py` | `M1, M6` | `Pending` |
-| `DB-10` | `public.analysis_requests` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema.py`, `tests/integration/test_worker.py` | `M1, M7, M8` | `Pending` |
-| `DB-11` | `public.analysis_results` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema.py`, `tests/integration/test_verification.py` | `M1, M9` | `Pending` |
-| `DB-12` | `public.analysis_selections` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema.py`, `tests/integration/test_analysis.py` | `M1, M7` | `Pending` |
-| `DB-13` | `public.ml_breaker_state` | `ENDPOINTS A.4` | `db/migrations/`, `models/breaker.py`, `worker/breaker.py`, `db/seed.py` | `tests/migration/test_schema.py`, `tests/integration/test_breaker.py` | `M1, M10` | `Pending` |
-| `DB-14` | `Schema: dataset` & Role `ml_reader` | `ENDPOINTS A.5`, `ADR-9` | `db/migrations/001_initial_schema.py` | `tests/migration/test_ml_reader_isolation.py` | `M1` | `Pending` |
+| `DB-01` | `public.users` | `ENDPOINTS A.4` | `db/migrations/`, `models/user.py`, `repositories/user.py` | `tests/migration/test_schema_and_ml_reader.py` | `M1, M3` | `M1 Verified (DDL + ORM; M3 pending)` |
+| `DB-02` | `public.refresh_tokens` | `ENDPOINTS A.4` | `db/migrations/`, `models/user.py`, `repositories/refresh_token.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/concurrency/` | `M1, M3` | `M1 Verified (DDL + ORM; M3 pending)` |
+| `DB-03` | `public.demo_locations` | `ENDPOINTS A.4` | `db/migrations/`, `models/demo.py`, `db/seed.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_demo.py` | `M1, M4` | `M1 Verified (DDL + ORM; M4 pending)` |
+| `DB-04` | `public.guest_sessions` | `ENDPOINTS A.4` | `db/migrations/`, `models/demo.py`, `repositories/guest_session.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_auth.py` | `M1, M3` | `M1 Verified (DDL + ORM; M3 pending)` |
+| `DB-05` | `public.farms` | `ENDPOINTS A.4` | `db/migrations/`, `models/farm.py`, `repositories/farm.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_farms.py` | `M1, M5` | `M1 Verified (DDL + ORM; M5 pending)` |
+| `DB-06` | `public.fields` | `ENDPOINTS A.4` | `db/migrations/`, `models/field.py`, `repositories/field.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_fields.py` | `M1, M5` | `M1 Verified (DDL + ORM; M5 pending)` |
+| `DB-07` | `public.field_crop_history` | `ENDPOINTS A.4` | `db/migrations/`, `models/field.py`, `repositories/field.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_fields.py` | `M1, M5` | `M1 Verified (DDL + ORM; M5 pending)` |
+| `DB-08` | `public.crop_catalog` | `ENDPOINTS A.4` | `db/migrations/`, `models/catalog.py`, `repositories/catalog.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_catalog.py` | `M1, M6` | `M1 Verified (DDL + ORM + empty; M6 pending)` |
+| `DB-09` | `public.dataset_registry` | `ENDPOINTS A.4` | `db/migrations/`, `models/catalog.py`, `repositories/dataset.py`, `db/seed.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_analysis.py` | `M1, M6` | `M1 Verified (DDL + ORM; M6 pending)` |
+| `DB-10` | `public.analysis_requests` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_worker.py` | `M1, M7, M8` | `M1 Verified (DDL + ORM; M7–M8 pending)` |
+| `DB-11` | `public.analysis_results` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_verification.py` | `M1, M9` | `M1 Verified (DDL + ORM; M9 pending)` |
+| `DB-12` | `public.analysis_selections` | `ENDPOINTS A.4` | `db/migrations/`, `models/analysis.py`, `repositories/analysis.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_analysis.py` | `M1, M7` | `M1 Verified (DDL + ORM; M7 pending)` |
+| `DB-13` | `public.ml_breaker_state` | `ENDPOINTS A.4` | `db/migrations/`, `models/breaker.py`, `worker/breaker.py`, `db/seed.py` | `tests/migration/test_schema_and_ml_reader.py`, `tests/integration/test_breaker.py` | `M1, M10` | `M1 Verified (DDL + ORM; M10 pending)` |
+| `DB-14` | `Schema: dataset` & Role `ml_reader` | `ENDPOINTS A.5`, `ADR-9` | `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M1` | `M1 Verified (PG 18.7/PostGIS 3.7; Docker 16-3.4 blocked on host IPv6 pull)` |
 
 ## 4. Error Codes (`19 / 19`) & Warning Notices (`2 / 2`)
 
@@ -140,13 +140,13 @@
 
 | ID | Variable | Default / Example | Consuming Module(s) | Test Verifying Presence & Parsing | Milestone | Status |
 | :--- | :--- | :--- | :--- | :--- | :---: | :--- |
-| `ENV-01` | `DATABASE_URL` | `postgresql+asyncpg://...` | `core/config.py`, `db/session.py` | `tests/unit/test_config.py` | `M0` | `Pending` |
+| `ENV-01` | `DATABASE_URL` | `postgresql+asyncpg://...` | `core/config.py`, `db/session.py` | `tests/unit/test_config.py`, `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 | `ENV-02` | `DB_PASSWORD` | required in `.env` | `docker-compose.yml`, `.env.example` | `tools/verify_contracts.py` | `M0` | `M0 Verified` |
 | `ENV-03` | `REDIS_URL` | `redis://redis:6379/0` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_config.py`, `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
 | `ENV-04` | `ML_DATASET_DB_URL` | `postgresql://ml_reader:...` | `core/config.py`, `.env.example` | `tools/verify_contracts.py` | `M0` | `M0 Verified` |
-| `ENV-05` | `ML_READER_PASSWORD` | required secret | `core/config.py`, `db/migrations/001` | `tests/migration/test_ml_reader_isolation.py` | `M0, M1` | `Pending` |
-| `ENV-06` | `ML_DB_STATEMENT_TIMEOUT_MS` | `5000` (`# TODO(OQ-D4)`) | `core/config.py`, `db/migrations/001` | `tests/migration/test_ml_reader_isolation.py` | `M0, M1` | `Pending` |
-| `ENV-07` | `ML_DB_CONNECTION_LIMIT` | `10` (`# TODO(OQ-D4)`) | `core/config.py`, `db/migrations/001` | `tests/migration/test_ml_reader_isolation.py` | `M0, M1` | `Pending` |
+| `ENV-05` | `ML_READER_PASSWORD` | required secret | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
+| `ENV-06` | `ML_DB_STATEMENT_TIMEOUT_MS` | `5000` (`# TODO(OQ-D4)`) | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
+| `ENV-07` | `ML_DB_CONNECTION_LIMIT` | `10` (`# TODO(OQ-D4)`) | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 | `ENV-08` | `JWT_SECRET_KEY` | required secret | `core/config.py`, `core/security.py` | `tests/unit/test_security.py` | `M0, M3` | `Pending` |
 | `ENV-09` | `JWT_PREVIOUS_SECRET_KEY` | optional string | `core/config.py`, `core/security.py` | `tests/unit/test_security.py` | `M0, M3` | `Pending` |
 | `ENV-10` | `JWT_ACCESS_EXPIRES_SECONDS` | `3600` | `core/config.py`, `services/auth.py` | `tests/integration/test_auth.py` | `M0, M3` | `Pending` |
@@ -191,7 +191,7 @@
 | `CMP-04` | `SEM04_NUMERIC_TOLERANCE` | `0.001` (`1e-3`) | `core/config.py`, `services/verification.py` | `tests/unit/test_sem_rules.py` | `M0, M9` | `Pending` |
 | `CMP-05` | `TRUSTED_PROXY_CIDRS` | `""` | `core/config.py`, `core/rate_limit.py` | `tests/unit/test_rate_limit.py`, `tests/integration/test_security.py` | `M0, M2, M12` | `Pending` |
 | `CMP-06` | `REDIS_FAIL_CLOSED` | `true` | `core/config.py`, `core/rate_limit.py`, `api/deps.py` | `tests/integration/test_rate_limit.py` | `M0, M2` | `Pending` |
-| `CMP-07` | `ML_DATASET_OWNER_ROLE` | `""` | `core/config.py`, `db/migrations/001` | `tests/migration/test_ml_reader_isolation.py` | `M0, M1` | `Pending` |
+| `CMP-07` | `ML_DATASET_OWNER_ROLE` | `""` | `core/config.py`, `db/migrations/versions/001_initial_schema.py` | `tests/migration/test_schema_and_ml_reader.py` | `M0, M1` | `M1 Verified` |
 
 ## 8. Open Questions (`19 / 19` — `Blueprint §13`)
 
@@ -205,14 +205,14 @@
 | `OQ-6` | 15 Golden scenarios & Agronomy pass gate | `backend/tests/golden/` harness + `# TODO(OQ-6)` marker | `M12` | `Pending` |
 | `OQ-7` | Backups, RPO/RTO & `input_snapshot_gz` archival TTL | `docs/impl/RUNBOOK.md` + optional reaper hook `# TODO(OQ-7)` | `M11, M13` | `Pending` |
 | `OQ-8` | `DEGRADED_MODE_MAX_AGE_HOURS` & `Deprecation`/`Sunset` duration | `core/config.py` + middleware hook `# TODO(OQ-8)` | `M2, M10` | `Pending` |
-| `OQ-9` | Exact Guelma regional & demo parcel coords | `db/seed.py` `# TODO(OQ-9)` | `M1` | `Pending` |
+| `OQ-9` | Exact Guelma regional & demo parcel coords | `db/seed.py` `# TODO(OQ-9)` | `M1` | `M1 Placeholder Added` |
 | `OQ-10` | Protected/greenhouse `INPUT-03` override | `services/validation.py` `# TODO(OQ-10)` | `M7` | `Pending` |
 | `OQ-11` | Strategy tie-breaking & `priority_fit` spread | Delegated to External ML; `SEM-01` checks structural order | `M9` | `Pending` |
-| `OQ-D1` | `Schema: dataset` tables/columns/units | `db/migrations/001` empty `dataset` schema + `ALTER DEFAULT PRIVILEGES` | `M1` | `Pending` |
-| `OQ-D2` | Spatial & temporal dataset coverage bounds | `public.dataset_registry` metadata (`db/seed.py`) | `M1` | `Pending` |
+| `OQ-D1` | `Schema: dataset` tables/columns/units | `db/migrations/versions/001_initial_schema.py` empty `dataset` schema + `ALTER DEFAULT PRIVILEGES` | `M1` | `M1 Schema Isolated` |
+| `OQ-D2` | Spatial & temporal dataset coverage bounds | `public.dataset_registry` metadata (`db/seed.py`) | `M1` | `M1 Registry Seeded` |
 | `OQ-D3` | Dataset rollout / zero-downtime swap | `uq_dataset_registry_single_active` + per-request pinning | `M6, M7` | `Pending` |
-| `OQ-D4` | `ml_reader` statement timeout & conn limit | `ML_DB_STATEMENT_TIMEOUT_MS`, `ML_DB_CONNECTION_LIMIT` in Alembic | `M1` | `Pending` |
+| `OQ-D4` | `ml_reader` statement timeout & conn limit | `ML_DB_STATEMENT_TIMEOUT_MS`, `ML_DB_CONNECTION_LIMIT` in Alembic | `M1` | `M1 Configurable` |
 | `OQ-D5` | Cross-verifying `"data_source": "dataset"` evidence | `services/verification.py` (`SEM-04` structural + period check) | `M9` | `Pending` |
 | `OQ-D6` | Minimum parcel history richness for `422 INSUFFICIENT_DATA` | ML error pass-through (`worker/runner.py`) + minItems=1 | `M5, M8` | `Pending` |
-| `OQ-D7` | Authoritative Guelma administrative shapefile | Placeholder 10-vertex Polygon in `db/seed.py` (`# TODO(OQ-D7)`) | `M1` | `Pending` |
-| `OQ-D8` | Unstudied demo parcel field measurements | `is_unverified_demo_parcel=true` + `DEMO_PARCEL_UNVERIFIED` notice | `M1, M3, M5` | `Pending` |
+| `OQ-D7` | Authoritative Guelma administrative shapefile | Placeholder 10-vertex Polygon in `db/seed.py` (`# TODO(OQ-D7)`) | `M1` | `M1 Placeholder Added` |
+| `OQ-D8` | Unstudied demo parcel field measurements | `is_unverified_demo_parcel=true` + `DEMO_PARCEL_UNVERIFIED` notice | `M1, M3, M5` | `M1 Placeholder Seeded (M3–M5 pending)` |
