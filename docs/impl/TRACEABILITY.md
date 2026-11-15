@@ -1,7 +1,7 @@
 # FieldShift Planner Backend — Requirements Traceability Matrix (`TRACEABILITY.md`)
 
 > **Legend:** Status remains **`Pending`** until implemented, verified by automated tests, and closed at its milestone gate.
-> **Totals Tracked:** `34` Backend Routes (Option-A `429`/`500`/`503` normative in `openapi.yaml`) + `3` ML Routes · `13` `public` Tables + `Schema: dataset` (`ml_reader`) · `19` Error Codes + `2` Notices · `40` Normative `.env` Vars + `7` Companion Settings · `6` Redis Rate-Limit Buckets (incl. `120 req/min` poll bucket) · `3` `INPUT` Rules + `7` `SEM` Rules · `4` Workflows (`W1–W4`) · `6` KPIs · `10` ADRs + `21` `IMPL` Decisions (`#1–#5` Second-Audit Hardening) · `19` Open Questions (`OQ-*`).
+> **Totals Tracked:** `34` Backend Routes (Option-A `429`/`500`/`503` normative in `openapi.yaml`) + `3` ML Routes · `13` `public` Tables + `Schema: dataset` (`ml_reader`) · `19` Error Codes + `2` Notices · `40` Normative `.env` Vars + `7` Companion Settings · `6` Redis Rate-Limit Buckets (incl. `120 req/min` poll bucket) · `3` `INPUT` Rules + `7` `SEM` Rules · `4` Workflows (`W1–W4`) · `6` KPIs · `10` ADRs + `IMPL-001..023` (`IMPL-015` superseded + `#1–#5` Second-Audit Hardening) · `19` Open Questions (`OQ-*`) · `M13` Container/Readiness Gate.
 
 ---
 
@@ -113,7 +113,7 @@
 | `VAL-SM6` | `SEM-06`: Every `target_crop_id` evaluated in `requested_crop_results[]` | `Blueprint §4 W4` | `services/verification.py` | `tests/unit/test_sem_rules.py` | `M9` | `M9 Verified (target_crop_ids complete coverage & excluded_crop_ids ban)` |
 | `VAL-SM7` | `SEM-07`: `dataset_version_used == analysis_requests.dataset_version` | `Blueprint §4 W4`, `ADR-9` | `services/verification.py` | `tests/unit/test_sem_rules.py`, `tests/integration/test_verification.py` | `M9` | `M9 Verified (exact version pin + IMPL-007 DATASET_VERSION_UNAVAILABLE priority)` |
 
-## 6. Workflows (`W1–W4`), KPIs (`1–6`), ADRs (`ADR-1..9`) & Decisions (`IMPL-001..021`)
+## 6. Workflows (`W1–W4`), KPIs (`1–6`), ADRs (`ADR-1..9`) & Decisions (`IMPL-001..023`)
 
 | ID | Item | Spec Source | Target Module(s) | Target Test(s) | Milestone | Status |
 | :--- | :--- | :--- | :--- | :--- | :---: | :--- |
@@ -127,7 +127,7 @@
 | `KPI-04` | `100%` guest outside Guelma -> `422`; unverified parcel flag -> `DEMO_PARCEL_UNVERIFIED` | `Blueprint §1.1` | `services/geo.py`, `services/fields.py` | `tests/integration/test_demo.py`, `tests/integration/test_farms_and_fields.py` | `M4, M5` | `M4+M5 Verified (100% guest outside Guelma -> 422 & DEMO_PARCEL_UNVERIFIED on fields)` |
 | `KPI-05` | ML outages trip `ml_breaker_state`, cap 8 bulkhead, label `last_good_replay` | `Blueprint §1.1` | `worker/{breaker,runner}.py` | `tests/concurrency/test_worker_race.py`, `tests/integration/test_breaker.py`, `tests/concurrency/test_fault_injection.py`, `tests/integration/test_e2e_workflows.py` | `M8, M10, M12` | `M8+M10+M12 Verified (bulkhead cap 8, 5 outages -> open -> last_good_replay, 6x probe, 8x storm & Visual I/O #8 E2E)` |
 | `KPI-06` | Golden 15-scenario harness (`>= TBD%` `OQ-6` pending Agronomy Owner) | `Blueprint §1.1, §4.5` | `tests/golden/` | `tests/golden/test_golden_harness.py` | `M12` | `M12 Verified (G01..G15 live POST /analysis + WorkerRunner + Stage 1/SEM gate; # TODO(OQ-6) threshold marker)` |
-| `ADR-1..9` | All Active Architecture Decisions (`ADR-0` superseded) | `ADR.md` | System-wide | Full suite + `verify_contracts.py` | `M0–M13` | `Pending` |
+| `ADR-1..9` | All Active Architecture Decisions (`ADR-0` superseded) | `ADR.md` | System-wide | Full suite + `verify_contracts.py` + Compose E2E | `M0–M13` | `M0–M13 Verified (all 9 ADRs enforced across code, contracts, tests & fresh-volume Compose stack)` |
 | `IMPL-001` | Interpolated two-bucket Redis sliding-window Lua throttles (`6` buckets incl. `120/min` poll), clamped `EXISTS`-guarded `DECRBY >= 0`/`DEL` refunds, hashed keys, `TRUSTED_PROXY_CIDRS`, PG->Redis hydration, non-burning W1 admission (incl. Step 2 `403`), `worker -> redis` dep, `503` fail-closed | `DECISIONS.md` | `core/rate_limit.py`, `services/analysis.py`, `worker/runner.py`, `docker-compose.yml` | `tests/integration/test_rate_limit.py`, `tests/integration/test_auth.py`, `tests/integration/test_analysis.py`, `tests/integration/test_worker.py`, `tests/concurrency/test_analysis_concurrency.py` | `M0, M2, M3, M7, M8` | `M2+M3+M7+M8 Verified (6 Redis buckets, W1 Lua rollbacks, cancel refund & M8 worker non-fatal Redis clamped Lua refunds)` |
 | `IMPL-002..007, 010..014` | Remaining resolved design & resilience decisions (24h idempotency savepoint, canonical hashes, `ml_reader` `FOR ROLE`, cooperative backoff/stream + `cancelled_at IS NULL` final cascade guard, reaper, refunds, SHA-256 tokens, `input_snapshot_gz`, JWT `fid`; `IMPL-015` superseded by `IMPL-023`) | `DECISIONS.md` | Corresponding `core/`, `services/`, `worker/`, `db/` modules | `tests/unit/`, `tests/migration/`, `tests/integration/`, `tests/concurrency/` | `M1–M11` | `M1–M11 Verified (SKIP LOCKED claim, heartbeat/reaper + expired guest/idempotency housekeeping, cooperative cancel, graceful drain, advisory bulkhead, shared breaker + last_good_replay & Stage 1/SEM error priority)` |
 | `IMPL-008` | `MLAdapter` (`RealMLAdapter`/`MockMLAdapter`), `mock_server.py`, `MLProviderManager` (no-mock production guard, zero in-flight silent fallback), Redis `ml:provider_status`, `app/ml_client/fixtures/` | `DECISIONS.md` | `ml_client/{base,real_adapter,mock_adapter,mock_server,manager}.py`, `main.py` | `tests/unit/test_ml_client.py`, `tests/unit/test_ml_provider_manager.py`, `tests/integration/test_catalog.py` | `M6` | `M6 Verified` |
@@ -202,16 +202,16 @@
 
 | ID | Topic | Configurable / Placeholder Target Module | Milestone | Status |
 | :--- | :--- | :--- | :---: | :--- |
-| `OQ-1` | External ML latency SLA (`X` s) & Stage budget | `core/config.py`, `services/health.py`, `api/v1/system.py` | `M0, M11` | `TODO(OQ-1) Marked in code (config, health probe, metrics); RUNBOOK/BACKLOG M13` |
+| `OQ-1` | External ML latency SLA (`X` s) & Stage budget | `core/config.py`, `services/health.py`, `api/v1/system.py` | `M0, M11, M13` | `M13 Documented (# TODO(OQ-1) marked in config/health/metrics & BACKLOG.md; ML SLA TBD per ML Lead)` |
 | `OQ-2` | Free-text prompt-injection risk (`farm_name`, `crop_name_raw`) | `schemas/common.py` `sanitize_free_text` helper `# TODO(OQ-2)` | `M5` | `M5 Mitigated (# TODO(OQ-2) control-char strip helper + integration test)` |
 | `OQ-3` | `SEM-04` numeric tolerance (`±TBD`) | `core/config.py` (`SEM04_NUMERIC_TOLERANCE`) + `services/verification.py` | `M9` | `M9 Implemented (# TODO(OQ-3) SEM04_NUMERIC_TOLERANCE=0.001 + unit tests)` |
 | `OQ-4` | `ML_MAX_PAYLOAD_BYTES` exact ceiling | `core/config.py` + `worker/runner.py` history trimmer | `M8` | `M8 Implemented (# TODO(OQ-4) ML_MAX_PAYLOAD_BYTES pre/413 oldest-first history trimmer)` |
-| `OQ-5` | Legacy `ADR-0` doc location/date | Docs only (`DESIGN_ISSUES.md`) | `M13` | `Pending` |
+| `OQ-5` | Legacy `ADR-0` doc location/date | `DESIGN_ISSUES.md`, `docs/impl/BACKLOG.md` | `M13` | `M13 Documented (Indexed in BACKLOG.md as historical ADR-0 metadata; zero runtime impact)` |
 | `OQ-6` | 15 Golden scenarios & Agronomy pass gate | `backend/tests/golden/test_golden_harness.py` (`# TODO(OQ-6)`) | `M12` | `M12 Harness Verified (# TODO(OQ-6) Agronomy pass gate marker; 15/15 structural+semantic pass)` |
-| `OQ-7` | Backups, RPO/RTO & `input_snapshot_gz` archival TTL | `worker/runner.py`, `docs/impl/RUNBOOK.md` (`# TODO(OQ-7)`) | `M11, M13` | `M11 Marked TODO(OQ-7) reaper hook; RUNBOOK/BACKLOG M13` |
+| `OQ-7` | Backups, RPO/RTO & `input_snapshot_gz` archival TTL | `worker/runner.py`, `docs/impl/RUNBOOK.md`, `docs/impl/BACKLOG.md` (`# TODO(OQ-7)`) | `M11, M13` | `M13 Documented (# TODO(OQ-7) reaper hook + pg_dump/pg_restore RUNBOOK.md & RPO/RTO BACKLOG.md)` |
 | `OQ-8` | `DEGRADED_MODE_MAX_AGE_HOURS` & `Deprecation`/`Sunset` duration | `core/config.py`, `worker/runner.py`, `repositories/analysis.py` + middleware hook `# TODO(OQ-8)` | `M2, M10` | `M2+M10 Verified (middleware headers + 72h replay window & 73h expiry)` |
 | `OQ-9` | Exact Guelma regional & demo parcel coords | `db/seed.py` `# TODO(OQ-9)` | `M1` | `M1 Placeholder Added` |
-| `OQ-10` | Protected/greenhouse `INPUT-03` override | `services/validation.py` `# TODO(OQ-10)` | `M7` | `Pending` |
+| `OQ-10` | Protected/greenhouse `INPUT-03` override | `services/analysis_input.py:178` `# TODO(OQ-10)`, `docs/impl/BACKLOG.md` | `M7, M13` | `M7+M13 Documented (# TODO(OQ-10) marked at INPUT-03 check & BACKLOG.md pending Agronomy rules)` |
 | `OQ-11` | Strategy tie-breaking & `priority_fit` spread | Delegated to External ML; `SEM-01` checks structural order | `M9` | `M9 Implemented (# TODO(OQ-11) SEM-01 structural order checks)` |
 | `OQ-D1` | `Schema: dataset` tables/columns/units | `db/migrations/versions/001_initial_schema.py` empty `dataset` schema + `ALTER DEFAULT PRIVILEGES` | `M1` | `M1 Schema Isolated` |
 | `OQ-D2` | Spatial & temporal dataset coverage bounds | `public.dataset_registry` metadata (`db/seed.py`) | `M1` | `M1 Registry Seeded` |
@@ -221,3 +221,13 @@
 | `OQ-D6` | Minimum parcel history richness for `422 INSUFFICIENT_DATA` | ML error pass-through (`worker/runner.py`) + minItems=1 | `M5, M8` | `M5+M8 Verified (minItems=1 schema + M8 422 INSUFFICIENT_DATA no-refund fail)` |
 | `OQ-D7` | Authoritative Guelma administrative shapefile | Placeholder 10-vertex Polygon in `db/seed.py` (`# TODO(OQ-D7)`) | `M1` | `M1 Placeholder Added` |
 | `OQ-D8` | Unstudied demo parcel field measurements | Optional frontend `is_unverified_demo_parcel=true` -> `DEMO_PARCEL_UNVERIFIED` (`default_parcel_*` removed per `IMPL-023`) | `M1, M3, M5` | `M1+M3+M5 Verified (IMPL-023 + field DEMO_PARCEL_UNVERIFIED notice)` |
+
+## 9. Containerization, Readiness & Documentation (`M13`)
+
+| ID | Verification Item | Artifact / Command | Milestone | Status |
+| :--- | :--- | :--- | :---: | :--- |
+| `M13-01` | Editable package install & `PYTHONPATH=/app` in `backend/Dockerfile` (`contracts/` + `fixtures/` resolution) | `backend/Dockerfile`, `docker-compose.yml` (`mock-ml` healthcheck) | `M13` | `M13 Verified (4 images built & Compose config valid)` |
+| `M13-02` | Fresh-volume 6-container boot (`db`, `redis`, `migrate`, `mock-ml`, `api`, `worker`) | `docker compose --profile dev down -v && up -d --build --wait` | `M13` | `M13 Verified (migrate Exit 0; db/redis/mock-ml/api/worker Healthy)` |
+| `M13-03` | Live Compose wire E2E (`api` -> `db`/`redis` -> `worker` -> `mock-ml` HTTP + `Idempotency-Key` + `PATCH /selection` + zero-PII `input_snapshot_gz`) | Live Compose HTTP suite + `docker compose exec -T worker python -m app.worker.healthcheck` | `M13` | `M13 Verified (202 -> ok -> analysis_<12hex> over Docker network)` |
+| `M13-04` | Frontend & ML readiness (CORS `http://localhost:5173`, `/openapi.json` `24` paths/`34` ops, `ErrorEnvelope`, `ML_PROVIDER_MODE=real`, `X-ML-API-Key` rotation `401->200`, `APP_ENV=production` fail-safe, `ml_reader` isolation) | Live Compose containers + `psql -U ml_reader` | `M13` | `M13 Verified (CORS, ErrorEnvelope, real_ml rotation, production guard, ml_reader RO)` |
+| `M13-05` | Operations runbook, backlog index, root quickstart & traceability closeout | `README.md`, `docs/impl/RUNBOOK.md`, `docs/impl/BACKLOG.md`, `docs/impl/TRACEABILITY.md` | `M13` | `M13 Verified (19/19 OQ indexed, zero Pending items)` |

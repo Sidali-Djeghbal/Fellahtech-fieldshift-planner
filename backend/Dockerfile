@@ -2,7 +2,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 # `curl` is required by the Docker Compose `api` healthcheck.
 RUN apt-get update \
@@ -21,7 +22,8 @@ COPY contracts ./contracts
 COPY tools ./tools
 COPY app ./app
 
-RUN pip install --no-deps --no-build-isolation . \
+RUN pip install editables \
+    && pip install --no-deps --no-build-isolation -e . \
     && chown -R appuser:appuser /app
 USER appuser
 

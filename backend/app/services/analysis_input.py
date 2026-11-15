@@ -175,6 +175,7 @@ def validate_input_rules(
             ],
         )
 
+    # TODO(OQ-10): Support protected/greenhouse INPUT-03 override once Agronomy Lead defines rules.
     planting_month = payload.planning.planting_month
     if planting_month is None:
         return
