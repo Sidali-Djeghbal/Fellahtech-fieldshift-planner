@@ -180,13 +180,32 @@ def _validate_semantics(payload: Dict[str, Any], errors: List[str]) -> None:
         if not s.get("explanation", {}).get("evidence"):
             errors.append(f"{s['strategy_id']}: explanation.evidence must not be empty.")
 
-    # 5. Conditional recommendation awareness
+    # 5. Conditional recommendation & Phase N decision gate consistency
     eligible_strats = [s for s in strats if s["feasibility_status"] in ELIGIBLE_STATUSES]
     if not eligible_strats and sugg_id is not None:
         errors.append("Zero eligible strategies exist; suggested_strategy_id must be null.")
     if rec_status == "CONDITIONAL_RECOMMENDATION_REQUIRES_LOCAL_VERIFICATION":
         if any(s["feasibility_status"] == "FEASIBLE_PASS" for s in eligible_strats):
             errors.append("rec_status indicates all conditional, yet a FEASIBLE_PASS strategy exists.")
+
+    d_gate = fp.get("decision_gate")
+    if isinstance(d_gate, dict):
+        d_status = d_gate.get("decision_status")
+        endorsed = d_gate.get("endorsed_recommendation_id")
+        allowed_decisions = {
+            "FEASIBLE_PASS",
+            "CONDITIONALLY_FEASIBLE",
+            "REQUIRES_LOCAL_VERIFICATION",
+            "EXPLORATORY_ONLY",
+            "INFEASIBLE",
+            "NO_RECOMMENDATION",
+        }
+        if d_status not in allowed_decisions:
+            errors.append(f"decision_gate.decision_status '{d_status}' must be one of {sorted(allowed_decisions)}.")
+        if d_status in {"EXPLORATORY_ONLY", "INFEASIBLE", "NO_RECOMMENDATION"} and endorsed is not None:
+            errors.append(f"decision_gate '{d_status}' cannot carry a non-null endorsed_recommendation_id ('{endorsed}').")
+        if d_status == "EXPLORATORY_ONLY" and not d_gate.get("provisional_only"):
+            errors.append("decision_gate 'EXPLORATORY_ONLY' must set provisional_only=true.")
 
     # 6. Pareto references must point only to eligible strategy IDs
     ps = fp.get("pareto_summary", {})

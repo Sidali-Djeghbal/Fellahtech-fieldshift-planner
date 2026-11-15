@@ -90,8 +90,20 @@ class TestPhaseJOutputEngine(unittest.TestCase):
         ds["terrain_dem"]["dem_elevation_m"]["quality_status"] = "REMOTE_SENSING_DERIVED"
         ds["soilgrids_v6"]["nitrogen_0_30cm"]["quality_status"] = "MEASURED_OR_OBSERVED"
         ds["soilgrids_v6"]["nitrogen_0_30cm"]["value"] = 1.4
+        ds["soilgrids_v6"]["clay_0_30cm"]["polygon_coverage_pct"] = 100.0
+        ds["crop_frequency"]["crop_frequency_2021_2025"]["value"] = 0.85
+        ds["crop_frequency"]["crop_frequency_2021_2025"]["stats"] = {"cropland_share_ge_05_pct": 85.0}
         fp["section_d_quality_and_uncertainty"]["quality_status_counts"]["UNAVAILABLE_NOT_INTEGRATED"] = 0
         fp["section_d_quality_and_uncertainty"]["quality_status_counts"]["UNVALIDATED_EXCLUDED"] = 0
+        fp["section_c_agronomic_knowledge_base"]["land_use_assessment"] = {
+            "status": "LAND_USE_SUPPORTED",
+            "is_provisional": False,
+            "requires_local_verification": False,
+            "confidence": "HIGH",
+            "crop_frequency_mean": 0.85,
+            "soilgrids_clay_coverage_pct": 100.0,
+            "explanations": ["Synthetic full-readiness arable verification for COMPLETE test fixture."],
+        }
 
         cand = generate_rotation_candidates(fp)
         # Simulate one FEASIBLE_PASS candidate with all warnings/unknowns resolved

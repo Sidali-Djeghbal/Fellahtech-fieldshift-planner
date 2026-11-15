@@ -4,13 +4,19 @@ const PRESETS = {
   belkheir: {
     fieldId: "FLD_BELKHEIR_PILOT",
     fieldName: "Belkheir / Boumahra Alluvial Parcel",
-    coords: [[[7.435, 36.443], [7.441, 36.443], [7.441, 36.447], [7.435, 36.447], [7.435, 36.443]]],
+    coords: [[[7.48, 36.47], [7.486, 36.47], [7.486, 36.474], [7.48, 36.474], [7.48, 36.47]]],
     water: { availability: "limited", source: "rainfed", irrigation_system: "none" },
   },
   tamlouka: {
     fieldId: "FLD_TAMLOUKA_PILOT",
     fieldName: "Tamlouka Semi-Arid Southern Parcel",
     coords: [[[7.137, 36.128], [7.143, 36.128], [7.143, 36.132], [7.137, 36.132], [7.137, 36.128]]],
+    water: { availability: "limited", source: "rainfed", irrigation_system: "none" },
+  },
+  periurban: {
+    fieldId: "FLD_PERIURBAN_CHECK",
+    fieldName: "Guelma South-East Peri-Urban Boundary Check",
+    coords: [[[7.435, 36.443], [7.441, 36.443], [7.441, 36.447], [7.435, 36.447], [7.435, 36.443]]],
     water: { availability: "limited", source: "rainfed", irrigation_system: "none" },
   },
 };
@@ -150,6 +156,7 @@ function buildApiPayload(includeAnalyzeFields = true) {
       start_season: el("startSeason").value,
       start_year: Number(el("startYear").value),
       horizon_seasons: Number(el("horizonSeasons").value),
+      planning_mode: el("planningMode").value,
     },
   };
 
@@ -213,7 +220,20 @@ function showError(msg) {
   el("errorCard").innerHTML = `<div class="notice notice-error"><strong>Validation / Request Error:</strong> ${msg}</div>`;
 }
 
-function statusBadgeHtml(feasStatus, isTop) {
+function defaultOpenPlanningPeriod(now = new Date()) {
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const y = now.getFullYear();
+  if (m === 1 || m === 2 || (m === 3 && d <= 15)) return { season: "Winter", year: y };
+  if (m <= 5) return { season: "Spring", year: y };
+  if (m <= 8) return { season: "Summer", year: y };
+  return { season: "Autumn", year: y };
+}
+
+function statusBadgeHtml(feasStatus, isTop, provisional = false) {
+  if (provisional) {
+    return `<span class="badge badge-unknown">${isTop ? "Exploratory Candidate (Unendorsed)" : "Provisional / Unverified Land Use"}</span>`;
+  }
   if (feasStatus === "FEASIBLE_PASS") return `<span class="badge badge-recommended">Recommended</span>`;
   if (feasStatus === "CONDITIONALLY_FEASIBLE_WITH_WARNINGS_OR_UNKNOWNS") {
     return `<span class="badge badge-conditional">${isTop ? "Top Conditional Choice" : "Conditionally Recommended"}</span>`;
@@ -232,23 +252,35 @@ function renderAnalysisResult(data) {
   const sv = fp.spatial_validation;
   const rec = data.recommendation;
   const fplan = rec.field_plans[0];
+  const gate = fplan.decision_gate || {};
+  const lu = fplan.land_use_assessment || fp.land_use_assessment || {};
+  const dq = fplan.data_quality || {};
+  const crit = dq.critical_data_adequacy || {};
+  const wb = fplan.water_balance_assessment || {};
 
   el("fieldProfileBox").innerHTML = `
     <div class="kpi-grid">
       <div class="kpi"><div class="label">Commune &amp; Area</div><div class="val">${sv.primary_commune ? sv.primary_commune.name_2 : "Unknown"} (${sv.area_ha} ha)</div></div>
-      <div class="kpi"><div class="label">Soil Texture (SoilGrids 250m)</div><div class="val">${ex.usda_texture_0_5cm || "Masked/Null"} (Clay: ${ex.clay_0_30cm_pct.value ?? "null"}%)</div></div>
+      <div class="kpi"><div class="label">Land-Use Evidence (10m CropFreq)</div><div class="val">${lu.status || "UNKNOWN"} (CF=${ex.crop_frequency_2021_2025.value ?? "null"})</div></div>
+      <div class="kpi"><div class="label">Soil Texture (SoilGrids 250m)</div><div class="val">${ex.usda_texture_0_5cm || "Masked/Null"} (Clay: ${ex.clay_0_30cm_pct.value ?? "null"}%, cov=${ex.clay_0_30cm_pct.polygon_coverage_pct ?? "null"}%)</div></div>
       <div class="kpi"><div class="label">SOC / pH (Modeled, Not Lab)</div><div class="val">SOC ${ex.soc_0_30cm_g_kg.value ?? "null"} g/kg | pH ${ex.ph_0_30cm.value ?? "null"}</div></div>
       <div class="kpi"><div class="label">Precip Spread (11–55 km)</div><div class="val">${ex.gpm_annual_precip_mm.value ?? "?"} mm GPM / ${ex.nasa_power_annual_precip_mm.value ?? "?"} mm POWER</div></div>
       <div class="kpi"><div class="label">DEM Terrain</div><div class="val">${ex.dem_elevation_m.value ?? "UNAVAILABLE_NOT_INTEGRATED"}</div></div>
-      <div class="kpi"><div class="label">Data Completeness (Not Confidence)</div><div class="val">${(fplan.data_quality.completeness_score * 100).toFixed(1)}%</div></div>
+      <div class="kpi"><div class="label">Catalog Completeness</div><div class="val">${((dq.completeness_score || 0) * 100).toFixed(1)}% (Not Confidence)</div></div>
+      <div class="kpi"><div class="label">Critical Data Adequacy</div><div class="val">${crit.adequacy_status || "UNKNOWN"}</div></div>
     </div>
     <p class="muted">${fp.provenance_disclosures.soilgrids_vs_laboratory_distinction}</p>
   `;
 
+  const bannerCls = gate.decision_status === "EXPLORATORY_ONLY" || !fplan.suggested_strategy_id ? "notice-error" : "notice-conditional";
+  const nearTieHtml = gate.near_tie_detected
+    ? `<br/><strong>Near-Tie / Sensitivity Caution (${gate.margin_status}):</strong> Alternatives close in score: ${(gate.plausible_alternatives || []).map((a) => `${a.strategy_id} (Δ=${a.score_gap_from_top})`).join(", ")}`
+    : "";
   el("overallBanner").innerHTML = `
-    <div class="notice ${fplan.suggested_strategy_id ? "notice-conditional" : "notice-error"}">
-      <strong>Analysis ID:</strong> <code>${data.analysis_id}</code> | <strong>Status:</strong> ${fplan.recommendation_status}<br/>
-      ${rec.overall_summary}<br/>
+    <div class="notice ${bannerCls}">
+      <strong>Analysis ID:</strong> <code>${data.analysis_id}</code> | <strong>Decision Gate:</strong> ${gate.decision_status || fplan.recommendation_status} | <strong>Endorsed ID:</strong> ${gate.endorsed_recommendation_id || "NONE (Exploratory/Unendorsed)"}<br/>
+      <strong>Water Modeling Scope:</strong> Ordinal crop regime only — FAO-56 Penman-Monteith balance is <code>${wb.fao56_water_balance_status || "UNKNOWN"}</code>.<br/>
+      ${rec.overall_summary}${nearTieHtml}<br/>
       <small><strong>Important:</strong> Ordinal scores reflect multi-criteria agronomic suitability—NOT predicted crop yield (t/ha), farm profit, or scientific probability.</small>
     </div>
   `;
@@ -266,25 +298,27 @@ function renderAnalysisResult(data) {
 
   el("strategiesList").innerHTML = fplan.strategies.map((s) => {
     const isTop = s.strategy_id === fplan.suggested_strategy_id;
+    const isProvisional = Boolean(s.provisional || gate.provisional_only);
     const infeas = s.feasibility_status === "INFEASIBLE_HARD_CONSTRAINT" || s.feasibility_status === "UNVERIFIED_HARD_UNKNOWN";
     const sc = s.scores;
+    const stab = s.stability_metrics || {};
     const slotsHtml = s.seasons.map((sl) => `
       <div class="slot-pill"><strong>${sl.order}. ${sl.season} ${sl.year}</strong><br/>${sl.crop_name}</div>
     `).join("");
 
     return `
-      <article class="strategy-card ${isTop ? "top-choice" : ""} ${infeas ? "infeasible-card" : ""}">
+      <article class="strategy-card ${isTop && !isProvisional ? "top-choice" : ""} ${infeas ? "infeasible-card" : ""}">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
           <strong>${s.rank ? `#${s.rank} ` : ""}${s.name}</strong>
-          <div>${statusBadgeHtml(s.feasibility_status, isTop)} <span class="badge badge-unknown">${s.pareto_status}</span></div>
+          <div>${statusBadgeHtml(s.feasibility_status, isTop, isProvisional)} <span class="badge badge-unknown">${s.pareto_status}</span></div>
         </div>
         <p class="muted" style="margin:0.3rem 0;">${s.description}</p>
         <div class="sequence-strip">${slotsHtml}</div>
         <div class="kpi-grid">
           <div class="kpi"><div class="label">Relative Composite Score</div><div class="val">${s.weighted_score !== null ? s.weighted_score : "N/A (Excluded)"}</div></div>
-          <div class="kpi"><div class="label">Water Efficiency</div><div class="val">${sc.water_efficiency.score ?? "UNKNOWN"} (${sc.water_efficiency.status})</div></div>
+          <div class="kpi"><div class="label">Water Efficiency (Ordinal)</div><div class="val">${sc.water_efficiency.score ?? "UNKNOWN"} (${sc.water_efficiency.status})</div></div>
           <div class="kpi"><div class="label">Soil Improvement</div><div class="val">${sc.soil_improvement.score ?? "UNKNOWN"} (${sc.soil_improvement.status})</div></div>
-          <div class="kpi"><div class="label">Income Potential</div><div class="val">${sc.income_potential.status}</div></div>
+          <div class="kpi"><div class="label">Stability / Income</div><div class="val">${stab.top_1_retention !== undefined ? `Top-1: ${(stab.top_1_retention * 100).toFixed(0)}% | ` : ""}${sc.income_potential.status}</div></div>
         </div>
         <p style="font-size:0.86rem; margin:0.4rem 0;"><strong>Why:</strong> ${s.explanation.summary}</p>
         <details>
@@ -312,8 +346,11 @@ function renderAnalysisResult(data) {
 }
 
 async function init() {
+  const defPlan = defaultOpenPlanningPeriod(new Date());
+  el("startSeason").value = defPlan.season;
+  el("startYear").value = String(defPlan.year);
   setPolygonTextFromVertices();
-  addHistoryRow("Autumn", 2024, "Durum Wheat");
+  addHistoryRow("Autumn", defPlan.year - 2, "Durum Wheat");
 
   el("historyMode").addEventListener("change", () => {
     el("historyListWrap").classList.toggle("hidden", el("historyMode").value !== "provided");
@@ -344,6 +381,7 @@ async function init() {
   };
   el("btnPresetBelkheir").addEventListener("click", () => applyPreset("belkheir"));
   el("btnPresetTamlouka").addEventListener("click", () => applyPreset("tamlouka"));
+  el("btnPresetPeriUrban").addEventListener("click", () => applyPreset("periurban"));
   el("btnAddHistory").addEventListener("click", () => addHistoryRow("Autumn", 2023, "Faba Bean"));
 
   try {

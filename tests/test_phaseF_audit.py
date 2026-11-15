@@ -71,6 +71,7 @@ def _minimal_payload(geometry: dict, geometry_crs: str = "EPSG:4326") -> dict:
             "start_season": "Winter",
             "start_year": 2025,
             "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
         },
     }
 

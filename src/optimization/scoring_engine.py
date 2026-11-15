@@ -12,8 +12,15 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from src.agronomic.constraint_engine import AgronomicKnowledgeBase, load_knowledge_base
+from src.agronomic.land_use_assessment import (
+    LAND_USE_DATA_UNAVAILABLE,
+    LAND_USE_LOW_EVIDENCE,
+    LAND_USE_SUPPORTED,
+    assess_land_use,
+)
 from src.optimization.pareto import ACTIVE_SCORE_STATUSES, compute_pareto_front
-from src.optimization.sensitivity import run_sensitivity_analysis
+from src.optimization.sensitivity import DEFAULT_MARGIN_THRESHOLDS, MarginThresholds, run_sensitivity_analysis
+from src.optimization.water_balance import assess_water_balance_readiness
 
 OBJECTIVE_ORDER: Tuple[str, ...] = (
     "water_efficiency",
@@ -297,7 +304,13 @@ def _eval_water_efficiency(
             p_eff = float(precip_mm) if precip_mm is not None else 0.0
             p_min = float(min_rain or 300.0)
             headroom = max(-0.35, min(0.45, (p_eff - p_min) / 300.0))
-            cat_bonus = 0.15 if wcat == "RAINFED_SEMI_ARID_TOLERANT" else 0.05
+            if wcat == "RAINFED_SEMI_ARID_TOLERANT":
+                # Semi-arid resilience confers maximum advantage under moisture limitation (<=500 mm);
+                # under humid sub-humid regimes (>=600 mm), drought specialization loses its relative edge.
+                dry_edge = max(0.0, min(1.0, (600.0 - p_eff) / 100.0))
+                cat_bonus = 0.05 + 0.10 * dry_edge
+            else:
+                cat_bonus = 0.05
             irrig_buf = 0.05 if irrig_active else 0.0
             vals.append(_clip01(0.40 + headroom + cat_bonus + irrig_buf))
         return round(sum(vals) / len(vals), 4)
@@ -330,10 +343,10 @@ def _eval_water_efficiency(
             "evidence_classification": "REMOTE_SENSING_DERIVED + REGIONAL_CLIMATE_CONTEXT",
             "confidence_or_uncertainty": conf,
             "missing_information": missing,
-            "applicability_condition": "Always applicable; favors drought-escaping rainfed crops over high-ET summer irrigation.",
+            "applicability_condition": "Always applicable; ordinal suitability comparison only (NOT volumetric FAO-56 ETc - P_eff).",
             "explanation": (
-                f"Water efficiency score {score_primary:.4f} derived from conservative GPM rainfall headroom against crop "
-                f"minimum rainfed thresholds, drought category, and blue-water irrigation dependence."
+                f"Ordinal water suitability score {score_primary:.4f} (NOT volumetric FAO-56 ETc/irrigation demand) "
+                f"comparing drought tolerance and farmer irrigation access against macro GPM ({gpm_mm} mm/yr) vs POWER ({power_mm} mm/yr)."
             ),
         },
         score_power,
@@ -417,7 +430,9 @@ def _eval_nitrogen_contribution(
     # Check SEQ_07 beneficial legume/vetch -> cereal transitions
     seq_rules = {r["rule_id"]: r for r in strat["constraint_evaluations"].get("sequence_rules", [])}
     seq07 = seq_rules.get("SEQ_07_LEGUME_CEREAL_SYNERGY", {})
-    n_synergy_count = len((seq07.get("observed_inputs") or {}).get("beneficial_transitions", []))
+    obs07 = seq07.get("observed_inputs") or {}
+    transitions = obs07.get("transitions") or obs07.get("beneficial_transitions") or []
+    n_synergy_count = len(transitions)
     synergy_bonus = min(0.12, 0.06 * n_synergy_count)
 
     # Sequence-level biological N supply score normalized so 1+ legumes in 2-4 yrs score meaningfully (~0.35-0.75)
@@ -430,6 +445,11 @@ def _eval_nitrogen_contribution(
     if unquantified_legumes:
         missing.append(
             f"Quantitative kg N/ha fixation is null in KB for {sorted(set(unquantified_legumes))}; scored via SEQ_07 legume break role."
+        )
+
+    if "VETCH_OAT" in crops:
+        missing.append(
+            "Vetch-Oat N contribution varies strongly with vetch:oat seed ratio and off-field hay baling export vs in-situ grazing."
         )
 
     status = "PARTIAL" if unquantified_legumes else "SCORED"
@@ -481,10 +501,15 @@ def _eval_pest_disease_disruption(
             transitions.append(0.0)
 
     trans_ratio = sum(transitions) / len(transitions) if transitions else 0.0
-    warn_penalty = sum(
-        0.12 for rid in ("SEQ_02_CEREAL_REPETITION", "SEQ_04_PULSE_BROOMRAPE_BREAK", "SEQ_06_VETCH_OAT_ROLE_AND_REPEAT")
-        if seq_rules.get(rid, {}).get("status") == "WARNING"
-    )
+    warn_penalty = 0.0
+    for rid in ("SEQ_02_CEREAL_REPETITION", "SEQ_04_PULSE_BROOMRAPE_BREAK"):
+        if seq_rules.get(rid, {}).get("status") == "WARNING":
+            warn_penalty += 0.12
+    seq06_rule = seq_rules.get("SEQ_06_VETCH_OAT_ROLE_AND_REPEAT", {})
+    if seq06_rule.get("status") == "WARNING":
+        rep_mode = (seq06_rule.get("observed_inputs") or {}).get("repeat_mode")
+        # Consecutive 1-yr repeat (<2 yr break) incurs full sanitation penalty; 2-yr hay cycle carries lighter management caution
+        warn_penalty += 0.12 if rep_mode == "CONSECUTIVE_1YR" else 0.04
     fail_penalty = sum(
         0.45 for rid in ("SEQ_02_CEREAL_REPETITION", "SEQ_03_SOLANACEAE_BREAK", "SEQ_04_PULSE_BROOMRAPE_BREAK", "SEQ_05_SUNFLOWER_BREAK")
         if seq_rules.get(rid, {}).get("status") == "FAIL"
@@ -712,7 +737,7 @@ def _eval_farmer_priority_fit(
     for s in strat["seasons"]:
         rules = {r["rule_id"]: r["status"] for r in s["slot_constraint_evaluations"]}
         w_st = rules.get("RULE_WATER_IRRIGATION_GATE", "UNKNOWN")
-        e_st = rules.get("RULE_EQUIPMENT_COMPATIBILITY", "UNKNOWN")
+        e_st = rules.get("RULE_EQUIPMENT_CONSTRAINT_CHECK") or rules.get("RULE_EQUIPMENT_COMPATIBILITY", "UNKNOWN")
         if w_st == "FAIL" or e_st == "FAIL":
             slot_scores.append(0.0)
         elif w_st == "PASS" and e_st == "PASS":
@@ -727,13 +752,13 @@ def _eval_farmer_priority_fit(
 
     missing: List[str] = []
     if equip_flag == "NOT_PROVIDED":
-        missing.append("equipment_constraints is null ('NOT_PROVIDED'); machinery compatibility unverified (RULE_EQUIPMENT_COMPATIBILITY).")
+        missing.append("equipment_constraints is null ('NOT_PROVIDED'); machinery compatibility unverified (RULE_EQUIPMENT_CONSTRAINT_CHECK).")
     status = "PARTIAL" if equip_flag == "NOT_PROVIDED" else "SCORED"
     return {
         "score": score,
         "status": status,
         "evidence": [
-            "preference_handling (target_crop_ids, excluded_crop_ids) & RULE_EQUIPMENT_COMPATIBILITY / RULE_WATER_IRRIGATION_GATE",
+            "preference_handling (target_crop_ids, excluded_crop_ids) & RULE_EQUIPMENT_CONSTRAINT_CHECK / RULE_WATER_IRRIGATION_GATE",
             f"equipment_constraints={equip_flag}; eligible_targets_matched={sum(1 for t in req_targets if t in crops_set)}/{len(req_targets)}.",
         ],
         "evidence_classification": "USER_REPORTED + AGRONOMIC_RULE_BASED",
@@ -805,6 +830,8 @@ def rank_rotation_candidates(
     priority_weights: Optional[Dict[str, Optional[float]]] = None,
     economic_data: Optional[Dict[str, Dict[str, float]]] = None,
     kb: Optional[AgronomicKnowledgeBase] = None,
+    *,
+    margin_thresholds: MarginThresholds = DEFAULT_MARGIN_THRESHOLDS,
 ) -> Dict[str, Any]:
     """Evaluate multi-objective scores, Pareto front, normalized weighted rankings, and sensitivity."""
     kb = kb or load_knowledge_base()
@@ -816,6 +843,45 @@ def rank_rotation_candidates(
     history_assessment = candidate_output.get("history_assessment", {})
     pref_handling = candidate_output.get("preference_handling", {})
     water_ctx = _extract_water_context(candidate_output, field_profile)
+
+    land_use = candidate_output.get("land_use_assessment")
+    if land_use is None and field_profile is not None:
+        land_use = (
+            field_profile.get("section_c_agronomic_knowledge_base", {}).get("land_use_assessment")
+            or assess_land_use(field_profile)
+        )
+    if land_use is None:
+        cf_val = veg_terrain.get("crop_frequency_2021_2025")
+        if cf_val is None:
+            lu_status, is_prov, req_verif = LAND_USE_DATA_UNAVAILABLE, False, True
+        elif float(cf_val) < 0.05:
+            lu_status, is_prov, req_verif = "LAND_USE_UNVERIFIED", True, True
+        elif float(cf_val) < 0.40:
+            lu_status, is_prov, req_verif = LAND_USE_LOW_EVIDENCE, False, True
+        else:
+            lu_status, is_prov, req_verif = LAND_USE_SUPPORTED, False, False
+        land_use = {
+            "status": lu_status,
+            "is_provisional": is_prov,
+            "requires_local_verification": req_verif,
+            "crop_frequency_mean": cf_val,
+            "explanations": [f"Fallback land-use status inferred from crop_frequency_2021_2025={cf_val}."],
+            "provisional_gating_reason": (
+                f"Provisional exploratory gating due to crop_frequency_2021_2025={cf_val}."
+                if is_prov
+                else ("Verify active arable parcel use locally." if req_verif else None)
+            ),
+        }
+
+    water_balance_assessment = (
+        assess_water_balance_readiness(field_profile, kb.crops)
+        if field_profile is not None
+        else {
+            "current_scoring_method": "ORDINAL_REGIME_SUITABILITY",
+            "fao56_water_balance_status": "UNKNOWN",
+            "missing_inputs": ["Full field_profile absent; daily ET0 / DEM / FC-PWP unavailable."],
+        }
+    )
 
     raw_obj_weights, raw_farmer_weights, weight_source = _resolve_weights(
         candidate_output, field_profile, priority_weights
@@ -925,21 +991,16 @@ def rank_rotation_candidates(
         wscore_lookup = {r["strategy_id"]: None for r in ranked_rows}
         ranked_ids = []
 
-    # 5. Recommendation gate (never force an infeasible or unrankable winner)
-    if not eligible_strats:
-        suggested_id: Optional[str] = None
-        rec_status = "NO_STRATEGY_RECOMMENDED_ALL_INFEASIBLE"
-    elif not ranked_ids or active_weight_sum <= 0.0:
-        suggested_id = None
-        rec_status = "INSUFFICIENT_SCORABLE_EVIDENCE_NO_WINNER"
-    elif all_conditional:
-        suggested_id = ranked_ids[0]
-        rec_status = "CONDITIONAL_RECOMMENDATION_REQUIRES_LOCAL_VERIFICATION"
-    else:
-        suggested_id = ranked_ids[0]
-        rec_status = "FEASIBLE_RECOMMENDATION"
+    # 5. Sensitivity analysis & explicit Decision Gating (Phase N hardened)
+    gpm_ann = clim_summary.get("gpm_annual_precip_mm")
+    power_ann = clim_summary.get("nasa_power_annual_precip_mm")
+    precip_spread_mm = (
+        round(abs(float(gpm_ann) - float(power_ann)), 2)
+        if gpm_ann is not None and power_ann is not None
+        else None
+    )
 
-    # 6. Sensitivity analysis across active weighted objectives + climate regime envelope
+    prelim_winner_id: Optional[str] = ranked_ids[0] if (eligible_strats and ranked_ids and active_weight_sum > 0.0) else None
     sens_eligible = [
         {
             "strategy_id": s["strategy_id"],
@@ -953,9 +1014,71 @@ def rank_rotation_candidates(
         baseline_weights_norm={o: normalized_weights[o] for o in active_weighted_objs},
         active_objectives=active_weighted_objs,
         pareto_front_ids=pareto_res["front_strategy_ids"],
-        baseline_winner_id=suggested_id,
+        baseline_winner_id=prelim_winner_id,
         power_water_scores=power_water_scores,
+        margin_thresholds=margin_thresholds,
+        precip_spread_mm=precip_spread_mm,
     )
+
+    provisional_lu = bool(land_use.get("is_provisional", False))
+    gate_reasons: List[str] = []
+    if not eligible_strats:
+        suggested_id: Optional[str] = None
+        rec_status = "NO_STRATEGY_RECOMMENDED_ALL_INFEASIBLE"
+        decision_status = "INFEASIBLE" if raw_strategies else "NO_RECOMMENDATION"
+        endorsed_id: Optional[str] = None
+        gate_reasons.append("Zero strategies satisfied hard feasibility constraints.")
+    elif not ranked_ids or active_weight_sum <= 0.0:
+        suggested_id = None
+        rec_status = "INSUFFICIENT_SCORABLE_EVIDENCE_NO_WINNER"
+        decision_status = "NO_RECOMMENDATION"
+        endorsed_id = None
+        gate_reasons.append("No active scorable objectives available to form a composite ranking.")
+    elif provisional_lu:
+        suggested_id = prelim_winner_id
+        rec_status = "EXPLORATORY_ONLY"
+        decision_status = "EXPLORATORY_ONLY"
+        endorsed_id = None
+        gate_reasons.append(land_use.get("provisional_gating_reason") or f"Provisional land-use gate: {land_use.get('status')}.")
+    elif all_conditional or land_use.get("requires_local_verification"):
+        suggested_id = prelim_winner_id
+        rec_status = "CONDITIONAL_RECOMMENDATION_REQUIRES_LOCAL_VERIFICATION"
+        # Distinguish CONDITIONALLY_FEASIBLE (soft cautions only) vs REQUIRES_LOCAL_VERIFICATION (UNKNOWN/missing critical data)
+        has_hard_or_critical_unknowns = bool(
+            water_balance_assessment.get("fao56_water_balance_status") != "COMPUTED_FULL"
+            or any(
+                s["constraint_evaluations"].get("overall_status_counts", {}).get("UNKNOWN", 0) > 0
+                for s in eligible_strats
+            )
+            or land_use.get("requires_local_verification")
+        )
+        decision_status = "REQUIRES_LOCAL_VERIFICATION" if has_hard_or_critical_unknowns else "CONDITIONALLY_FEASIBLE"
+        endorsed_id = prelim_winner_id
+        if has_hard_or_critical_unknowns:
+            gate_reasons.append("Unresolved UNKNOWN constraints (e.g. DEM/drainage, ECe salinity, history, or land-use check) require local verification.")
+        if sensitivity_res.get("near_tie_detected"):
+            gate_reasons.append(
+                f"Ranking near-tie/narrow margin ({sensitivity_res.get('margin_status')}: diff={sensitivity_res.get('baseline_top_two_margin')}); "
+                "plausible alternatives should be considered jointly."
+            )
+    else:
+        suggested_id = prelim_winner_id
+        rec_status = "FEASIBLE_RECOMMENDATION"
+        decision_status = "FEASIBLE_PASS"
+        endorsed_id = prelim_winner_id
+
+    decision_gate = {
+        "decision_status": decision_status,
+        "endorsed_recommendation_id": endorsed_id,
+        "exploratory_candidate_id": prelim_winner_id if decision_status == "EXPLORATORY_ONLY" else None,
+        "suggested_strategy_endorsed": bool(endorsed_id is not None),
+        "provisional_only": bool(decision_status == "EXPLORATORY_ONLY"),
+        "land_use_status": land_use.get("status"),
+        "margin_status": sensitivity_res.get("margin_status"),
+        "near_tie_detected": bool(sensitivity_res.get("near_tie_detected", False)),
+        "plausible_alternatives": sensitivity_res.get("plausible_alternatives", []),
+        "gating_reasons": gate_reasons,
+    }
 
     # 7. Assemble final strategy objects conforming to Section 7 output contract
     strat_by_id = {s["strategy_id"]: s for s in raw_strategies}
@@ -1038,6 +1161,8 @@ def rank_rotation_candidates(
                 "name": strat.get("name"),
                 "is_existing_rotation": strat.get("is_existing_rotation", False),
                 "selection_status": strat.get("selection_status"),
+                "provisional": bool(provisional_lu or strat.get("provisional", False)),
+                "land_use_status": land_use.get("status"),
                 "feasibility_status": strat["feasibility_status"],
                 "feasible": is_elig,
                 "rank": rank_lookup.get(sid),
@@ -1046,6 +1171,7 @@ def rank_rotation_candidates(
                 "weighted_score": wscore_lookup.get(sid),
                 "seasons": strat.get("seasons", []),
                 "scores": sc_map,
+                "stability_metrics": sensitivity_res.get("per_strategy_stability", {}).get(sid),
                 "confidence": {
                     "level": conf_level,
                     "score_coverage_ratio": cov_ratio,
@@ -1079,13 +1205,16 @@ def rank_rotation_candidates(
     )
 
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "phase": "PHASE_I_SCORING_AND_RANKING",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "field_id": candidate_output.get("field_id"),
         "field_name": candidate_output.get("field_name"),
         "suggested_strategy_id": suggested_id,
         "recommendation_status": rec_status,
+        "decision_gate": decision_gate,
+        "land_use_assessment": land_use,
+        "water_balance_assessment": water_balance_assessment,
         "all_candidates_conditional": all_conditional,
         "feasibility_gate_summary": {
             "total_input_candidates": len(raw_strategies),
@@ -1103,6 +1232,7 @@ def rank_rotation_candidates(
             "normalized_active_weights": normalized_weights,
             "normalized_active_weight_sum": round(sum(normalized_weights.values()), 6),
             "inactive_objectives_audit": inactive_weight_audit,
+            "water_efficiency_scope": "ORDINAL_REGIME_SUITABILITY (not volumetric FAO-56 ETc/irrigation demand)",
             "tie_breaker": "(-weighted_score, is_non_pareto_front, -pass_rule_count, strategy_id)",
             "income_policy": "Qualitative market tier reported separately; numeric income_potential scored ONLY with verified local yield/price/cost data.",
             "forage_policy": "Null ('NOT_PROVIDED') and 0.0 keep forage_value inactive ('NOT_APPLICABLE'); never silently treated as favorable or penalized.",

@@ -22,6 +22,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from fieldshift_integration.config import PROJECT_ROOT
+from src.agronomic.land_use_assessment import (
+    LAND_USE_CONFLICTING_EVIDENCE,
+    LAND_USE_DATA_UNAVAILABLE,
+    LAND_USE_LOW_EVIDENCE,
+    LAND_USE_UNVERIFIED,
+    assess_land_use,
+)
 
 KNOWLEDGE_DIR = PROJECT_ROOT / "agronomic_knowledge"
 CROP_PROFILES_JSON = KNOWLEDGE_DIR / "crop_profiles.json"
@@ -453,23 +460,46 @@ def _eval_salinity_unmeasured(kb: AgronomicKnowledgeBase, crop: Dict[str, Any], 
 
 
 def _eval_cropland_veg(
-    kb: AgronomicKnowledgeBase, crop: Dict[str, Any], cf_sec: Dict[str, Any], s2_sec: Dict[str, Any], modis_sec: Dict[str, Any]
+    kb: AgronomicKnowledgeBase,
+    crop: Dict[str, Any],
+    cf_sec: Dict[str, Any],
+    s2_sec: Dict[str, Any],
+    modis_sec: Dict[str, Any],
+    land_use: Optional[Dict[str, Any]] = None,
 ) -> RuleEvaluation:
     cf = _metric_val(cf_sec, "crop_frequency_2021_2025")
     s2_ndvi = _metric_val(s2_sec, "s2_2024_03_ndvi_10m")
     modis_sp = _metric_val(modis_sec, "modis_ndvi_spring_2016_2025_mean")
-    obs = {"crop_frequency_2021_2025": cf, "s2_2024_03_ndvi_10m": s2_ndvi, "modis_spring_ndvi": modis_sp}
+    lu_status = (land_use or {}).get("status")
+    obs = {
+        "crop_frequency_2021_2025": cf,
+        "s2_2024_03_ndvi_10m": s2_ndvi,
+        "modis_spring_ndvi": modis_sp,
+        "land_use_status": lu_status,
+        "soilgrids_clay_coverage_pct": (land_use or {}).get("soilgrids_clay_coverage_pct"),
+    }
     if cf is None and s2_ndvi is None and modis_sp is None:
-        return _make_rule(kb, "RULE_CROPLAND_VEG_CONTEXT", "UNKNOWN", "All remote-sensing vegetation layers missing locally.", "Parcel land cover unverified.", obs)
-    if cf is not None and cf < 0.2 and crop["crop_id"] not in {"OLIVE", "BARE_FALLOW"}:
         return _make_rule(
-            kb, "RULE_CROPLAND_VEG_CONTEXT", "WARNING",
-            f"Low 2021-2025 ESA Crop Frequency ({cf} < 0.20): polygon may contain permanent orchards, buildings, water, or non-arable land.",
-            "CropFreq valid ONLY 2021-2025 (blocked 2017-2020); multi-year S2 rasters remain Wilaya fallback only.", obs,
+            kb, "RULE_CROPLAND_VEG_CONTEXT", "UNKNOWN",
+            "All remote-sensing vegetation layers missing locally.",
+            "Parcel land cover unverified (LAND_USE_DATA_UNAVAILABLE).", obs,
         )
+    if crop["crop_id"] not in {"OLIVE", "BARE_FALLOW"}:
+        if lu_status in {LAND_USE_UNVERIFIED, LAND_USE_CONFLICTING_EVIDENCE}:
+            return _make_rule(
+                kb, "RULE_CROPLAND_VEG_CONTEXT", "WARNING",
+                f"Multi-signal land-use gate={lu_status} (CropFreq 2021-2025={cf}, SoilGrids cov={obs['soilgrids_clay_coverage_pct']}%, S2 NDVI={s2_ndvi}): annual cropland unverified/conflicting; results are EXPLORATORY_ONLY.",
+                "Non-arable/urban boundary mismatch or permanent cover suspected; verify parcel boundary before acting on annual crop plans.", obs,
+            )
+        if lu_status in {LAND_USE_LOW_EVIDENCE, LAND_USE_DATA_UNAVAILABLE} or (cf is not None and cf < 0.2):
+            return _make_rule(
+                kb, "RULE_CROPLAND_VEG_CONTEXT", "WARNING",
+                f"Land-use verification caution ({lu_status or 'LOW_CROP_FREQ'}, CropFreq 2021-2025={cf}): polygon may contain intermittent fallow, permanent orchards, or edge pixels.",
+                "CropFreq valid ONLY 2021-2025 (blocked 2017-2020); verify active arable parcel use locally.", obs,
+            )
     return _make_rule(
         kb, "RULE_CROPLAND_VEG_CONTEXT", "PASS",
-        f"Cropland & vegetation context observed (CropFreq 2021-2025={cf}, S2 2024-03 NDVI={s2_ndvi}, MODIS Spring={modis_sp}).",
+        f"Cropland & vegetation context observed ({lu_status or 'SUPPORTED'}, CropFreq 2021-2025={cf}, S2 2024-03 NDVI={s2_ndvi}, MODIS Spring={modis_sp}).",
         "Vegetation greenness never identifies crop species; Wilaya multi-year S2 metric is regional fallback only.", obs,
     )
 
@@ -575,6 +605,10 @@ def evaluate_crop_for_field(
     s2 = ds["sentinel2"]
     modis = ds["modis"]
     terrain = ds["terrain_dem"]
+    land_use = (
+        field_profile.get("section_c_agronomic_knowledge_base", {}).get("land_use_assessment")
+        or assess_land_use(field_profile)
+    )
 
     evals: List[RuleEvaluation] = [
         _eval_perennial_exclusion(kb, crop),
@@ -588,7 +622,7 @@ def evaluate_crop_for_field(
         _eval_soil_ph(kb, crop, soil),
         _eval_soil_soc(kb, crop, soil),
         _eval_salinity_unmeasured(kb, crop, water),
-        _eval_cropland_veg(kb, crop, cf, s2, modis),
+        _eval_cropland_veg(kb, crop, cf, s2, modis, land_use=land_use),
         _eval_hypothesis_status(kb, crop),
         _eval_equipment_constraints(kb, crop, sec_a),
         _eval_forage_alignment(kb, crop, sec_a),
@@ -817,15 +851,25 @@ def evaluate_crop_sequence(
     pulse_indices = [(i, combined[i][1]) for i in range(len(combined)) if combined[i][1] in pulses]
     same_pulse_or_orobanche = False
     cross_pulse_short = False
+    short_pulse_pairs: List[Dict[str, Any]] = []
     for pos_b in range(len(pulse_indices)):
         ib, cb = pulse_indices[pos_b]
         if ib < plan_start_idx:
             continue
         for pos_a in range(pos_b):
             ia, ca = pulse_indices[pos_a]
-            if (ib - ia) < 3:
+            gap = ib - ia
+            if gap < 3:
                 norm_a = "CHICKPEA" if "CHICKPEA" in ca else ca
                 norm_b = "CHICKPEA" if "CHICKPEA" in cb else cb
+                pair_info = {
+                    "earlier_slot": combined[ia][0],
+                    "earlier_crop": ca,
+                    "later_slot": combined[ib][0],
+                    "later_crop": cb,
+                    "interval_seasons": gap,
+                }
+                short_pulse_pairs.append(pair_info)
                 if norm_a == norm_b or ({ca, cb} == {"FABA_BEAN", "LENTIL"}):
                     same_pulse_or_orobanche = True
                 else:
@@ -833,20 +877,20 @@ def evaluate_crop_sequence(
     if same_pulse_or_orobanche:
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_04_PULSE_BROOMRAPE_BREAK", "FAIL",
-            "Repeated food legume or Faba Bean <-> Lentil within <3 years escalates Orobanche crenata / Ascochyta / Fusarium blight.",
-            {"pulse_positions": pulse_indices},
+            f"Hard constraint FAIL: same legume genus or Faba Bean <-> Lentil within <3 seasons ({short_pulse_pairs}) escalates Orobanche crenata / host-specific Ascochyta blight.",
+            {"pulse_positions": pulse_indices, "short_pulse_pairs": short_pulse_pairs, "rule_tier": "HARD_FAIL_SAME_PULSE_OR_OROBANCHE"},
         ))
     elif cross_pulse_short:
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_04_PULSE_BROOMRAPE_BREAK", "WARNING",
-            "Cross-legume placement within <3 years shares Sclerotinia/Fusarium carryover risk; extend gap to 3-4 years if possible.",
-            {"pulse_positions": pulse_indices},
+            f"Soft caution on <3-season cross-genus legume return ({short_pulse_pairs}): host-specific Ascochyta does not cross Faba Bean <-> Chickpea, so feasible with caution, but shared Sclerotinia/Fusarium and secondary Orobanche risk warrants extending break to 3-4 years locally.",
+            {"pulse_positions": pulse_indices, "short_pulse_pairs": short_pulse_pairs, "rule_tier": "SOFT_WARNING_CROSS_PULSE_2YR", "kb_provenance_verified": True},
         ))
     elif any(i >= plan_start_idx for i, _ in pulse_indices):
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_04_PULSE_BROOMRAPE_BREAK", "PASS",
             "Food legume return interval clean inside observed timeline.",
-            {"pulse_positions": pulse_indices},
+            {"pulse_positions": pulse_indices, "rule_tier": "CLEAN_BREAK"},
         ))
 
     # Sunflower 3-year break
@@ -858,19 +902,33 @@ def evaluate_crop_sequence(
             {"sunflower_indices": sun_idx},
         ))
 
-    # Vetch-Oat repeat & role
-    vo_repeat = any(combined[i][1] == "VETCH_OAT" and combined[i - 1][1] == "VETCH_OAT" for i in range(max(1, plan_start_idx), len(combined)))
-    if vo_repeat:
+    # Vetch-Oat repeat & role (consecutive = 1yr; frequent 2yr e.g. Vetch-Oat -> Cereal -> Vetch-Oat)
+    vo_positions = [i for i, (_, cid) in enumerate(combined) if cid == "VETCH_OAT"]
+    vo_consec_repeat = any(
+        combined[i][1] == "VETCH_OAT" and combined[i - 1][1] == "VETCH_OAT"
+        for i in range(max(1, plan_start_idx), len(combined))
+    )
+    vo_short_2yr_cycle = any(
+        vo_positions[k] >= plan_start_idx and (vo_positions[k] - vo_positions[k - 1]) <= 2
+        for k in range(1, len(vo_positions))
+    )
+    if vo_consec_repeat:
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_06_VETCH_OAT_ROLE_AND_REPEAT", "WARNING",
-            "Consecutive Vetch-Oat -> Vetch-Oat repeats Avena (oat) host; cut hay early and rotate cleanly to broadleaf or wheat.",
-            {"combined_timeline": combined},
+            "Consecutive Vetch-Oat -> Vetch-Oat repeats Avena (oat) host (<2 yr break); cut hay early and rotate cleanly to broadleaf or wheat.",
+            {"combined_timeline": combined, "vo_positions": vo_positions, "repeat_mode": "CONSECUTIVE_1YR"},
+        ))
+    elif vo_short_2yr_cycle:
+        seq_evals.append(_make_seq_rule(
+            kb, "SEQ_06_VETCH_OAT_ROLE_AND_REPEAT", "WARNING",
+            "Frequent 2-year Vetch-Oat cycle around cereal hits KB min_return_break_years=2: requires oat share <=35%, strict Apr-May hay cutting BEFORE wild-oat/ryegrass seed shed, and monitoring off-field baled shoot-N/residue export.",
+            {"combined_timeline": combined, "vo_positions": vo_positions, "repeat_mode": "FREQUENT_2YR_CYCLE"},
         ))
     elif "VETCH_OAT" in sequence_crops:
         seq_evals.append(_make_seq_rule(
             kb, "SEQ_06_VETCH_OAT_ROLE_AND_REPEAT", "PASS",
             "Vetch-Oat serves as validated Algerian fallow-replacement forage break (cut in Apr-May before grass-weed seed shed).",
-            {"combined_timeline": combined},
+            {"combined_timeline": combined, "vo_positions": vo_positions, "repeat_mode": "SINGLE_BREAK"},
         ))
 
     # Legume -> Cereal synergy

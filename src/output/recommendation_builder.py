@@ -26,7 +26,7 @@ OBJECTIVE_ORDER: Tuple[str, ...] = (
     "farmer_priority_fit",
 )
 
-DECISION_ENGINE_VERSION = "FieldShift-PhaseFJ-1.0.0"
+DECISION_ENGINE_VERSION = "FieldShift-PhaseFJ-1.1.0"
 DATASET_VERSION_USED = "Guelma_Phases_AD_SoilGridsV6_250m_GPM_SMAP_11km_POWER_2016_2025_S2_2024_03"
 
 
@@ -328,12 +328,157 @@ def _build_requested_crop_results(
     return results
 
 
+def _assess_critical_data_adequacy(
+    field_profile: Dict[str, Any],
+    cand_out: Dict[str, Any],
+    rank_out: Dict[str, Any],
+    *,
+    avail_geospatial: int,
+    completeness_score: float,
+) -> Dict[str, Any]:
+    """Classify decision-critical data adequacy separately from catalog completeness_score."""
+    sec_a = field_profile["section_a_farmer_provided"]
+    ds = field_profile["section_b_extracted_geospatial"]["extracted_datasets"]
+    sec_d = field_profile["section_d_quality_and_uncertainty"]
+    opt_flags = sec_d["input_completeness_flags"]
+    water = sec_a.get("water") or {}
+
+    land_use = rank_out.get("land_use_assessment") or cand_out.get("land_use_assessment") or {}
+    lu_status = str(land_use.get("status") or "UNKNOWN")
+    wb = rank_out.get("water_balance_assessment") or {}
+    wb_status = str(wb.get("fao56_water_balance_status") or "UNKNOWN")
+
+    sg_clay = (ds.get("soilgrids_v6") or {}).get("clay_0_30cm") or {}
+    clay_val = sg_clay.get("value")
+    clay_cov = sg_clay.get("polygon_coverage_pct")
+    clay_qstatus = str(sg_clay.get("quality_status") or "UNKNOWN")
+    sg_n_status = str(((ds.get("soilgrids_v6") or {}).get("nitrogen_0_30cm") or {}).get("quality_status") or "UNVALIDATED_EXCLUDED")
+
+    gpm_ann = ((ds.get("gpm_and_smap") or {}).get("gpm_annual_precip_2016_2025_mean_mm") or {}).get("value")
+    power_ann = ((ds.get("nasa_power") or {}).get("nasa_power_annual_precip_2016_2025_mean_mm") or {}).get("value")
+    dem_slope_status = str(((ds.get("terrain_dem") or {}).get("dem_slope_pct") or {}).get("quality_status") or "UNKNOWN")
+
+    critical_missing: List[Dict[str, str]] = []
+    blockers = 0
+
+    if avail_geospatial == 0 or (gpm_ann is None and power_ann is None):
+        critical_missing.append({
+            "variable": "core_geospatial_and_climate_envelope",
+            "severity": "NOT_ASSESSABLE",
+            "impact": "No usable climate precipitation source or geospatial extraction available.",
+        })
+        return {
+            "adequacy_status": "NOT_ASSESSABLE",
+            "completeness_score": completeness_score,
+            "land_use_verification_status": lu_status,
+            "soilgrids_clay_coverage_pct": clay_cov,
+            "fao56_water_balance_status": wb_status,
+            "critical_gaps": critical_missing,
+            "adequacy_vs_completeness_explanation": (
+                f"Decision adequacy is NOT_ASSESSABLE (catalog completeness={completeness_score:.2f}) because core climate/geospatial inputs are unavailable."
+            ),
+        }
+
+    if lu_status in ("LAND_USE_UNVERIFIED", "LAND_USE_CONFLICTING_EVIDENCE"):
+        blockers += 1
+        critical_missing.append({
+            "variable": "cropland_land_use_verification",
+            "severity": "CRITICAL_BLOCKER",
+            "impact": f"{lu_status}: parcel annual arable cultivation unverified (CropFreq={land_use.get('crop_frequency_mean')}); rotation rankings are exploratory only.",
+        })
+    elif lu_status in ("LAND_USE_LOW_EVIDENCE", "LAND_USE_DATA_UNAVAILABLE"):
+        critical_missing.append({
+            "variable": "cropland_land_use_verification",
+            "severity": "CRITICAL_VERIFICATION_REQUIRED",
+            "impact": f"{lu_status}: verify active arable boundary vs orchard/fallow locally.",
+        })
+
+    sg_present = clay_qstatus not in ("UNAVAILABLE_NOT_INTEGRATED", "TEMPORAL_GUARD_EXCLUDED")
+    if clay_val is None or (sg_present and clay_cov is not None and float(clay_cov) < 25.0):
+        blockers += 1
+        critical_missing.append({
+            "variable": "soilgrids_polygon_soil_coverage",
+            "severity": "CRITICAL_BLOCKER",
+            "impact": f"Modeled SoilGrids covers only {clay_cov}% of polygon (status={clay_qstatus}); soil suitability unrepresentative.",
+        })
+
+    if dem_slope_status in ("UNAVAILABLE_NOT_INTEGRATED", "UNKNOWN", "UNAVAILABLE_MASKED_PIXEL"):
+        critical_missing.append({
+            "variable": "terrain_dem_elevation_and_slope_pct",
+            "severity": "CRITICAL_VERIFICATION_REQUIRED",
+            "impact": "Drainage/waterlogging and slope erosion hazards cannot be confirmed without DEM or field puddling inspection.",
+        })
+
+    if water.get("availability") == "unknown" or (water.get("source") != "rainfed" and water.get("irrigation_system") != "none"):
+        critical_missing.append({
+            "variable": "soil_and_irrigation_salinity_ECe_ECw",
+            "severity": "CRITICAL_VERIFICATION_REQUIRED",
+            "impact": "No local lab ECe/ECw salinity or irrigation flow metering exists on disk.",
+        })
+
+    if sg_n_status == "UNVALIDATED_EXCLUDED":
+        critical_missing.append({
+            "variable": "soil_nitrogen_and_lab_PK",
+            "severity": "CRITICAL_VERIFICATION_REQUIRED",
+            "impact": "SoilGrids Nitrogen is quarantined (N>SOC anomaly) and local lab N/P/K is unavailable.",
+        })
+
+    if opt_flags.get("crop_history") in ("NOT_PROVIDED", "EXPLICITLY_CONFIRMED_EMPTY") or not cand_out.get("history_assessment", {}).get("sufficient_for_existing_baseline", False):
+        critical_missing.append({
+            "variable": "verified_multi_year_crop_history",
+            "severity": "CRITICAL_VERIFICATION_REQUIRED",
+            "impact": "Short/missing crop history leaves Orobanche/Fusarium/take-all break years partially unverified (SEQ_10 UNKNOWN).",
+        })
+
+    if rank_out.get("ranking_methodology", {}).get("inactive_objectives_audit", {}).get("income_potential"):
+        critical_missing.append({
+            "variable": "local_crop_budgets_yield_price_cost",
+            "severity": "ADVISORY_GAP",
+            "impact": "Income_potential remains UNKNOWN without local yield/price/cost enterprise budgets.",
+        })
+
+    if wb_status != "COMPUTED_FULL":
+        critical_missing.append({
+            "variable": "fao56_et0_wind_and_soil_fc_pwp",
+            "severity": "ADVISORY_GAP",
+            "impact": "Full FAO-56 Penman-Monteith water balance is uncomputable (WS2M wind speed, DEM, and soil FC/PWP missing).",
+        })
+
+    if opt_flags.get("equipment_constraints") == "NOT_PROVIDED" or opt_flags.get("forage_value_weight") == "NOT_PROVIDED":
+        critical_missing.append({
+            "variable": "optional_farmer_constraints_or_forage_priority",
+            "severity": "ADVISORY_GAP",
+            "impact": "Null optional farmer preferences/equipment keep operational alignment PARTIAL.",
+        })
+
+    if blockers > 0 or int(rank_out.get("feasibility_gate_summary", {}).get("eligible_for_ranking_count", 0)) == 0:
+        adequacy_status = "INSUFFICIENT"
+    elif len(critical_missing) > 0:
+        adequacy_status = "PARTIAL"
+    else:
+        adequacy_status = "ADEQUATE"
+
+    return {
+        "adequacy_status": adequacy_status,
+        "completeness_score": completeness_score,
+        "land_use_verification_status": lu_status,
+        "soilgrids_clay_coverage_pct": clay_cov,
+        "fao56_water_balance_status": wb_status,
+        "critical_gaps": critical_missing,
+        "adequacy_vs_completeness_explanation": (
+            f"Catalog completeness_score={completeness_score:.4f} counts non-null geospatial/farmer fields ONLY; "
+            f"decision-critical adequacy is '{adequacy_status}' ({len(critical_missing)} critical gap(s), "
+            f"land_use='{lu_status}', SoilGrids coverage={clay_cov}%)."
+        ),
+    }
+
+
 def _build_data_quality(
     field_profile: Dict[str, Any],
     cand_out: Dict[str, Any],
     rank_out: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Build Section 3 data_quality keeping dataset completeness separate from decision confidence."""
+    """Build Section 3 data_quality keeping dataset completeness separate from critical adequacy and decision confidence."""
     sec_d = field_profile["section_d_quality_and_uncertainty"]
     ds = field_profile["section_b_extracted_geospatial"]["extracted_datasets"]
     q_counts = sec_d["quality_status_counts"]
@@ -347,6 +492,13 @@ def _build_data_quality(
     farmer_provided_or_empty = sum(1 for k in farmer_items if opt_flags.get(k) in ("PROVIDED", "EXPLICITLY_CONFIRMED_EMPTY"))
 
     completeness_score = round((avail_geospatial + farmer_provided_or_empty) / max(total_geospatial + len(farmer_items), 1), 4)
+    critical_adequacy = _assess_critical_data_adequacy(
+        field_profile,
+        cand_out,
+        rank_out,
+        avail_geospatial=avail_geospatial,
+        completeness_score=completeness_score,
+    )
 
     missing_data: List[str] = []
     for dom_name, dom in ds.items():
@@ -366,19 +518,28 @@ def _build_data_quality(
     if field_profile["section_b_extracted_geospatial"]["spatial_validation"].get("validation_warnings"):
         warnings.extend(field_profile["section_b_extracted_geospatial"]["spatial_validation"]["validation_warnings"])
 
+    land_use = rank_out.get("land_use_assessment") or cand_out.get("land_use_assessment") or {}
+    if land_use.get("status") and land_use.get("status") != "LAND_USE_SUPPORTED":
+        warnings.append(f"[LAND_USE:{land_use['status']}] {land_use.get('provisional_gating_reason') or 'Verify parcel cropland status.'}")
+    temporal = (field_profile.get("section_a_farmer_provided", {}).get("planning") or {}).get("temporal_validation") or {}
+    if temporal.get("is_historical_simulation"):
+        warnings.extend(temporal.get("warnings") or ["HISTORICAL_SIMULATION mode active."])
+
     limitations = [
         sec_d["soilgrids_vs_laboratory_distinction"],
         sec_d["regional_climate_vs_field_distinction"],
         sec_d["missing_values_policy"],
-        "Data completeness_score tracks availability of raster/tabular inputs and MUST NOT be interpreted as recommendation confidence or agronomic probability of yield success.",
+        "Data completeness_score tracks availability of raster/tabular inputs and MUST NOT be interpreted as critical decision adequacy, recommendation confidence, or yield probability.",
         "Sensitivity stability_index measures ranking invariance across priority-weight and macro-climate perturbations; it is NOT scientific proof or statistical confidence.",
     ]
 
     return {
         "completeness_score": completeness_score,
+        "critical_data_adequacy": critical_adequacy,
         "confidence_note": (
-            f"Data completeness ({completeness_score:.2f}) measures available vs unavailable geospatial/farmer inputs separately from "
-            f"strategy confidence ({rank_out['recommendation_status']}). All recommendations remain subject to missing local DEM/ECe checks."
+            f"Data completeness ({completeness_score:.2f}) measures available vs unavailable catalog inputs ONLY; "
+            f"critical decision adequacy is '{critical_adequacy['adequacy_status']}' and strategy status is '{rank_out['recommendation_status']}'. "
+            "Recommendations remain subject to missing local DEM/ECe and field checks."
         ),
         "missing_data": sorted(set(missing_data)),
         "warnings": sorted(set(warnings)),
@@ -458,6 +619,9 @@ def build_final_recommendation(
                 "dominated_by": i_strat["dominated_by"],
                 "rank": i_strat["rank"],
                 "weighted_score": i_strat["weighted_score"],
+                "provisional": bool(i_strat.get("provisional", False)),
+                "land_use_status": i_strat.get("land_use_status"),
+                "stability_metrics": i_strat.get("stability_metrics"),
                 "explanation": {
                     "summary": i_strat["explanation"],
                     "reasons": i_strat["reasons"],
@@ -475,10 +639,36 @@ def build_final_recommendation(
     data_quality = _build_data_quality(field_profile, candidate_output, ranking_output)
     rec_status = ranking_output["recommendation_status"]
     sugg_id = ranking_output["suggested_strategy_id"]
+    decision_gate = ranking_output.get("decision_gate") or {
+        "decision_status": "INFEASIBLE" if sugg_id is None else ("REQUIRES_LOCAL_VERIFICATION" if ranking_output.get("all_candidates_conditional") else "FEASIBLE_PASS"),
+        "endorsed_recommendation_id": sugg_id,
+        "exploratory_candidate_id": None,
+        "suggested_strategy_endorsed": bool(sugg_id is not None),
+        "provisional_only": False,
+        "land_use_status": (ranking_output.get("land_use_assessment") or {}).get("status"),
+        "margin_status": (ranking_output.get("sensitivity_analysis") or {}).get("margin_status"),
+        "near_tie_detected": bool((ranking_output.get("sensitivity_analysis") or {}).get("near_tie_detected", False)),
+        "plausible_alternatives": (ranking_output.get("sensitivity_analysis") or {}).get("plausible_alternatives", []),
+        "gating_reasons": [],
+    }
+    land_use = ranking_output.get("land_use_assessment") or candidate_output.get("land_use_assessment") or {}
+    temporal_val = (
+        (field_profile.get("section_a_farmer_provided", {}).get("planning") or {}).get("temporal_validation")
+        or candidate_output.get("temporal_validation")
+        or {}
+    )
+    wb_assess = ranking_output.get("water_balance_assessment") or {}
 
     if sugg_id is None:
         fp_status = "NO_ELIGIBLE_STRATEGY"
         partial_reason: Optional[str] = ranking_output["feasibility_gate_summary"]["notice"]
+        root_status = "PARTIAL"
+    elif decision_gate.get("decision_status") == "EXPLORATORY_ONLY":
+        fp_status = "PARTIAL"
+        partial_reason = (
+            f"EXPLORATORY_ONLY / PROVISIONAL: {decision_gate.get('gating_reasons', ['Land-use evidence unverified or conflicting'])[0]} "
+            "Missing local DEM, irrigation ECe, and enterprise budgets further prevent operational endorsement."
+        )
         root_status = "PARTIAL"
     elif ranking_output["all_candidates_conditional"] or data_quality["missing_data"]:
         fp_status = "PARTIAL"
@@ -501,6 +691,10 @@ def build_final_recommendation(
         "strategies": strategies_final,
         "suggested_strategy_id": sugg_id,
         "recommendation_status": rec_status,
+        "decision_gate": decision_gate,
+        "land_use_assessment": land_use,
+        "temporal_validation": temporal_val,
+        "water_balance_assessment": wb_assess,
         "pareto_summary": {
             "active_pareto_objectives": ranking_output["pareto_analysis"]["active_pareto_objectives"],
             "front_strategy_ids": ranking_output["pareto_analysis"]["front_strategy_ids"],
@@ -518,16 +712,31 @@ def build_final_recommendation(
     }
 
     front_n = len(field_plan["pareto_summary"]["front_strategy_ids"])
-    if sugg_id is not None:
+    sens_sum = field_plan["sensitivity_summary"]
+    near_tie_msg = ""
+    if sens_sum.get("near_tie_detected") and sens_sum.get("plausible_alternatives"):
+        alt_ids = [a["strategy_id"] for a in sens_sum["plausible_alternatives"][:2]]
+        near_tie_msg = (
+            f" Near-tie/narrow ranking margin detected ({sens_sum.get('margin_status')}, diff={sens_sum.get('baseline_top_two_margin')}, "
+            f"rel={sens_sum.get('relative_top_two_margin_pct')}%): plausible alternatives {alt_ids} should be weighed alongside rank #1."
+        )
+
+    if sugg_id is None:
         overall_summary = (
             f"Evaluated {len(strategies_final)} candidate strategies for field '{f_id}'. "
-            f"Top conditional recommendation: '{sugg_id}' (Pareto front contains {front_n} non-dominated option(s); "
-            f"status='{rec_status}', zero clean FEASIBLE_PASS options due to missing local DEM/ECe tests)."
+            f"No strategy can be responsibly recommended (status='{rec_status}', decision='{decision_gate['decision_status']}'); inspect hard blockers and missing evidence."
+        )
+    elif decision_gate.get("decision_status") == "EXPLORATORY_ONLY":
+        overall_summary = (
+            f"PROVISIONAL / EXPLORATORY ONLY (NOT an endorsed operational farm recommendation) for field '{f_id}'. "
+            f"Evaluated {len(strategies_final)} candidates; land-use status='{land_use.get('status')}' and critical data adequacy='{data_quality['critical_data_adequacy']['adequacy_status']}' "
+            f"prevent operational endorsement. Provisional top-scoring sequence='{sugg_id}'.{near_tie_msg}"
         )
     else:
         overall_summary = (
             f"Evaluated {len(strategies_final)} candidate strategies for field '{f_id}'. "
-            f"No strategy can be responsibly recommended (status='{rec_status}'); inspect hard blockers and missing evidence."
+            f"Top conditional recommendation: '{sugg_id}' (Pareto front contains {front_n} non-dominated option(s); "
+            f"status='{rec_status}', decision='{decision_gate['decision_status']}', adequacy='{data_quality['critical_data_adequacy']['adequacy_status']}').{near_tie_msg}"
         )
 
     disclaimer = (

@@ -245,6 +245,9 @@
         "dominated_by": { "type": "array", "items": { "type": "string" } },
         "rank": { "type": ["integer", "null"], "minimum": 1 },
         "weighted_score": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "provisional": { "type": "boolean" },
+        "land_use_status": { "type": ["string", "null"] },
+        "stability_metrics": { "type": ["object", "null"] },
         "explanation": { "$ref": "#/$defs/StrategyExplanation" }
       }
     },
@@ -304,6 +307,7 @@
       "properties": {
         "completeness_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
         "confidence_note": { "type": "string", "minLength": 1 },
+        "critical_data_adequacy": { "type": "object" },
         "missing_data": { "type": "array", "items": { "type": "string" } },
         "warnings": { "type": "array", "items": { "type": "string" } },
         "limitations": { "type": "array", "items": { "type": "string" } },
@@ -337,6 +341,10 @@
         "strategies": { "type": "array", "items": { "$ref": "#/$defs/StrategyItem" } },
         "suggested_strategy_id": { "type": ["string", "null"] },
         "recommendation_status": { "type": "string", "minLength": 1 },
+        "decision_gate": { "type": "object" },
+        "land_use_assessment": { "type": "object" },
+        "temporal_validation": { "type": "object" },
+        "water_balance_assessment": { "type": "object" },
         "pareto_summary": { "type": "object" },
         "ranking_methodology": { "type": "object" },
         "sensitivity_summary": { "type": "object" },

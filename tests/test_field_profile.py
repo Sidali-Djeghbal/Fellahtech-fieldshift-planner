@@ -53,6 +53,7 @@ def _sample_boumahra_payload() -> dict:
             "start_year": 2025,
             "horizon_seasons": 3,
             "planting_month": 11,
+            "planning_mode": "HISTORICAL_SIMULATION",
         },
         "preferences": {
             "target_crop_ids": ["DURUM_WHEAT", "FABA_BEAN", "TOMATO_IND"],

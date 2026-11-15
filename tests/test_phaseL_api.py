@@ -68,7 +68,12 @@ def _base_payload(field_id: str = "L_FIELD_01", poly: Dict[str, Any] = POLY_BELK
         "crop_history": [
             {"season": "Autumn", "year": 2024, "planting_month": 11, "crop_name_raw": "Durum Wheat"}
         ],
-        "planning": {"start_season": "Autumn", "start_year": 2025, "horizon_seasons": 3},
+        "planning": {
+            "start_season": "Autumn",
+            "start_year": 2025,
+            "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
+        },
     }
 
 
@@ -190,7 +195,12 @@ class TestPhaseLApplicationIntegration(unittest.TestCase):
         minimal = {
             "field": {"field_id": "L_MINIMAL", "geometry": POLY_TAMLOUKA},
             "water": {"availability": "limited", "source": "rainfed", "irrigation_system": "none"},
-            "planning": {"start_season": "Autumn", "start_year": 2025, "horizon_seasons": 3},
+            "planning": {
+            "start_season": "Autumn",
+            "start_year": 2025,
+            "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
+        },
         }
         r_min = self.client.post("/api/v1/fields/analyze", json=minimal)
         self.assertEqual(r_min.status_code, 200)

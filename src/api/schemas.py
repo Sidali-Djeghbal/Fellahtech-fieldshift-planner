@@ -53,6 +53,7 @@ class PlanningInputContract(StrictModel):
     start_year: int = Field(..., ge=2024, le=2035)
     horizon_seasons: int = Field(..., ge=2, le=4)
     planting_month: Optional[int] = Field(default=None, ge=1, le=12)
+    planning_mode: Optional[Literal["CURRENT_PLANNING", "HISTORICAL_SIMULATION"]] = None
 
 
 class PreferencesInputContract(StrictModel):

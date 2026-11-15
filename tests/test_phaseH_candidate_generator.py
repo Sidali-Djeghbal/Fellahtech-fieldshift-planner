@@ -277,7 +277,13 @@ class TestPhaseHCandidateGenerator(unittest.TestCase):
         fp = build_field_profile(
             _make_payload(
                 water={"availability": "abundant", "source": "reservoir", "irrigation_system": "drip"},
-                planning={"start_season": "Spring", "start_year": 2026, "horizon_seasons": 3, "planting_month": 3},
+                planning={
+                    "start_season": "Spring",
+                    "start_year": 2026,
+                    "horizon_seasons": 3,
+                    "planting_month": 3,
+                    "planning_mode": "HISTORICAL_SIMULATION",
+                },
                 preferences={"target_crop_ids": ["SUNFLOWER"]},
             )
         )

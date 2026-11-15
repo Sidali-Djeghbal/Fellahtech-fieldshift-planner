@@ -100,12 +100,14 @@ def create_app(repository: Optional[AnalysisRepository] = None) -> FastAPI:
 
     @application.exception_handler(FarmerInputValidationError)
     async def farmer_input_error_handler(_request: Request, exc: FarmerInputValidationError) -> JSONResponse:
+        err_code = getattr(exc, "error_code", None) or "FARMER_INPUT_POLICY_ERROR"
+        err_details = getattr(exc, "details", None)
         return JSONResponse(
             status_code=422,
             content={
-                "error_code": "FARMER_INPUT_POLICY_ERROR",
+                "error_code": err_code,
                 "message": str(exc),
-                "details": [],
+                "details": [err_details] if isinstance(err_details, dict) else (err_details or []),
             },
         )
 

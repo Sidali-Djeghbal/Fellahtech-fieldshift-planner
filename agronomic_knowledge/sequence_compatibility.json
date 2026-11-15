@@ -42,8 +42,9 @@
       "evidence_classification": "HARD_CONSTRAINT",
       "source": "CON_11_SEQUENCE; ITGC/MDPI & ICARDA-ITGC Winter Chickpea Program",
       "min_same_pulse_gap_years": 3,
+      "min_cross_pulse_caution_gap_years": 3,
       "family_members": ["FABA_BEAN", "CHICKPEA_WINTER", "CHICKPEA_SPRING", "LENTIL"],
-      "rule": "Consecutive same food legume or Faba Bean <-> Lentil fails immediately (<3 yr gap accelerates Orobanche crenata, Botrytis, Ascochyta, Fusarium wilt). Cross-legume transitions (e.g. Faba Bean -> Chickpea) within <3 yr trigger WARNING for shared fungal/soilborne carryover.",
+      "rule": "Consecutive or <3 yr same food legume or Faba Bean <-> Lentil fails immediately (HARD_CONSTRAINT: Orobanche crenata, Ascochyta spp., Botrytis, Fusarium). Different legume genera within <3 yr (e.g. Faba Bean -> Wheat -> Winter Chickpea, gap=2 yr) trigger SOFT WARNING for shared Sclerotinia/Fusarium and secondary Orobanche carryover because crop_profiles specify >=3 yr within chickpea/faba species while Ascochyta is genus-specific.",
       "outcome_on_same_or_orobanche_repeat": "FAIL",
       "outcome_on_cross_pulse_short_gap": "WARNING"
     },
@@ -61,8 +62,10 @@
       "name": "Vetch-Oat Fallow Replacement & Oat Host Caution",
       "evidence_classification": "SOFT_CONSTRAINT",
       "source": "crop_system_inventory.csv; ITGC / CIHEAM ArimNet Algeria",
-      "rule": "Cereal -> Vetch-Oat -> Cereal is an approved fallow-replacement break if hay is cut before grass-weed seed shed (PASS with oat-weed cut timing note); consecutive Vetch-Oat -> Vetch-Oat triggers WARNING due to recurring Avena host.",
-      "outcome_on_repeat": "WARNING"
+      "min_return_break_years": 2,
+      "rule": "Single Vetch-Oat inside Cereal -> Vetch-Oat -> Cereal is an approved fallow-replacement break if hay is cut in Apr-May before grass-weed seed shed (PASS). Consecutive Vetch-Oat -> Vetch-Oat or frequent 2-year return around cereal (Vetch-Oat -> Cereal -> Vetch-Oat) triggers WARNING for recurring Avena grass-weed/host pressure, mandatory early hay cut timing, and shoot-N/biomass export if baled off-field.",
+      "outcome_on_repeat": "WARNING",
+      "outcome_on_frequent_2yr_cycle": "WARNING"
     },
     {
       "seq_rule_id": "SEQ_07_LEGUME_CEREAL_SYNERGY",

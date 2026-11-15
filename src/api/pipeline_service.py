@@ -18,7 +18,12 @@ from fieldshift_integration.config import (
 )
 from src.agronomic import load_knowledge_base
 from src.optimization import rank_rotation_candidates
-from src.output import OutputValidationError, build_final_recommendation, validate_final_recommendation
+from src.output import (
+    DECISION_ENGINE_VERSION,
+    OutputValidationError,
+    build_final_recommendation,
+    validate_final_recommendation,
+)
 from src.rotation import generate_rotation_candidates
 
 
@@ -27,9 +32,10 @@ class PipelineExecutionError(RuntimeError):
 
 
 def compute_payload_sha256(scientific_payload: Dict[str, Any], language: str = "en") -> str:
-    """Compute a deterministic full-request SHA-256 covering geometry, water, history, planning, preferences."""
+    """Compute a deterministic full-request SHA-256 covering engine version, language, and farmer inputs."""
     canonical = json.dumps(
         {
+            "decision_engine_version": DECISION_ENGINE_VERSION,
             "language": language,
             "scientific_payload": scientific_payload,
         },
@@ -45,9 +51,18 @@ def derive_analysis_id(payload_sha256: str) -> str:
     return f"ANAL_{payload_sha256[:16].upper()}"
 
 
-def validate_farmer_submission(scientific_payload: Dict[str, Any]) -> Dict[str, Any]:
+def validate_farmer_submission(
+    scientific_payload: Dict[str, Any],
+    *,
+    reference_date: Optional[Any] = None,
+    clock: Optional[Any] = None,
+) -> Dict[str, Any]:
     """Validate farmer input contract + GeoJSON Polygon inside Guelma Wilaya (no raster extraction)."""
-    normalized = validate_farmer_input(scientific_payload)
+    normalized = validate_farmer_input(
+        scientific_payload,
+        reference_date=reference_date,
+        clock=clock,
+    )
     geom_cfg = normalized["field"]
     spatial = validate_and_project_polygon(
         geom_cfg["geometry"],
@@ -111,6 +126,8 @@ def build_field_profile_summary(field_profile: Dict[str, Any]) -> Dict[str, Any]
             "dem_elevation_m": dem,
         },
         "descriptive_field_diagnostics": sec_c.get("descriptive_field_diagnostics", []),
+        "land_use_assessment": sec_c.get("land_use_assessment"),
+        "temporal_validation": sec_a.get("planning", {}).get("temporal_validation"),
         "conditional_follow_up_questions": sec_d.get("conditional_follow_up_questions", []),
         "quality_status_counts": sec_d.get("quality_status_counts", {}),
         "input_completeness_flags": sec_d.get("input_completeness_flags", {}),
@@ -128,11 +145,22 @@ def run_field_analysis_pipeline(
     analysis_id: str,
     language: str = "en",
     generated_at: Optional[str] = None,
+    reference_date: Optional[Any] = None,
+    clock: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """Execute Phases F -> G -> H -> I -> J + Draft 2020-12 schema/semantic validation."""
     kb = load_knowledge_base()
-    field_profile = build_field_profile(scientific_payload)
-    candidate_output = generate_rotation_candidates(field_profile, kb=kb)
+    field_profile = build_field_profile(
+        scientific_payload,
+        reference_date=reference_date,
+        clock=clock,
+    )
+    candidate_output = generate_rotation_candidates(
+        field_profile,
+        kb=kb,
+        reference_date=reference_date,
+        clock=clock,
+    )
     ranking_output = rank_rotation_candidates(candidate_output, field_profile=field_profile, kb=kb)
 
     recommendation = build_final_recommendation(

@@ -123,7 +123,12 @@
         "start_season": { "type": "string", "enum": ["Winter", "Spring", "Summer", "Autumn"] },
         "start_year": { "type": "integer", "minimum": 2024, "maximum": 2035 },
         "horizon_seasons": { "type": "integer", "minimum": 2, "maximum": 4 },
-        "planting_month": { "type": ["integer", "null"], "minimum": 1, "maximum": 12 }
+        "planting_month": { "type": ["integer", "null"], "minimum": 1, "maximum": 12 },
+        "planning_mode": {
+          "type": ["string", "null"],
+          "enum": ["CURRENT_PLANNING", "HISTORICAL_SIMULATION", null],
+          "default": "CURRENT_PLANNING"
+        }
       }
     },
     "preferences": {

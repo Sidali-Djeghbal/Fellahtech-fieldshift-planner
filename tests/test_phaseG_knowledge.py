@@ -68,6 +68,7 @@ def _boumahra_payload(
             "start_season": "Winter",
             "start_year": 2025,
             "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
         },
     }
     if crop_history is not None:
@@ -105,6 +106,7 @@ def _tamlouka_rainfed_payload() -> dict:
             "start_season": "Winter",
             "start_year": 2025,
             "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
         },
         "preferences": {
             "equipment_constraints": [],

@@ -61,7 +61,12 @@ def _make_request(
                 }
             ]
         ),
-        "planning": {"start_season": "Autumn", "start_year": 2025, "horizon_seasons": 3},
+        "planning": {
+            "start_season": "Autumn",
+            "start_year": 2025,
+            "horizon_seasons": 3,
+            "planning_mode": "HISTORICAL_SIMULATION",
+        },
     }
     if preferences is not None:
         req["preferences"] = preferences

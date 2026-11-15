@@ -13,8 +13,8 @@ Strict boundaries:
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from datetime import date, datetime, timezone
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from src.agronomic.constraint_engine import (
     AgronomicKnowledgeBase,
@@ -22,6 +22,11 @@ from src.agronomic.constraint_engine import (
     evaluate_all_crops_for_field,
     evaluate_crop_sequence,
     load_knowledge_base,
+)
+from src.agronomic.land_use_assessment import LAND_USE_SUPPORTED, assess_land_use
+from src.agronomic.temporal_planning import (
+    season_window_bounds,
+    validate_and_build_planning_timeline,
 )
 
 CROP_VALID_PLANTING_MONTHS: Dict[str, Tuple[int, ...]] = {
@@ -183,19 +188,29 @@ def _slot_calendar_sequence(
     start_year: int,
     kb: AgronomicKnowledgeBase,
 ) -> Tuple[List[str], List[int]]:
-    """Assign biologically valid planting season and calendar year per planned step."""
+    """Assign chronologically ordered, biologically valid planting season and calendar year per planned step."""
     seasons: List[str] = []
     years: List[int] = []
+    prev_end: Optional[date] = None
     for idx, cid in enumerate(crops):
         crop = kb.crops[cid]
         allowed = crop["parameters"]["suitable_planting_seasons"]["value"] or []
-        yr = start_year + idx
         if idx == 0:
-            seasons.append(start_season)
-            years.append(yr)
+            season_choice = start_season
+            yr = start_year
         else:
-            seasons.append(start_season if start_season in allowed else _canonical_season_for_crop(crop))
-            years.append(yr)
+            season_choice = start_season if start_season in allowed else _canonical_season_for_crop(crop)
+            yr = years[-1]
+            while True:
+                s_start, s_end = season_window_bounds(season_choice, yr)
+                # Advance until the new planting window begins strictly after the previous slot's main sowing window
+                if prev_end is None or s_start > prev_end:
+                    break
+                yr += 1
+        _, w_end = season_window_bounds(season_choice, yr)
+        prev_end = w_end
+        seasons.append(season_choice)
+        years.append(yr)
     return seasons, years
 
 
@@ -496,12 +511,16 @@ def generate_rotation_candidates(
     field_profile: Dict[str, Any],
     config: Optional[GenerationConfig] = None,
     kb: Optional[AgronomicKnowledgeBase] = None,
+    *,
+    reference_date: Optional[Union[date, datetime, str]] = None,
+    clock: Optional[Callable[[], date]] = None,
 ) -> Dict[str, Any]:
     """Generate and deterministically evaluate diverse crop rotation candidates for one Field Profile."""
     cfg = config or GenerationConfig()
     kb = kb or load_knowledge_base()
 
     sec_a = field_profile["section_a_farmer_provided"]
+    sec_c = field_profile.get("section_c_agronomic_knowledge_base") or {}
     sec_d = field_profile["section_d_quality_and_uncertainty"]
     fld = sec_a["field"]
     planning = sec_a["planning"]
@@ -514,6 +533,19 @@ def generate_rotation_candidates(
 
     if horizon < 2 or horizon > 4:
         raise ValueError("planning.horizon_seasons must be between 2 and 4.")
+
+    # Enforce centralized temporal validation unless profile was constructed explicitly via injected clock
+    if planning.get("temporal_validation") is not None and reference_date is None and clock is None:
+        temporal_info = planning["temporal_validation"]
+    else:
+        temporal_info = validate_and_build_planning_timeline(
+            planning,
+            crop_history=sec_a.get("crop_history"),
+            reference_date=reference_date,
+            clock=clock,
+        )
+
+    land_use = sec_c.get("land_use_assessment") or assess_land_use(field_profile)
 
     # Cache single-crop slot evaluations across key seasons using Phase G directly
     slot_eval_cache: Dict[Tuple[str, str], Dict[str, Any]] = {}
@@ -590,10 +622,14 @@ def generate_rotation_candidates(
         info_gaps = sorted({f"[UNKNOWN] {r['rule_id']}: {r['reason']}" for r in all_rules if r["status"] == "UNKNOWN"})
 
         checklist: List[str] = []
+        if land_use["is_provisional"]:
+            checklist.insert(0, f"EXPLORATORY / LAND-USE BLOCKER: {land_use.get('provisional_gating_reason')}")
+        elif land_use["status"] != LAND_USE_SUPPORTED:
+            checklist.append(f"LAND-USE VERIFICATION: {land_use.get('provisional_gating_reason')}")
         if combined_counts["UNKNOWN"] > 0:
             checklist.append("Resolve UNKNOWN constraints (DEM/drainage puddling check, irrigation salinity ECe, missing history or optional inputs).")
         if combined_counts["WARNING"] > 0:
-            checklist.append("Review WARNING flags (GPM vs NASA POWER precipitation spread, clay workability, Hypothesis DSA trial status).")
+            checklist.append("Review WARNING flags (GPM vs NASA POWER precipitation spread, clay workability, sequence return breaks, Hypothesis DSA trial status).")
         if not seq_eval["feasible"]:
             checklist.append("HARD/UNKNOWN BLOCKER: Sequence infeasible as configured; inspect hard_fail_reasons / hard_unknown_reasons.")
 
@@ -605,6 +641,13 @@ def generate_rotation_candidates(
             "description": bp["description"],
             "is_existing_rotation": bp["is_existing_rotation"],
             "selection_status": bp["selection_status"],
+            "provisional": bool(land_use["is_provisional"]),
+            "land_use_status": land_use["status"],
+            "provisional_reasons": (
+                [land_use["provisional_gating_reason"]]
+                if land_use["is_provisional"] and land_use.get("provisional_gating_reason")
+                else []
+            ),
             "generation_rationale": bp["rationale"],
             "feasibility_status": fstatus,
             "feasible": seq_eval["feasible"],
@@ -625,12 +668,12 @@ def generate_rotation_candidates(
             "evidence": evidence,
             "assumptions": assumptions,
             "information_gaps": info_gaps,
-            "needs_local_review": bool(combined_counts["UNKNOWN"] > 0 or combined_counts["WARNING"] > 0 or not seq_eval["feasible"]),
+            "needs_local_review": bool(combined_counts["UNKNOWN"] > 0 or combined_counts["WARNING"] > 0 or not seq_eval["feasible"] or land_use["requires_local_verification"]),
             "review_checklist": checklist,
         })
 
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "field_id": fld["field_id"],
         "field_name": fld.get("field_name"),
@@ -638,10 +681,13 @@ def generate_rotation_candidates(
             **asdict(cfg),
             "start_season": start_season,
             "start_year": start_year,
+            "planning_mode": temporal_info["planning_mode"],
             "horizon_seasons": horizon,
             "deterministic": True,
             "ranking_executed": False,
         },
+        "temporal_validation": temporal_info,
+        "land_use_assessment": land_use,
         "field_insights": _build_field_insights(field_profile),
         "history_assessment": history_info,
         "preference_handling": {

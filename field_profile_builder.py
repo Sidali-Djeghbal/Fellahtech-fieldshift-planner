@@ -14,15 +14,20 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import pandas as pd
 
 from field_geospatial_processor import extract_field_geospatial_context
 from fieldshift_integration.config import PROJECT_ROOT
+from src.agronomic.land_use_assessment import LAND_USE_SUPPORTED, assess_land_use
+from src.agronomic.temporal_planning import (
+    TemporalPlanningError,
+    validate_and_build_planning_timeline,
+)
 
 SCHEMA_PATH = PROJECT_ROOT / "field_input_schema.json"
 CROP_INVENTORY_CSV = PROJECT_ROOT / "docs" / "phaseE" / "crop_system_inventory.csv"
@@ -127,6 +132,11 @@ CROP_ALIASES: Dict[str, str] = {
 class FarmerInputValidationError(ValueError):
     """Raised when farmer payload violates the minimal input schema or supplies forbidden technical fields."""
 
+    def __init__(self, message: str, *, error_code: str = "INVALID_FARMER_INPUT", details: Optional[Dict[str, Any]] = None) -> None:
+        super().__init__(message)
+        self.error_code = error_code
+        self.details = details or {}
+
 
 @lru_cache(maxsize=1)
 def load_input_schema() -> Dict[str, Any]:
@@ -183,7 +193,12 @@ def _classify_weight_input(present: bool, val: Any, key_name: str) -> Tuple[Opti
     return float(val), "PROVIDED"
 
 
-def validate_farmer_input(payload: Dict[str, Any]) -> Dict[str, Any]:
+def validate_farmer_input(
+    payload: Dict[str, Any],
+    *,
+    reference_date: Optional[Union[date, datetime, str]] = None,
+    clock: Optional[Callable[[], date]] = None,
+) -> Dict[str, Any]:
     """Strictly validate farmer input against field_input_schema.json rules and normalize optional fields."""
     if not isinstance(payload, dict):
         raise FarmerInputValidationError("Input payload must be a JSON object.")
@@ -281,11 +296,11 @@ def validate_farmer_input(payload: Dict[str, Any]) -> Dict[str, Any]:
             })
         history_completeness = "EXPLICITLY_CONFIRMED_EMPTY" if len(norm_history) == 0 else "PROVIDED"
 
-    # 4. Planning
+    # 4. Planning (with strict CURRENT_PLANNING vs HISTORICAL_SIMULATION temporal guard)
     pln = payload["planning"]
     if not isinstance(pln, dict):
         raise FarmerInputValidationError("'planning' must be an object.")
-    if set(pln.keys()) - {"start_season", "start_year", "horizon_seasons", "planting_month"}:
+    if set(pln.keys()) - {"start_season", "start_year", "horizon_seasons", "planting_month", "planning_mode"}:
         raise FarmerInputValidationError("Unsupported keys in 'planning'.")
     if pln.get("start_season") not in VALID_SEASONS:
         raise FarmerInputValidationError(f"Invalid planning.start_season: {pln.get('start_season')}")
@@ -298,6 +313,15 @@ def validate_farmer_input(payload: Dict[str, Any]) -> Dict[str, Any]:
     ppm = pln.get("planting_month")
     if ppm is not None and (not isinstance(ppm, int) or isinstance(ppm, bool) or not (1 <= ppm <= 12)):
         raise FarmerInputValidationError(f"Invalid planning.planting_month: {ppm}")
+    try:
+        temporal_info = validate_and_build_planning_timeline(
+            pln,
+            crop_history=norm_history,
+            reference_date=reference_date,
+            clock=clock,
+        )
+    except TemporalPlanningError as exc:
+        raise FarmerInputValidationError(str(exc), error_code=exc.error_code, details=exc.details) from exc
 
     # 5. Preferences (optional; omitted/null subfields preserved distinctly from [])
     list_pref_keys = ("target_crop_ids", "excluded_crop_ids", "equipment_constraints")
@@ -351,6 +375,8 @@ def validate_farmer_input(payload: Dict[str, Any]) -> Dict[str, Any]:
             "start_year": sy,
             "horizon_seasons": hz,
             "planting_month": ppm,
+            "planning_mode": temporal_info["planning_mode"],
+            "temporal_validation": temporal_info,
             "provenance": "USER_REPORTED",
         },
         "preferences": norm_pref,
@@ -454,9 +480,23 @@ def _build_agronomic_context(
             for h in hist_entries
         ]
 
+    land_use = assess_land_use({
+        "section_a_farmer_provided": farmer_data,
+        "section_b_extracted_geospatial": geospatial_ctx,
+    })
+    if land_use["status"] != LAND_USE_SUPPORTED:
+        diagnostics.append({
+            "constraint_id": "CON_10_LAND_USE",
+            "status": "PROVISIONAL_FLAG" if land_use["is_provisional"] else "ADVISORY_CAUTION",
+            "finding": f"Land-use assessment status = {land_use['status']} (CropFreq 2021-2025={land_use['crop_frequency_mean']}, SoilGrids cov={land_use['soilgrids_clay_coverage_pct']}%).",
+            "agronomic_implication": land_use.get("provisional_gating_reason") or "; ".join(land_use["explanations"]),
+            "source_rule": "agronomic_constraints_framework.csv::CON_10_CROP_FREQ; src/agronomic/land_use_assessment.py",
+        })
+
     return {
         "knowledge_base_sources": [str(CROP_INVENTORY_CSV.name), str(CONSTRAINTS_CSV.name)],
         "optimization_executed": False,
+        "land_use_assessment": land_use,
         "descriptive_field_diagnostics": diagnostics,
         "target_crop_kb_profiles": target_profiles,
         "resolved_history_summary": hist_groups,
@@ -547,22 +587,39 @@ def _build_quality_and_clarifications(
     return quality_ledger, follow_ups
 
 
-def build_field_profile(farmer_payload: Dict[str, Any]) -> Dict[str, Any]:
+def build_field_profile(
+    farmer_payload: Dict[str, Any],
+    *,
+    reference_date: Optional[Union[date, datetime, str]] = None,
+    clock: Optional[Callable[[], date]] = None,
+) -> Dict[str, Any]:
     """Build complete validated 4-part Field Profile from minimal farmer input."""
-    farmer_data = validate_farmer_input(farmer_payload)
+    farmer_data = validate_farmer_input(farmer_payload, reference_date=reference_date, clock=clock)
     geom_cfg = farmer_data["field"]
     geo_ctx = extract_field_geospatial_context(geom_cfg["geometry"], geometry_crs=geom_cfg.get("geometry_crs", "EPSG:4326"))
     agronomic_ctx = _build_agronomic_context(farmer_data, geo_ctx)
     quality_ledger, follow_ups = _build_quality_and_clarifications(farmer_data, geo_ctx)
 
+    # Material UX follow-up if land-use evidence is unverified or conflicting
+    lu = agronomic_ctx["land_use_assessment"]
+    if lu["status"] in {"LAND_USE_UNVERIFIED", "LAND_USE_CONFLICTING_EVIDENCE"}:
+        follow_ups.append({
+            "question_id": "Q_LAND_USE_BOUNDARY_VERIFICATION",
+            "material_reason": lu.get("provisional_gating_reason") or "Annual cropland detection is near zero over the submitted polygon.",
+            "farmer_prompt": "Please verify on the map that your polygon covers your cultivated annual field rather than buildings, road edges, or permanent trees.",
+            "fallback_if_unanswered": "Gate rotation outputs as EXPLORATORY_ONLY pending local boundary and arable-land verification.",
+        })
+
     return {
-        "profile_schema_version": "1.0.0",
+        "profile_schema_version": "1.1.0",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "section_a_farmer_provided": farmer_data,
         "section_b_extracted_geospatial": geo_ctx,
         "section_c_agronomic_knowledge_base": agronomic_ctx,
         "section_d_quality_and_uncertainty": {
             **quality_ledger,
+            "land_use_assessment": lu,
+            "temporal_validation": farmer_data["planning"]["temporal_validation"],
             "conditional_follow_up_questions": follow_ups,
         },
     }
